@@ -61,8 +61,6 @@ if(BTYPE_UC STREQUAL DEBUG)
   add_definitions(-DDEBUGME)
 endif()
 
-find_package(MPI QUIET)
-
 # macros for art_dictionary and simple_plugin
 include(ArtDictionary)
 include(ArtMake)
