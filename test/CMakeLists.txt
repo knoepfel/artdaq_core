@@ -7,3 +7,4 @@ include(CetTest)
 cet_test_env("FHICL_FILE_PATH=.")
 
 add_subdirectory(Data)
+add_subdirectory(Generators)
