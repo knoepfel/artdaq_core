@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace artdaq {
+namespace artdaq-core {
   std::string const & getReleaseVersion();
   std::string const & getBuildDateTime();
 }
