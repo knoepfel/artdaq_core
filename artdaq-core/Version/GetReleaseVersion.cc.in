@@ -1,6 +1,6 @@
 #include "artdaq-core/Version/GetReleaseVersion.h"
 
-namespace artdaq {
+namespace artdaqcore {
 
   std::string const & getReleaseVersion() {
     static std::string const releaseVersion("@version@");
