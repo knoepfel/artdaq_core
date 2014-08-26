@@ -34,16 +34,14 @@ cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
   NO_UNDEFINED
   EXTRA_FLAGS -pedantic
-  EXTRA_CXX_FLAGS -std=c++11  -D_GLIBCXX_USE_NANOSLEEP
+  EXTRA_CXX_FLAGS -D_GLIBCXX_USE_NANOSLEEP
 )
 
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
 find_ups_product( art v1_08_10 )
-find_ups_product( cetbuildtools v3_07_03 )
-
-cet_check_gcc()
+find_ups_product( cetbuildtools v4_00_00 )
 
 # include search path
 # notice use of ENV to invoke an external variable
