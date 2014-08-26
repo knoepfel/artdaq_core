@@ -17,27 +17,32 @@ bindir      fq_dir      bin
 
 #
 product		version		optional
-art		v1_11_00
-cetbuildtools	v4_01_01	-	only_for_build
+art		v1_11_01
+art		v1_10_00b	s3
+cetbuildtools	v4_01_02	-	only_for_build
 end_product_list
 
 # e5  - with gcc 4.8.2 and -std=c++11
 # e6  - with gcc 4.9.1 and -std=c++1y
+# s3  - with art v1_10_00b
+
 # -nq- means there is no qualifier
 # a - means the dependent product is not required by the parent and will not be setup
-qualifier	art		compiler	notes
-e6:debug	e6:debug	gcc		-std=c++1y
-e6:prof		e6:prof		gcc		-std=c++1y
-nu:e6:debug	nu:e6:debug	gcc		-std=c++1y
-nu:e6:prof	nu:e6:prof	gcc		-std=c++1y
-mu2e:e6:debug	mu2e:e6:debug	gcc		-std=c++1y
-mu2e:e6:prof	mu2e:e6:prof	gcc		-std=c++1y
-e5:debug	e5:debug	gcc		-std=c++11
-e5:prof		e5:prof		gcc		-std=c++11
-nu:e5:debug	nu:e5:debug	gcc		-std=c++11
-nu:e5:prof	nu:e5:prof	gcc		-std=c++11
-mu2e:e5:debug	mu2e:e5:debug	gcc		-std=c++11
-mu2e:e5:prof	mu2e:e5:prof	gcc		-std=c++11
+qualifier	art		notes
+e6:debug	e6:debug	-std=c++1y
+e6:prof		e6:prof		-std=c++1y
+nu:e6:debug	nu:e6:debug	-std=c++1y
+nu:e6:prof	nu:e6:prof	-std=c++1y
+mu2e:e6:debug	mu2e:e6:debug	-std=c++1y
+mu2e:e6:prof	mu2e:e6:prof	-std=c++1y
+e5:debug	e5:debug	-std=c++11
+e5:prof		e5:prof		-std=c++11
+e5:s3:debug	e5:debug	-std=c++11
+e5:s3:prof	e5:prof		-std=c++11
+nu:e5:debug	nu:e5:debug	-std=c++11
+nu:e5:prof	nu:e5:prof	-std=c++11
+mu2e:e5:debug	mu2e:e5:debug	-std=c++11
+mu2e:e5:prof	mu2e:e5:prof	-std=c++11
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
