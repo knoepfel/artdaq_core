@@ -43,16 +43,6 @@ cet_report_compiler_flags()
 find_ups_product( art v1_08_10 )
 find_ups_product( cetbuildtools v4_00_00 )
 
-# include search path
-# notice use of ENV to invoke an external variable
-include_directories ( $ENV{LIBSIGCPP_INC}/sigc++-2.0 )
-include_directories ( $ENV{LIBSIGCPP_LIB}/sigc++-2.0/include )
-include_directories ( $ENV{SMC_HOME}/lib/C++ )
-
-#  Find all the libraries needed by our dependent CMakeList.txt files
-find_library( CPPUNIT NAMES cppunit   PATHS $ENV{CPPUNIT_LIB}   NO_DEFAULT_PATH )
-find_library( SIGC    NAMES sigc-2.0  PATHS $ENV{LIBSIGCPP_LIB} NO_DEFAULT_PATH )
-
 # Debug streamer.
 string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
 if(BTYPE_UC STREQUAL DEBUG)
