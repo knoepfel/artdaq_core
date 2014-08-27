@@ -22,9 +22,10 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
-set(CMAKE_MODULE_PATH $ENV{ART_DIR}/Modules
-		      $ENV{CETBUILDTOOLS_DIR}/Modules
-		      ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH
+  $ENV{ART_DIR}/Modules
+	$ENV{CETBUILDTOOLS_DIR}/Modules
+	${CMAKE_MODULE_PATH})
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -34,26 +35,13 @@ cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
   NO_UNDEFINED
   EXTRA_FLAGS -pedantic
-  EXTRA_CXX_FLAGS -std=c++11  -D_GLIBCXX_USE_NANOSLEEP
 )
 
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
 find_ups_product( art v1_08_10 )
-find_ups_product( cetbuildtools v3_07_03 )
-
-cet_check_gcc()
-
-# include search path
-# notice use of ENV to invoke an external variable
-include_directories ( $ENV{LIBSIGCPP_INC}/sigc++-2.0 )
-include_directories ( $ENV{LIBSIGCPP_LIB}/sigc++-2.0/include )
-include_directories ( $ENV{SMC_HOME}/lib/C++ )
-
-#  Find all the libraries needed by our dependent CMakeList.txt files
-find_library( CPPUNIT NAMES cppunit   PATHS $ENV{CPPUNIT_LIB}   NO_DEFAULT_PATH )
-find_library( SIGC    NAMES sigc-2.0  PATHS $ENV{LIBSIGCPP_LIB} NO_DEFAULT_PATH )
+find_ups_product( cetbuildtools v4_01_02 )
 
 # Debug streamer.
 string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
