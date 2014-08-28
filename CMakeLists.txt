@@ -43,6 +43,12 @@ cet_report_compiler_flags()
 find_ups_product( art v1_08_10 )
 find_ups_product( cetbuildtools v4_01_02 )
 
+# Needed if using old art with new cetbuildtools / CMake.
+check_ups_version(art "$ENV{ART_VERSION}" v1_11_00 PRODUCT_OLDER_VAR have_old_art)
+if (have_old_art)
+  cmake_policy(SET CMP0046 OLD)
+endif()
+
 # Debug streamer.
 string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
 if(BTYPE_UC STREQUAL DEBUG)
