@@ -1,3 +1,4 @@
+add_subdirectory(Utilities)
 add_subdirectory(Data)
 add_subdirectory(Core)
 add_subdirectory(Generators)
