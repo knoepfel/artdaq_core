@@ -18,8 +18,11 @@ artdaq::Fragment::Fragment() :
 }
 
 artdaq::Fragment::Fragment(std::size_t n) :
-  vals_(n + RawFragmentHeader::num_words(), 0)
+  vals_(n + RawFragmentHeader::num_words())
 {
+  // vals ctor w/o init val is used; make sure header is ALL initialized.
+  for (iterator ii=vals_.begin();
+       ii!=(vals_.begin()+RawFragmentHeader::num_words()); ++ii) *ii=0;
   updateFragmentHeaderWC_();
   fragmentHeader()->type        = Fragment::InvalidFragmentType;
   fragmentHeader()->sequence_id = Fragment::InvalidSequenceID;

@@ -13,6 +13,9 @@
 
 #include "artdaq-core/Data/detail/RawFragmentHeader.hh"
 #include "artdaq-core/Data/dictionarycontrol.hh"
+#include "RonVec.hh"
+#define RONVEC_T RonVec<RawDataType>
+#define DO_STDVEC 0
 
 namespace artdaq {
   typedef detail::RawFragmentHeader::RawDataType RawDataType;
@@ -68,12 +71,21 @@ public:
   static constexpr bool isUserFragmentType(type_t fragmentType);
   static constexpr bool isSystemFragmentType(type_t fragmentType);
 
+#if DO_STDVEC == 1
   typedef std::vector<RawDataType>::reference       reference;
   typedef std::vector<RawDataType>::iterator        iterator;
   typedef std::vector<RawDataType>::const_iterator  const_iterator;
   typedef std::vector<RawDataType>::value_type      value_type;
   typedef std::vector<RawDataType>::difference_type difference_type;
   typedef std::vector<RawDataType>::size_type       size_type;
+#else
+  typedef RONVEC_T::reference       reference;
+  typedef RONVEC_T::iterator        iterator;
+  typedef RONVEC_T::const_iterator  const_iterator;
+  typedef RONVEC_T::value_type      value_type;
+  typedef RONVEC_T::difference_type difference_type;
+  typedef RONVEC_T::size_type       size_type;
+#endif
 
   // Create a Fragment ready to hold n words (RawDataTypes) of payload, and with
   // all values zeroed.
@@ -158,13 +170,15 @@ public:
   template <class T> void setMetadata(const T & md);
 
   // Resize the data payload to hold sz words.
-  void resize(std::size_t sz, RawDataType v = RawDataType());
+  void resize(std::size_t sz);
+  void resize(std::size_t sz, RawDataType v);
 
   // Resize the data payload to hold szbytes bytes (padded by the
   // 8-byte RawDataTypes, so, e.g., requesting 14 bytes will actually
   // get you 16)
 
-  void resizeBytes(std::size_t szbytes, byte_t v = 0);
+  void resizeBytes(std::size_t szbytes);
+  void resizeBytes(std::size_t szbytes, byte_t v);
 
   // Resize the fragment to hold the number of words in the header.
   void autoResize();
@@ -238,7 +252,11 @@ public:
 private:
   template <typename T> static std::size_t validatedMetadataSize_();
   void updateFragmentHeaderWC_();
+#if DO_STDVEC == 1
   std::vector<RawDataType> vals_;
+#else
+  RONVEC_T                 vals_;
+#endif
 
 #if HIDE_FROM_ROOT
   detail::RawFragmentHeader * fragmentHeader();
@@ -448,6 +466,13 @@ artdaq::Fragment::setMetadata(const T & metadata)
   memcpy(metadataAddress(), &metadata, sizeof(T));
 }
 
+inline void
+artdaq::Fragment::resize(std::size_t sz)
+{
+  vals_.resize(sz + fragmentHeader()->metadata_word_count +
+               detail::RawFragmentHeader::num_words());
+  updateFragmentHeaderWC_();
+}
 inline
 void
 artdaq::Fragment::resize(std::size_t sz, RawDataType v)
@@ -457,6 +482,12 @@ artdaq::Fragment::resize(std::size_t sz, RawDataType v)
   updateFragmentHeaderWC_();
 }
 
+inline void 
+artdaq::Fragment::resizeBytes(std::size_t szbytes) 
+{
+  RawDataType nwords = ceil( szbytes / static_cast<double>( sizeof(RawDataType) ) );
+  resize( nwords );
+}
 inline
 void 
 artdaq::Fragment::resizeBytes(std::size_t szbytes, byte_t v) 
