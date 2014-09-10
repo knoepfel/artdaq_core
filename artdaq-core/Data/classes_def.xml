@@ -1,10 +1,11 @@
 <lcgdict>
   <class name="artdaq::RawDataType"/>
-  <class name="artdaq::Fragment" ClassVersion="11">
+  <class name="artdaq::Fragment" ClassVersion="12">
+   <version ClassVersion="12" checksum="1619094339"/>
    <version ClassVersion="11" checksum="1968943840"/>
    <version ClassVersion="10" checksum="164730940"/>
   </class>
-  <class name="RonVec<unsigned long>"/>
+  <class name="artdaq::QuickVec<artdaq::RawDataType>"/>
   <class name="std::vector<artdaq::Fragment>"/>
   <class name="art::Wrapper<std::vector<artdaq::Fragment> >"/>
 
