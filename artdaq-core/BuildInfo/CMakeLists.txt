@@ -1,5 +1,5 @@
 # project name
-project(artdaq-core_Version)
+project(artdaq-core_BuildInfo)
 
 # the utcDateTime variable is used by the GetReleaseVersion code
 # to report the build datetime
@@ -9,8 +9,12 @@ string( STRIP ${rawUTCDate} utcDateTime )
 configure_file ( ${CMAKE_CURRENT_SOURCE_DIR}/GetReleaseVersion.cc.in
   ${CMAKE_CURRENT_BINARY_DIR}/GetReleaseVersion.cc @ONLY )
 
-art_make_library( LIBRARY_NAME artdaq-core_Version
+configure_file ( ${CMAKE_CURRENT_SOURCE_DIR}/GetPackageInfo.cc.in
+  ${CMAKE_CURRENT_BINARY_DIR}/GetPackageInfo.cc @ONLY )
+
+art_make_library( LIBRARY_NAME artdaq-core_BuildInfo
                   SOURCE ${CMAKE_CURRENT_BINARY_DIR}/GetReleaseVersion.cc
+		  ${CMAKE_CURRENT_BINARY_DIR}/GetPackageInfo.cc
                  )
 
 install_headers()
