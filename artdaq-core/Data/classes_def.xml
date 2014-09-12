@@ -6,6 +6,15 @@
    <version ClassVersion="10" checksum="164730940"/>
   </class>
   <class name="artdaq::QuickVec<artdaq::RawDataType>"/>
+  <ioread sourceClass="artdaq::Fragment"
+        source="std::vector<unsigned long> vals_;"
+        version="[-11]"
+        targetClass="artdaq::Fragment"
+        target="vals_"
+        embed="true">
+    <![CDATA[ vals_ = onfile.vals_; ]]>
+  </ioread>
+
   <class name="std::vector<artdaq::Fragment>"/>
   <class name="art::Wrapper<std::vector<artdaq::Fragment> >"/>
 
