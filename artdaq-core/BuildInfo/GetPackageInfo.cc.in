@@ -1,4 +1,4 @@
-#include "artdaq-core/BuildInfo/GetPackageInfo.h"
+#include "artdaq-core/BuildInfo/GetPackageInfo.hh"
 
 #include <string>
 #include <iostream>

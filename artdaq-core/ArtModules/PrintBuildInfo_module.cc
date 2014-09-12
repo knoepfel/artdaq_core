@@ -19,7 +19,6 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "artdaq-core/Data/PackageBuildInfo.hh"
-//#include "artdaq-core/ArtModules/pkginfo.hh"
 
 #include <iostream>
 
@@ -67,15 +66,25 @@ void artdaq::PrintBuildInfo::beginRun(art::Run const& run)
   run.getByLabel(buildinfo_module_label_, buildinfo_instance_label_, raw);
 
   if (raw.isValid()) {
+    
+    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout.width(20);
+    std::cout << std::left << "Package" << "|";
+    std::cout.width(20);
+    std::cout << std::left << "Version" << "|";
+    std::cout.width(20);
+    std::cout << std::left << "Timestamp" << std::endl;
 
     for (auto pkg : *raw ) {
-      std::cout << std::endl;
-      std::cout << "Package " << pkg.getPackageName() << ": " << std::endl;
-      std::cout << "Version: " << pkg.getPackageVersion() << std::endl;
-      std::cout << "Timestamp: " << pkg.getBuildTimestamp() << std::endl;
-      std::cout << std::endl;
+      std::cout.width(20);
+      std::cout << std::left << pkg.getPackageName() << "|";
+      std::cout.width(20);
+      std::cout << std::left << pkg.getPackageVersion() << "|";
+      std::cout.width(20);
+      std::cout << std::left << pkg.getBuildTimestamp() << std::endl;
     }
-    
+
+    std::cout << "--------------------------------------------------------------" << std::endl;
 
   } else {
 

@@ -1,5 +1,5 @@
-#ifndef artdaq_core_BuildInfo_GetPackageInfo_h
-#define artdaq_core_BuildInfo_GetPackageInfo_h
+#ifndef artdaq_core_BuildInfo_GetPackageInfo_hh
+#define artdaq_core_BuildInfo_GetPackageInfo_hh
 
 #include "artdaq-core/Data/PackageBuildInfo.hh"
 
@@ -14,4 +14,4 @@ namespace artdaqcore {
 
 }
 
-#endif /* artdaq_core_BuildInfo_GetPackageInfo_h */
+#endif /* artdaq_core_BuildInfo_GetPackageInfo_hh */

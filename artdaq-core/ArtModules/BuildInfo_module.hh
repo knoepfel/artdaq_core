@@ -24,6 +24,7 @@ namespace artdaq {
   private:
 
     std::unique_ptr< std::vector<PackageBuildInfo> > packages_;
+    std::string instanceName_;
 
     template <typename... Args>
     struct fill_packages;
@@ -46,20 +47,22 @@ namespace artdaq {
   };
 
   template <std::string* instanceName, typename... Pkgs>
-  BuildInfo<instanceName, Pkgs...>::BuildInfo(fhicl::ParameterSet const &):
-    packages_( new std::vector<PackageBuildInfo>() )
+  BuildInfo<instanceName, Pkgs...>::BuildInfo(fhicl::ParameterSet const & ps):
+    packages_( new std::vector<PackageBuildInfo>() ),
+    instanceName_(ps.get<std::string>( *instanceName, *instanceName ))
   {
 
     fill_packages<Pkgs...>::doit(*packages_);
 
-    produces<std::vector<PackageBuildInfo>, art::InRun>(*instanceName);
+    produces<std::vector<PackageBuildInfo>, art::InRun>(instanceName_);
 
   }
 
   template <std::string* instanceName, typename... Pkgs>
   void BuildInfo<instanceName, Pkgs...>::beginRun(art::Run &e) { 
 
-    e.put( std::move(packages_), *instanceName );
+    std::cout << "instanceName_ = " << instanceName_ << std::endl;
+    e.put( std::move(packages_), instanceName_ );
     
   }
 
