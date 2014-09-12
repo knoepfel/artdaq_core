@@ -1,12 +1,21 @@
 #include "artdaq-core/BuildInfo/GetPackageInfo.h"
 
 #include <string>
+#include <iostream>
+
 
 namespace artdaqcore {
 
-  std::string PackageInfo::getPackageName() { return "artdaq-core"; }
-  std::string PackageInfo::getPackageVersion() { return "@version@"; }
-  std::string PackageInfo::getBuildTimestamp() { return "@utcDateTime@"; }
+  artdaq::PackageBuildInfo PackageInfo::getPackageBuildInfo() {
+
+    artdaq::PackageBuildInfo pkg;
+    
+    pkg.setPackageName("artdaq-core");
+    pkg.setPackageVersion("@version@");
+    pkg.setBuildTimestamp("@utcDateTime@");
+
+    return pkg;
+  }
 
 }
 

@@ -5,9 +5,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-//#include "artdaq-core/Data/PackageBuildInfo.hh"
-
-#include "artdaq-core/ArtModules/pkginfo.hh"
+#include "artdaq-core/Data/PackageBuildInfo.hh"
 
 #include <iostream>
 
@@ -25,59 +23,36 @@ namespace artdaq {
 
   private:
 
-    std::unique_ptr< std::vector<pkginfo> > packages_;
+    std::unique_ptr< std::vector<PackageBuildInfo> > packages_;
 
     template <typename... Args>
     struct fill_packages;
 
     template <typename Arg>
     struct fill_packages<Arg> {
-      static void doit(const fhicl::ParameterSet &, std::vector<pkginfo>& packages) {
-
-	pkginfo info;
-
-	info.packageName_ = Arg::getPackageName(); 
-	info.packageVersion_ = Arg::getPackageVersion();
-	info.buildTimestamp_ = Arg::getBuildTimestamp();
-
-	packages.emplace_back( info );
-
+      static void doit(std::vector<PackageBuildInfo>& packages) {
+	packages.emplace_back( Arg::getPackageBuildInfo() );
       }
     };
 
     template <typename Arg, typename... Args>
     struct fill_packages<Arg, Args...> {
-      static void doit(const fhicl::ParameterSet & p, std::vector<pkginfo>& packages) {
-	
-	pkginfo info;
-	
-	info.packageName_ = Arg::getPackageName(); 
-	info.packageVersion_ = Arg::getPackageVersion();
-	info.buildTimestamp_ = Arg::getBuildTimestamp();
-
-	packages.emplace_back( info );
-
-	fill_packages<Args...>::doit(p, packages);
+      static void doit(std::vector<PackageBuildInfo>& packages) {
+	packages.emplace_back( Arg::getPackageBuildInfo() );
+	fill_packages<Args...>::doit(packages);
       }
     };
     
   };
 
   template <std::string* instanceName, typename... Pkgs>
-  BuildInfo<instanceName, Pkgs...>::BuildInfo(fhicl::ParameterSet const &p):
-    packages_( new std::vector<pkginfo>() )
+  BuildInfo<instanceName, Pkgs...>::BuildInfo(fhicl::ParameterSet const &):
+    packages_( new std::vector<PackageBuildInfo>() )
   {
 
-    fill_packages<Pkgs...>::doit(p, *packages_);
+    fill_packages<Pkgs...>::doit(*packages_);
 
-    // for (auto package : *packages_) {
-    //   std::cout << "Package \"" << package.packageName_ << "\": " << std::endl;
-    //   std::cout << "Version: " << package.packageVersion_ << std::endl;
-    //   std::cout << "Build time: " << package.buildTimestamp_ << std::endl;
-    //   std::cout << std::endl;
-    // }
-
-    produces<std::vector<pkginfo>, art::InRun>(*instanceName);
+    produces<std::vector<PackageBuildInfo>, art::InRun>(*instanceName);
 
   }
 

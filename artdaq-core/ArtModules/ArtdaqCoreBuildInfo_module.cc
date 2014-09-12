@@ -1,6 +1,6 @@
-#include "artdaq-core/ArtModules/BuildInfo_module.hh"
-
 #include "artdaq-core/BuildInfo/GetPackageInfo.h"
+
+#include "artdaq-core/ArtModules/BuildInfo_module.hh"
 
 #include <string>
 

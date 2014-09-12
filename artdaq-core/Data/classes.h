@@ -5,4 +5,4 @@
 
 template class std::vector<artdaq::Fragment>;
 template class art::Wrapper<std::vector<artdaq::Fragment> >;
-template class art::Wrapper<artdaq::PackageBuildInfo>;
+template class art::Wrapper<std::vector<artdaq::PackageBuildInfo> >;
