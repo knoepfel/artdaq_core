@@ -1,4 +1,4 @@
-#include "artdaq-core/BuildInfo/GetPackageInfo.hh"
+#include "artdaq-core/BuildInfo/GetPackageBuildInfo.hh"
 
 #include <string>
 #include <iostream>
@@ -6,7 +6,7 @@
 
 namespace artdaqcore {
 
-  artdaq::PackageBuildInfo PackageInfo::getPackageBuildInfo() {
+  artdaq::PackageBuildInfo GetPackageBuildInfo::getPackageBuildInfo() {
 
     artdaq::PackageBuildInfo pkg;
     
