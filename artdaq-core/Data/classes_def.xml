@@ -18,8 +18,13 @@
   <class name="std::vector<artdaq::Fragment>"/>
   <class name="art::Wrapper<std::vector<artdaq::Fragment> >"/>
 
-  <class name="artdaq::PackageBuildInfo" ClassVersion="10">
+  <class name="artdaq::PackageBuildInfo" ClassVersion="11">
+   <version ClassVersion="11" checksum="2965328636"/>
    <version ClassVersion="10" checksum="3107758661"/>
   </class>
-  <class name="art::Wrapper<artdaq::PackageBuildInfo>" compression="0"/>
+  <class name="std::vector<artdaq::PackageBuildInfo>"/>
+  <class name="art::Wrapper<std::vector<artdaq::PackageBuildInfo>>"/>
+
+
+
 </lcgdict>
