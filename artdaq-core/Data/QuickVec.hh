@@ -13,6 +13,7 @@
 #include <strings.h>		// bzero
 #include <utility>		// std::swap 
 #include <memory>		// unique_ptr
+#include <vector>
 
 //#include "trace.h"		// TRACE
 #ifndef TRACE
@@ -66,6 +67,11 @@ struct QuickVec
 #  else
 #   define PTR_(xx) xx.get()
 #  endif
+    QuickVec( std::vector<TT_> & other )
+	: size_(other.size()), data_(new TT_[other.size()]), capacity_(other.capacity())
+    {   memcpy( PTR_(data_), (void*)&other[0], size_*sizeof(TT_) );
+    }
+    void clear() { size_=0; }
 
     QuickVec( const QuickVec & other ) //= delete; // non construction-copyable
 	: size_(other.size_), data_(new TT_[other.size_]), capacity_(other.capacity_)
