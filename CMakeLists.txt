@@ -30,7 +30,6 @@ set(CMAKE_MODULE_PATH
 include(CetCMakeEnv)
 cet_cmake_env()
 
-# -D_GLIBCXX_USE_NANOSLEEP is needed to make std::this_thread::sleep_for available.
 cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
   NO_UNDEFINED
