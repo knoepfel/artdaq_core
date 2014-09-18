@@ -13,11 +13,11 @@
 
 #include "artdaq-core/Data/detail/RawFragmentHeader.hh"
 #include "artdaq-core/Data/dictionarycontrol.hh"
-#include "RonVec.hh"
-#define RONVEC_T RonVec<RawDataType>
-#define DO_STDVEC 0
 
 namespace artdaq {
+# include "QuickVec.hh"
+# define QUICKVEC_T QuickVec<RawDataType>
+# define DO_STDVEC 0
   typedef detail::RawFragmentHeader::RawDataType RawDataType;
 
   class Fragment;
@@ -79,12 +79,12 @@ public:
   typedef std::vector<RawDataType>::difference_type difference_type;
   typedef std::vector<RawDataType>::size_type       size_type;
 #else
-  typedef RONVEC_T::reference       reference;
-  typedef RONVEC_T::iterator        iterator;
-  typedef RONVEC_T::const_iterator  const_iterator;
-  typedef RONVEC_T::value_type      value_type;
-  typedef RONVEC_T::difference_type difference_type;
-  typedef RONVEC_T::size_type       size_type;
+  typedef QUICKVEC_T::reference       reference;
+  typedef QUICKVEC_T::iterator        iterator;
+  typedef QUICKVEC_T::const_iterator  const_iterator;
+  typedef QUICKVEC_T::value_type      value_type;
+  typedef QUICKVEC_T::difference_type difference_type;
+  typedef QUICKVEC_T::size_type       size_type;
 #endif
 
   // Create a Fragment ready to hold n words (RawDataTypes) of payload, and with
@@ -255,7 +255,7 @@ private:
 #if DO_STDVEC == 1
   std::vector<RawDataType> vals_;
 #else
-  RONVEC_T                 vals_;
+  QUICKVEC_T                 vals_;
 #endif
 
 #if HIDE_FROM_ROOT
