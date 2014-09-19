@@ -49,7 +49,7 @@ namespace artdaq {
   template <std::string* instanceName, typename... Pkgs>
   BuildInfo<instanceName, Pkgs...>::BuildInfo(fhicl::ParameterSet const & ps):
     packages_( new std::vector<PackageBuildInfo>() ),
-    instanceName_(ps.get<std::string>( *instanceName, *instanceName ))
+    instanceName_(ps.get<std::string>( "instance_name", *instanceName ))
   {
 
     fill_packages<Pkgs...>::doit(*packages_);
@@ -61,7 +61,6 @@ namespace artdaq {
   template <std::string* instanceName, typename... Pkgs>
   void BuildInfo<instanceName, Pkgs...>::beginRun(art::Run &e) { 
 
-    std::cout << "instanceName_ = " << instanceName_ << std::endl;
     e.put( std::move(packages_), instanceName_ );
     
   }
