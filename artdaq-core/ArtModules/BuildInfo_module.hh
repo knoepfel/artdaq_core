@@ -61,8 +61,22 @@ namespace artdaq {
   template <std::string* instanceName, typename... Pkgs>
   void BuildInfo<instanceName, Pkgs...>::beginRun(art::Run &e) { 
 
-    e.put( std::move(packages_), instanceName_ );
-    
+    // JCF, 9/22/14                                                                                                                     
+
+    // Previously, the vector pointed to by the member variable                                                                       
+    // packages_ itself got stored in output on the call to "e.put()"                                                                   
+    // below; what would then happen is that at the start of a new run                                                                  
+    // or subrun, when e.put() got called again an exception would be                                                                   
+    // thrown because packages_ would now be null thanks to the                                                                         
+    // previous call to std::move. To make sure this doesn't happen, I                                                                  
+    // now stash a copy of the vector pointed to by packages_, not the                                                                  
+    // original member vector                                                                                                           
+
+    auto packages_deep_copy_ptr = std::unique_ptr<std::vector<PackageBuildInfo>>(
+                                                                                 new std::vector<PackageBuildInfo>(*packages_ ) );
+
+    e.put( std::move(packages_deep_copy_ptr), instanceName_ );
+
   }
 
   template <std::string* instanceName, typename... Pkgs>
