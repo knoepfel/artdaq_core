@@ -68,13 +68,13 @@ struct QuickVec
 #   define PTR_(xx) xx.get()
 #  endif
     QuickVec( std::vector<TT_> & other )
-	: size_(other.size()), data_(new TT_[other.size()]), capacity_(other.capacity())
+	: size_(other.size()), data_(new TT_[other.capacity()]), capacity_(other.capacity())
     {   memcpy( PTR_(data_), (void*)&other[0], size_*sizeof(TT_) );
     }
     void clear() { size_=0; }
 
     QuickVec( const QuickVec & other ) //= delete; // non construction-copyable
-	: size_(other.size_), data_(new TT_[other.size_]), capacity_(other.capacity_)
+	: size_(other.size_), data_(new TT_[other.capacity_]), capacity_(other.capacity_)
     {	TRACE( 10, "QuickVec copy ctor this=%p data_=%p other.data_=%p size_=%d other.size_=%d"
 	      , (void*)this, (void*)PTR_(data_), (void*)PTR_(other.data_), size_, other.size_ );
 	memcpy( PTR_(data_), PTR_(other.data_), size_*sizeof(TT_) );
