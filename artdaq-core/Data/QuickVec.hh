@@ -38,7 +38,7 @@ extern "C" {
 
 #if QUICKVEC_DO_TEMPLATE == 0
 # ifndef QUICKVEC_TT
-#  define QUICKVEC_TT uint64_t
+#  define QUICKVEC_TT unsigned long long
 # endif
 # define TT_		 QUICKVEC_TT
 # define QUICKVEC_TEMPLATE
@@ -137,13 +137,13 @@ private:
     // Root needs the size_ member first. It must be of type int.
     // Root then needs the [size_] comment after data_.
     // Note: NO SPACE between "//" and "[size_]"
-    uint64_t size_;
+    unsigned long long size_;
 #  if USE_UNIQUE_PTR == 0
     TT_ * data_; //[size_]
 #  else
     std::unique_ptr<TT_[]> data_;
 #  endif
-    uint64_t capacity_;
+    unsigned long long capacity_;
 };
 
 QUICKVEC_TEMPLATE
