@@ -137,13 +137,13 @@ private:
     // Root needs the size_ member first. It must be of type int.
     // Root then needs the [size_] comment after data_.
     // Note: NO SPACE between "//" and "[size_]"
-    unsigned long long size_;
+    unsigned size_;
 #  if USE_UNIQUE_PTR == 0
     TT_ * data_; //[size_]
 #  else
     std::unique_ptr<TT_[]> data_;
 #  endif
-    unsigned long long capacity_;
+    unsigned capacity_;
 };
 
 QUICKVEC_TEMPLATE
