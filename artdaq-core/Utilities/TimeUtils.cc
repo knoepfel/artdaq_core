@@ -29,7 +29,7 @@ convertUnixTimeToString(struct timeval const& inputUnixTime)
 
     // now fractional seconds
     char fractionalString[20];
-    sprintf(fractionalString, "%06ld", inputUnixTime.tv_usec);
+    sprintf(fractionalString, "%06d", static_cast<int32_t>(inputUnixTime.tv_usec));
     workingString.append(".");
     workingString.append(fractionalString);
     workingString.append(" UTC");

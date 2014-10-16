@@ -1,13 +1,14 @@
 <lcgdict>
   <class name="artdaq::RawDataType"/>
-  <class name="artdaq::Fragment" ClassVersion="12">
+  <class name="artdaq::Fragment" ClassVersion="13">
+   <version ClassVersion="13" checksum="2193120826"/>
    <version ClassVersion="12" checksum="1619094339"/>
    <version ClassVersion="11" checksum="1968943840"/>
    <version ClassVersion="10" checksum="164730940"/>
   </class>
   <class name="artdaq::QuickVec<artdaq::RawDataType>"/>
   <ioread sourceClass="artdaq::Fragment"
-        source="std::vector<unsigned long> vals_;"
+        source="std::vector<unsigned long long> vals_;"
         version="[-11]"
         targetClass="artdaq::Fragment"
         target="vals_"
@@ -24,7 +25,5 @@
   </class>
   <class name="std::vector<artdaq::PackageBuildInfo>"/>
   <class name="art::Wrapper<std::vector<artdaq::PackageBuildInfo>>"/>
-
-
-
+  <class name="art::Wrapper<artdaq::PackageBuildInfo>"/>
 </lcgdict>

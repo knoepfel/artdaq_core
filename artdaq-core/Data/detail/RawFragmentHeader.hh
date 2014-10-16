@@ -20,7 +20,7 @@ namespace artdaq {
 }
 
 struct artdaq::detail::RawFragmentHeader {
-  typedef uint64_t RawDataType;
+  typedef unsigned long long RawDataType;
 
 #if HIDE_FROM_ROOT
   typedef uint16_t version_t;

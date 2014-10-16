@@ -7,6 +7,10 @@
 #ifndef QuickVec_hh
 #define QuickVec_hh
 
+extern "C" {
+#include <stdint.h>
+}
+
 #include <cassert>
 #include <cstddef>		// ptrdiff_t
 #include <string.h>		// memcpy
@@ -34,7 +38,7 @@
 
 #if QUICKVEC_DO_TEMPLATE == 0
 # ifndef QUICKVEC_TT
-#  define QUICKVEC_TT unsigned long
+#  define QUICKVEC_TT unsigned long long
 # endif
 # define TT_		 QUICKVEC_TT
 # define QUICKVEC_TEMPLATE
@@ -45,7 +49,7 @@
 # define QUICKVEC_TEMPLATE template <typename TT_>
 # define QUICKVEC          QuickVec<TT_>
 # define QUICKVEC_TN       typename QuickVec<TT_>
-# define QUICKVEC_VERSION  static short Class_Version() { return 3; } // proper version for templates
+# define QUICKVEC_VERSION  static short Class_Version() { return 4; } // proper version for templates
 #endif
 
 QUICKVEC_TEMPLATE
@@ -133,13 +137,13 @@ private:
     // Root needs the size_ member first. It must be of type int.
     // Root then needs the [size_] comment after data_.
     // Note: NO SPACE between "//" and "[size_]"
-    int size_;
+    unsigned size_;
 #  if USE_UNIQUE_PTR == 0
     TT_ * data_; //[size_]
 #  else
     std::unique_ptr<TT_[]> data_;
 #  endif
-    size_t capacity_;
+    unsigned capacity_;
 };
 
 QUICKVEC_TEMPLATE
@@ -213,7 +217,7 @@ inline void QUICKVEC::reserve( size_t size )
 
 QUICKVEC_TEMPLATE
 inline void QUICKVEC::resize( size_t size )
-{   if      (size < (size_t)size_)      size_ = size; // decrease
+{   if      (size <  size_)     size_ = size; // decrease
     else if (size <= capacity_) size_ = size;
     else // increase/reallocate 
     {
@@ -308,9 +312,8 @@ inline void QUICKVEC::swap( QuickVec& x )
 
 QUICKVEC_TEMPLATE
 inline void QUICKVEC::push_back( const value_type& val )
-{   if ((size_t)size_ == capacity_)
-    {   size_t new_sz=size_ + size_/10 + 1;
-	reserve( new_sz );
+{   if (size_ == capacity_)
+    {   reserve( size_ + size_/10 + 1 );
     }
     *end() = val;
     ++size_;
