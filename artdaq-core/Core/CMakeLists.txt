@@ -7,7 +7,8 @@
 # ----------------------------------------------------------------------
 # Build this project's library:
 
-art_make(
+art_make( BASENAME_ONLY
+  LIBRARY_NAME artdaq-core_Core
   LIB_LIBRARIES
   artdaq-core_Data
   ${FHICLCPP}
