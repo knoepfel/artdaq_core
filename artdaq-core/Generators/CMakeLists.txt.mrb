@@ -1,4 +1,5 @@
-art_make(
+art_make( BASENAME_ONLY
+  LIBRARY_NAME artdaq-core_Generators
   LIB_LIBRARIES
   artdaq-core_Data
   ${ART_PERSISTENCY_COMMON}
