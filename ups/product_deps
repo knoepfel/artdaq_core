@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_core  v1_04_07
-defaultqual	e6:s5
+parent artdaq_core  v1_04_08
+defaultqual	e6:s6
 
 # These optional lines define the installed directories where
 # headers, libraries, and executables will be found
@@ -21,6 +21,7 @@ product		version		optional
 art		v1_10_00b	s3
 art		v1_11_03	s4
 art		v1_12_04	s5
+art		v1_12_05	s6
 cetbuildtools	v4_03_03	-	only_for_build
 end_product_list
 
@@ -32,6 +33,14 @@ end_product_list
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
 qualifier		art		notes
+e6:s6:debug		e6:debug	-std=c++1y
+e6:s6:prof		e6:prof		-std=c++1y
+nu:e6:s6:debug		nu:e6:debug	-std=c++1y
+nu:e6:s6:prof		nu:e6:prof	-std=c++1y
+e5:s6:debug		e5:debug	-std=c++11
+e5:s6:prof		e5:prof		-std=c++11
+nu:e5:s6:debug		nu:e5:debug	-std=c++11
+nu:e5:s6:prof		nu:e5:prof	-std=c++11
 e6:s5:debug		e6:debug	-std=c++1y
 e6:s5:prof		e6:prof		-std=c++1y
 nu:e6:s5:debug		nu:e6:debug	-std=c++1y
