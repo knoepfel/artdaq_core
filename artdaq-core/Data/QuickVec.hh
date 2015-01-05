@@ -49,7 +49,8 @@ extern "C" {
 # define QUICKVEC_TEMPLATE template <typename TT_>
 # define QUICKVEC          QuickVec<TT_>
 # define QUICKVEC_TN       typename QuickVec<TT_>
-# define QUICKVEC_VERSION  static short Class_Version() { return 4; } // proper version for templates
+// Class_Version() MUST be updated every time private member data change.
+# define QUICKVEC_VERSION  static short Class_Version() { return 5; } // proper version for templates
 #endif
 
 QUICKVEC_TEMPLATE
