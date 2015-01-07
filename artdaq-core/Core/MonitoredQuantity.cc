@@ -364,3 +364,33 @@ MonitoredQuantity::TIME_POINT_T MonitoredQuantity::getCurrentTime()
   }
   return result;
 }
+
+MonitoredQuantity::TIME_POINT_T MonitoredQuantity::lastCalculationTime() const
+{
+  boost::mutex::scoped_lock results(_resultsMutex);
+  return _lastLatchedCalculationTime;
+}
+
+MonitoredQuantity::DURATION_T MonitoredQuantity::fullDuration() const
+{
+  boost::mutex::scoped_lock results(_resultsMutex);
+  return _fullDuration;
+}
+
+double MonitoredQuantity::recentValueSum() const
+{
+  boost::mutex::scoped_lock results(_resultsMutex);
+  return _recentValueSum;
+}
+
+double MonitoredQuantity::recentValueAverage() const
+{
+  boost::mutex::scoped_lock results(_resultsMutex);
+  return _recentValueAverage;
+}
+
+long long MonitoredQuantity::fullSampleCount() const
+{
+  boost::mutex::scoped_lock results(_resultsMutex);
+  return _fullSampleCount;
+}

@@ -124,6 +124,14 @@ namespace artdaq {
     */
     static TIME_POINT_T getCurrentTime();
 
+    // accessors for particular statistics values (more efficient when
+    // only a single value is needed)
+    TIME_POINT_T lastCalculationTime() const;
+    DURATION_T fullDuration() const;
+    double recentValueSum() const;
+    double recentValueAverage() const;
+    long long fullSampleCount() const;
+
   private:
 
     // Prevent copying of the MonitoredQuantity
