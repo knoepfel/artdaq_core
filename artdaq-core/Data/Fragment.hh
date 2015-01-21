@@ -188,37 +188,88 @@ public:
   // ... and the end
   iterator dataEnd();
 
+  // JCF, 1/21/15
+
+  // There's actually not an ironclad guarantee in the C++ standard
+  // that the pointer reinterpret_cast<> returns has the same address
+  // as the pointer that was casted. It IS tested in the artdaq-core
+  // test suite, but since any uncaught, unexpected behavior from
+  // reinterpret_cast could be disastrous, I've wrapped it in this
+  // function and added a check just to be completely safe.
+
+  // I supply const- and non-const versions; const_cast<> would
+  // require a #pragma override of const-cast-as-error, which is a can
+  // of worms I don't wish to open.
+
+  // template <typename T>
+  // const T reinterpret_cast_checked( const RawDataType* in) const {
+  //   const T newpointer = reinterpret_cast<const T>( in );
+
+  //   if ( static_cast<const void*>( newpointer ) != static_cast<const void*>( in )) {
+  //     throw cet::exception("Error in Fragment.hh: reinterpret_cast failed to return expected address-- please contact John Freeman at jcfree@fnal.gov");
+  //   }
+
+  //   return newpointer;
+  // }
+
+  // Please note that for this const-version, you'll need the const-
+  // qualifier to the pointer you pass as a parameter (i.e.,
+  // reinterpret_cast_checked<const PtrType*>, not reinterpret_cast_checked<PtrType*>)
+
+  template <typename T>
+  T reinterpret_cast_checked( const RawDataType* in) const {
+    T newpointer = reinterpret_cast<T>( in );
+
+    if ( static_cast<const void*>( newpointer ) != static_cast<const void*>( in )) {
+      throw cet::exception("Error in Fragment.hh: reinterpret_cast failed to return expected address-- please contact John Freeman at jcfree@fnal.gov");
+    }
+
+    return newpointer;
+  }
+
+
+  template <typename T>
+  T reinterpret_cast_checked( RawDataType* in) {
+    T newpointer = reinterpret_cast<T>( in );
+
+    if ( static_cast<void*>( newpointer ) != static_cast<void*>( in )) {
+      throw cet::exception("Error in Fragment.hh: reinterpret_cast failed to return expected address-- please contact John Freeman at jcfree@fnal.gov");
+    }
+
+    return newpointer;
+  }
+
   // Return Fragment::byte_t* pointing at the beginning/ends of the payload
 
   // JCF, 3/25/14 -- one nice thing about returning a pointer rather
   // than an iterator is that we don't need to take the address of the
   // dereferenced iterator (e.g., via &*dataBegin() ) to get ahold of the memory
 
-  byte_t* dataBeginBytes() { return reinterpret_cast<byte_t*>( &* dataBegin() ); }
-  byte_t* dataEndBytes() { return reinterpret_cast<byte_t*>( &* dataEnd() ); }
+  byte_t* dataBeginBytes() { return reinterpret_cast_checked<byte_t*>( &* dataBegin() ); }
+  byte_t* dataEndBytes() { return reinterpret_cast_checked<byte_t*>( &* dataEnd() ); }
 
   // Return an iterator to the beginning of the header (should be used
   // for serialization only: use setters for preference).
   iterator headerBegin();
 
   // Return a pointer-to-Fragment::byte_t pointing to the beginning of the header
-  byte_t* headerBeginBytes() { return reinterpret_cast<byte_t*>( &* headerBegin() ); }
+  byte_t* headerBeginBytes() { return reinterpret_cast_checked<byte_t*>( &* headerBegin() ); }
   
 
   const_iterator dataBegin() const;
   const_iterator dataEnd() const;
 
   const byte_t* dataBeginBytes() const { 
-    return reinterpret_cast<const byte_t*>( &* dataBegin() ); }
+    return reinterpret_cast_checked<const byte_t*>( &* dataBegin() ); }
 
   const byte_t* dataEndBytes() const { 
-    return reinterpret_cast<const byte_t*>( &* dataEnd() ); }
+    return reinterpret_cast_checked<const byte_t*>( &* dataEnd() ); }
 
 
   const_iterator headerBegin() const; // See note for non-const, above.
 
   const byte_t* headerBeginBytes() const { 
-    return reinterpret_cast<const byte_t*>( &* headerBegin() ); }
+    return reinterpret_cast_checked<const byte_t*>( &* headerBegin() ); }
 
 
   void clear();
@@ -434,7 +485,8 @@ artdaq::Fragment::metadata()
     throw cet::exception("InvalidRequest")
       << "No metadata has been stored in this Fragment.";
   }
-  return reinterpret_cast<T *>
+
+  return reinterpret_cast_checked<T *>
     (&vals_[detail::RawFragmentHeader::num_words()]);
 }
 
@@ -446,7 +498,7 @@ artdaq::Fragment::metadata() const
     throw cet::exception("InvalidRequest")
       << "No metadata has been stored in this Fragment.";
   }
-  return reinterpret_cast<T const *>
+  return reinterpret_cast_checked<T const *>
     (&vals_[detail::RawFragmentHeader::num_words()]);
 }
 
@@ -493,7 +545,7 @@ void
 artdaq::Fragment::resizeBytes(std::size_t szbytes, byte_t v) 
 {
   RawDataType defaultval;
-  byte_t* ptr = reinterpret_cast<byte_t*>( &defaultval );
+  byte_t* ptr = reinterpret_cast_checked<byte_t*>( &defaultval );
 
   for (uint8_t i = 0; i < sizeof(RawDataType); ++i) {
     *ptr = v;
@@ -635,14 +687,14 @@ inline
 artdaq::detail::RawFragmentHeader *
 artdaq::Fragment::fragmentHeader()
 {
-  return reinterpret_cast<detail::RawFragmentHeader *>(&vals_[0]);
+  return reinterpret_cast_checked<detail::RawFragmentHeader *>(&vals_[0]);
 }
 
 inline
 artdaq::detail::RawFragmentHeader const *
 artdaq::Fragment::fragmentHeader() const
 {
-  return reinterpret_cast<detail::RawFragmentHeader const *>(&vals_[0]);
+  return reinterpret_cast_checked<detail::RawFragmentHeader const *>(&vals_[0]);
 }
 
 inline
