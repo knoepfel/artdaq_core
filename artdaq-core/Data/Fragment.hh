@@ -201,17 +201,6 @@ public:
   // require a #pragma override of const-cast-as-error, which is a can
   // of worms I don't wish to open.
 
-  // template <typename T>
-  // const T reinterpret_cast_checked( const RawDataType* in) const {
-  //   const T newpointer = reinterpret_cast<const T>( in );
-
-  //   if ( static_cast<const void*>( newpointer ) != static_cast<const void*>( in )) {
-  //     throw cet::exception("Error in Fragment.hh: reinterpret_cast failed to return expected address-- please contact John Freeman at jcfree@fnal.gov");
-  //   }
-
-  //   return newpointer;
-  // }
-
   // Please note that for this const-version, you'll need the const-
   // qualifier to the pointer you pass as a parameter (i.e.,
   // reinterpret_cast_checked<const PtrType*>, not reinterpret_cast_checked<PtrType*>)
