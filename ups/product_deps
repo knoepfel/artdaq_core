@@ -21,16 +21,22 @@ product		version		optional
 art		v1_11_03	s4
 art		v1_12_04	s5
 art		v1_12_05	s6
-cetbuildtools	v4_03_03	-	only_for_build
+art             v1_13_01        s7
+cetbuildtools	v4_07_03	-	only_for_build
 end_product_list
 
 # e5  - with gcc 4.8.2 and -std=c++11
 # e6  - with gcc 4.9.1 and -std=c++1y
+# e7  - with gcc 4.9.2 and -std=c++1y
 # s4  - with art v1_11_03
 # s5  - with art v1_12_xx
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
 qualifier		art		notes
+e7:s7:debug             e7:debug        -std=c++1y
+e7:s7:prof              e7:prof         -std=c++1y
+nu:e7:s7:debug          nu:e7:debug     -std=c++1y
+nu:e7:s7:prof           nu:e7:prof      -std=c++1y
 e6:s6:debug		e6:debug	-std=c++1y
 e6:s6:prof		e6:prof		-std=c++1y
 nu:e6:s6:debug		nu:e6:debug	-std=c++1y
