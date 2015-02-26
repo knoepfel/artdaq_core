@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_core  v1_04_09
+parent artdaq_core  v1_04_10
 defaultqual	e6:s6
 
 # These optional lines define the installed directories where
@@ -37,6 +37,10 @@ e7:s7:debug             e7:debug        -std=c++1y
 e7:s7:prof              e7:prof         -std=c++1y
 nu:e7:s7:debug          nu:e7:debug     -std=c++1y
 nu:e7:s7:prof           nu:e7:prof      -std=c++1y
+e6:s7:debug             e6:debug        -std=c++1y
+e6:s7:prof              e6:prof         -std=c++1y
+nu:e6:s7:debug          nu:e6:debug     -std=c++1y
+nu:e6:s7:prof           nu:e6:prof      -std=c++1y
 e6:s6:debug		e6:debug	-std=c++1y
 e6:s6:prof		e6:prof		-std=c++1y
 nu:e6:s6:debug		nu:e6:debug	-std=c++1y
