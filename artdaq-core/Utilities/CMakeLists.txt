@@ -1,7 +1,7 @@
 art_make(
   LIB_LIBRARIES
-  ${FHICLCPP}
-  ${CETLIB}
+  fhiclcpp
+  cetlib
   ${Boost_DATE_TIME_LIBRARY}
 )
 
