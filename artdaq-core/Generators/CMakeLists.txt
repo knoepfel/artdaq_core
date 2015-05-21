@@ -1,12 +1,12 @@
 art_make(
   LIB_LIBRARIES
   artdaq-core_Data
-  ${ART_PERSISTENCY_COMMON}
-  ${ART_UTILITIES}
-  ${FHICLCPP}
-  ${CETLIB}
-  ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  art_Persistency_Common
+  art_Utilities
+  fhiclcpp
+  cetlib
+  MF_MessageLogger
+  MF_Utilities
   )
 
 install_headers()

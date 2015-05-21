@@ -1,8 +1,8 @@
 art_make(
   LIB_LIBRARIES
-  ${ART_PERSISTENCY_COMMON}
-  ${ART_UTILITIES}
-  ${CETLIB}
+  art_Persistency_Common
+  art_Utilities
+  cetlib
   )
 
 install_headers(SUBDIRS detail)
