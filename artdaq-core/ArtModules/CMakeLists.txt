@@ -1,20 +1,16 @@
 
 simple_plugin(ArtdaqCoreBuildInfo "module"
   artdaq-core_BuildInfo
-  ${MF_MESSAGELOGGER}
-  ${FHICLCPP}
-  ${CETLIB}
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-)
+  MF_MessageLogger
+  fhiclcpp
+  cetlib
+  )
 
 simple_plugin(PrintBuildInfo "module"
-  ${MF_MESSAGELOGGER}
-  ${FHICLCPP}
-  ${CETLIB}
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-)
+  MF_MessageLogger
+  fhiclcpp
+  cetlib
+  )
 
 install_headers()
 install_source()

@@ -10,7 +10,7 @@
 art_make(
   LIB_LIBRARIES
   artdaq-core_Data
-  ${FHICLCPP}
+  fhiclcpp
   ${Boost_THREAD_LIBRARY}
   ${Boost_SYSTEM_LIBRARY} 
   )
