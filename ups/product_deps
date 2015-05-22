@@ -15,6 +15,7 @@ incdir      product_dir include
 libdir      fq_dir      lib
 bindir      fq_dir      bin
 fcldir      -
+perllib  product_dir
 
 #
 product		version		optional
