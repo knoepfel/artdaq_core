@@ -24,9 +24,8 @@ art		v1_15_00	s13
 art		v1_14_03	s12
 art		v1_14_02	s11
 art		v1_14_01	s10
-art             v1_13_01        s7
 art             v1_13_02        s8
-
+art             v1_13_01        s7
 cetbuildtools	v4_12_05	-	only_for_build
 end_product_list
 
