@@ -1,11 +1,11 @@
 art_make(
   LIB_LIBRARIES
+  art_Utilities
+  MF_MessageLogger
+  MF_Utilities
   fhiclcpp
   cetlib
   ${Boost_DATE_TIME_LIBRARY}
-  ${ART_UTILITIES}
-  ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
 )
 
 install_headers()
