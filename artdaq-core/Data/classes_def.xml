@@ -1,5 +1,4 @@
 <lcgdict>
-  <class name="artdaq::RawDataType"/>
   <class name="artdaq::Fragment" ClassVersion="15">
    <version ClassVersion="15" checksum="2193120826"/>
    <version ClassVersion="14" checksum="2597906257"/>
