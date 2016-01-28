@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_core  v1_04_27
+parent artdaq_core  v1_04_28
 defaultqual	e7:s15
 
 # These optional lines define the installed directories where
@@ -19,9 +19,8 @@ perllib  product_dir
 
 #
 product		version		optional
-art		v1_18_04	s29
-art		v1_18_02	s25
-art		v1_18_01	s23
+art		v1_18_05	s31
+art		v1_17_07	s30
 art		v1_17_06	s28
 art		v1_17_05	s26
 art		v1_17_04	s24
@@ -40,14 +39,22 @@ end_product_list
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
 qualifier		art		notes
-e9:s29:debug             e9:debug        -std=c++14
-e9:s29:prof              e9:prof         -std=c++14
-nu:e9:s29:debug          nu:e9:debug     -std=c++14
-nu:e9:s29:prof           nu:e9:prof      -std=c++14
-e7:s29:debug             e7:debug        -std=c++14
-e7:s29:prof              e7:prof         -std=c++14
-nu:e7:s29:debug          nu:e7:debug     -std=c++14
-nu:e7:s29:prof           nu:e7:prof      -std=c++14
+e9:s31:debug             e9:debug        -std=c++14
+e9:s31:prof              e9:prof         -std=c++14
+nu:e9:s31:debug          nu:e9:debug     -std=c++14
+nu:e9:s31:prof           nu:e9:prof      -std=c++14
+e7:s31:debug             e7:debug        -std=c++14
+e7:s31:prof              e7:prof         -std=c++14
+nu:e7:s31:debug          nu:e7:debug     -std=c++14
+nu:e7:s31:prof           nu:e7:prof      -std=c++14
+e9:s30:debug             e9:debug        -std=c++14
+e9:s30:prof              e9:prof         -std=c++14
+nu:e9:s30:debug          nu:e9:debug     -std=c++14
+nu:e9:s30:prof           nu:e9:prof      -std=c++14
+e7:s30:debug             e7:debug        -std=c++14
+e7:s30:prof              e7:prof         -std=c++14
+nu:e7:s30:debug          nu:e7:debug     -std=c++14
+nu:e7:s30:prof           nu:e7:prof      -std=c++14
 e9:s28:debug             e9:debug        -std=c++14
 e9:s28:prof              e9:prof         -std=c++14
 nu:e9:s28:debug          nu:e9:debug     -std=c++14
@@ -64,14 +71,6 @@ e7:s26:debug             e7:debug        -std=c++14
 e7:s26:prof              e7:prof         -std=c++14
 nu:e7:s26:debug          nu:e7:debug     -std=c++14
 nu:e7:s26:prof           nu:e7:prof      -std=c++14
-e9:s25:debug             e9:debug        -std=c++14
-e9:s25:prof              e9:prof         -std=c++14
-nu:e9:s25:debug          nu:e9:debug     -std=c++14
-nu:e9:s25:prof           nu:e9:prof      -std=c++14
-e7:s25:debug             e7:debug        -std=c++14
-e7:s25:prof              e7:prof         -std=c++14
-nu:e7:s25:debug          nu:e7:debug     -std=c++14
-nu:e7:s25:prof           nu:e7:prof      -std=c++14
 e9:s24:debug             e9:debug        -std=c++14
 e9:s24:prof              e9:prof         -std=c++14
 nu:e9:s24:debug          nu:e9:debug     -std=c++14
@@ -80,14 +79,6 @@ e7:s24:debug             e7:debug        -std=c++14
 e7:s24:prof              e7:prof         -std=c++14
 nu:e7:s24:debug          nu:e7:debug     -std=c++14
 nu:e7:s24:prof           nu:e7:prof      -std=c++14
-e9:s23:debug             e9:debug        -std=c++14
-e9:s23:prof              e9:prof         -std=c++14
-nu:e9:s23:debug          nu:e9:debug     -std=c++14
-nu:e9:s23:prof           nu:e9:prof      -std=c++14
-e7:s23:debug             e7:debug        -std=c++14
-e7:s23:prof              e7:prof         -std=c++14
-nu:e7:s23:debug          nu:e7:debug     -std=c++14
-nu:e7:s23:prof           nu:e7:prof      -std=c++14
 e9:s21:debug             e9:debug        -std=c++14
 e9:s21:prof              e9:prof         -std=c++14
 nu:e9:s21:debug          nu:e9:debug     -std=c++14
