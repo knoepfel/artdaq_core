@@ -37,13 +37,6 @@ cet_set_compiler_flags(DIAGS VIGILANT
   EXTRA_FLAGS -pedantic
 )
 
-string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
-if( ${BTYPE_UC} MATCHES "DEBUG" )
-  cet_add_compiler_flags(-fsanitize=address)
-endif()
-
-cet_report_compiler_flags()
-
 # these are minimum required versions, not the actual product versions
 find_ups_boost(v1_53_0)
 find_ups_product (cetbuildtools v4_09_02)
@@ -67,7 +60,13 @@ endif()
 string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
 if(BTYPE_UC STREQUAL DEBUG)
   add_definitions(-DDEBUGME)
+  check_ups_version(art "$ENV{ART_VERSION}" v1_18_00 PRODUCT_OLDER_VAR have_old_art2)
+  if (have_old_art2)
+    cet_add_compiler_flags(-fsanitize=address)
+  endif()
 endif()
+
+cet_report_compiler_flags()
 
 # macros for art_dictionary and simple_plugin
 include(ArtDictionary)
