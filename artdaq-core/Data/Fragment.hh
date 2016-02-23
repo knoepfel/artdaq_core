@@ -171,6 +171,9 @@ public:
   // the Fragment already contains metadata.
   template <class T> void setMetadata(const T & md);
 
+  // If you wish to alter metadata which already exists, use this function:
+  template <class T> void updateMetadata(const T & md);
+
   // Resize the data payload to hold sz words.
   void resize(std::size_t sz);
   void resize(std::size_t sz, RawDataType v);
@@ -505,6 +508,25 @@ artdaq::Fragment::setMetadata(const T & metadata)
   vals_.insert(dataBegin(), mdSize, 0);
   updateFragmentHeaderWC_();
   fragmentHeader()->metadata_word_count = mdSize;
+
+  memcpy(metadataAddress(), &metadata, sizeof(T));
+}
+
+template <class T>
+void
+artdaq::Fragment::updateMetadata(const T & metadata)
+{
+  if (fragmentHeader()->metadata_word_count == 0) {
+    throw cet::exception("InvalidRequest")
+      << "No metadata in fragment; please use Fragment::setMetadata instead of Fragment::updateMetadata";
+  }
+
+  auto const mdSize = validatedMetadataSize_<T>();
+
+  if (fragmentHeader()->metadata_word_count != mdSize) {
+    throw cet::exception("InvalidRequest")
+      << "Mismatch between type of metadata struct passed to updateMetadata and existing metadata struct";
+  }
 
   memcpy(metadataAddress(), &metadata, sizeof(T));
 }
