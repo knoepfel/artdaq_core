@@ -44,6 +44,7 @@ struct artdaq::detail::RawFragmentHeader {
   static constexpr type_t EndOfSubrunFragmentType = FIRST_SYSTEM_TYPE+4;
   static constexpr type_t ShutdownFragmentType = FIRST_SYSTEM_TYPE+5;
   static constexpr type_t EmptyFragmentType = FIRST_SYSTEM_TYPE+6;
+  static constexpr type_t ContainerFragmentType = FIRST_SYSTEM_TYPE+7;
 
   // Each of the following invalid values is chosen based on the
   // size of the bitfield in which the corresponding data are

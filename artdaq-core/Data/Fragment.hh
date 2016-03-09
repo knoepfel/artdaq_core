@@ -72,6 +72,8 @@ public:
     detail::RawFragmentHeader::FIRST_USER_TYPE;
   static constexpr type_t EmptyFragmentType =
     detail::RawFragmentHeader::EmptyFragmentType;
+  static constexpr type_t ContainerFragmentType =
+	detail::RawFragmentHeader::ContainerFragmentType;
 
   static constexpr bool isUserFragmentType(type_t fragmentType);
   static constexpr bool isSystemFragmentType(type_t fragmentType);
