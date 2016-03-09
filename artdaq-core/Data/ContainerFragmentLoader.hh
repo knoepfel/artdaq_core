@@ -99,6 +99,7 @@ void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment & frag)
   if(payloadSize() < lastFragmentIndex() + frag.size()) { 
     addSpace_(frag.size());
   }
+  frag.setSequenceID(artdaq_Fragment_.sequenceID());
   memcpy(dataEnd_(), frag.headerAddress(), frag.sizeBytes());
   metadata()->index[block_count()] = lastFragmentIndex() + frag.size();
   metadata()->block_count++;
