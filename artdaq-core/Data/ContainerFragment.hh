@@ -55,10 +55,20 @@ class artdaq::ContainerFragment {
   Fragment const * dataEnd() const {
     return reinterpret_cast<Fragment const *>(reinterpret_cast<uint8_t const *>(dataBegin()) + lastFragmentIndex());
   }
+ 
+  Fragment const * operator[](size_t index) const {
+	if(index > block_count()) throw cet::exception("Buffer overrun detected! ContainerFragment::operator[] was asked for a non-existant Fragment!");
+	return reinterpret_cast<Fragment const *>(reinterpret_cast<uint8_t const *>(dataBegin()) + fragmentIndex(index));
+  }
+
+  size_t fragmentIndex(size_t index) const {
+	assert(index <= block_count());
+    if(index == 0) { return 0; }
+    return metadata()->index[ index - 1];
+  }
 
   size_t  lastFragmentIndex() const {
-    if(block_count() == 0) { return 0; }
-    return metadata()->index[ block_count() - 1];
+	return fragmentIndex(block_count());
   }
 
   size_t payloadSize() const { return artdaq_Fragment_.dataSize() * sizeof(Fragment::value_type) - sizeof(Metadata); }
