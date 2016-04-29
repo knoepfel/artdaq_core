@@ -43,6 +43,7 @@ public:
   typedef detail::RawFragmentHeader::type_t        type_t;
   typedef detail::RawFragmentHeader::sequence_id_t sequence_id_t;
   typedef detail::RawFragmentHeader::fragment_id_t fragment_id_t;
+  typedef detail::RawFragmentHeader::timestamp_t   timestamp_t;
 
   static constexpr version_t InvalidVersion =
     detail::RawFragmentHeader::InvalidVersion;
@@ -50,6 +51,8 @@ public:
     detail::RawFragmentHeader::InvalidSequenceID;
   static constexpr fragment_id_t InvalidFragmentID =
     detail::RawFragmentHeader::InvalidFragmentID;
+  static constexpr timestamp_t InvalidTimestamp =
+	detail::RawFragmentHeader::InvalidTimestamp;
 
   static constexpr type_t InvalidFragmentType =
     detail::RawFragmentHeader::InvalidFragmentType;
@@ -69,6 +72,8 @@ public:
     detail::RawFragmentHeader::FIRST_USER_TYPE;
   static constexpr type_t EmptyFragmentType =
     detail::RawFragmentHeader::EmptyFragmentType;
+  static constexpr type_t ContainerFragmentType =
+	detail::RawFragmentHeader::ContainerFragmentType;
 
   static constexpr bool isUserFragmentType(type_t fragmentType);
   static constexpr bool isSystemFragmentType(type_t fragmentType);
@@ -103,11 +108,12 @@ public:
   }
 
   // Create a Fragment ready to hold the specified number of words
-  // of payload, with the specified sequence ID, fragment ID,
+  // of payload, with the specified sequence ID, fragment ID, timestamp,
   // fragment type, and metadata.
   template <class T>
   Fragment(std::size_t payload_size, sequence_id_t sequence_id,
-           fragment_id_t fragment_id, type_t type, const T & metadata);
+           fragment_id_t fragment_id, type_t type, const T & metadata,
+		   timestamp_t timestamp = Fragment::InvalidTimestamp);
 
   // Similar, but provide size of payload in bytes, and use a static
   // factory function rather than a constructor to allow for the
@@ -116,18 +122,20 @@ public:
   template <class T>
   static std::unique_ptr<Fragment> FragmentBytes(std::size_t payload_size_in_bytes, 
 				sequence_id_t sequence_id,
-				fragment_id_t fragment_id, type_t type, 
-				const T & metadata)  {
+				fragment_id_t fragment_id,
+				type_t type, const T & metadata, 
+				timestamp_t timestamp = Fragment::InvalidTimestamp)  {
     RawDataType nwords = ceil( payload_size_in_bytes / 
 			       static_cast<double>( sizeof(RawDataType) ) );
-    return std::unique_ptr<Fragment>( new Fragment( nwords, sequence_id, fragment_id, type, metadata) );
+    return std::unique_ptr<Fragment>( new Fragment( nwords, sequence_id, fragment_id, type, metadata, timestamp) );
   }
 
   // Create a fragment with the given event id and fragment id, and
   // with no data payload.
   Fragment(sequence_id_t sequenceID,
            fragment_id_t fragID,
-           type_t type = Fragment::DataFragmentType);
+           type_t type = Fragment::DataFragmentType,
+		   timestamp_t timestamp = Fragment::InvalidTimestamp);
 
   // Print out summary information for this Fragment to the given stream.
   void print(std::ostream & os) const;
@@ -138,6 +146,7 @@ public:
   type_t        type() const;
   sequence_id_t sequenceID() const;
   fragment_id_t fragmentID() const;
+  timestamp_t timestamp() const;
 
   // Header setters
   void setVersion(version_t version);
@@ -145,6 +154,7 @@ public:
   void setSystemType(type_t type);
   void setSequenceID(sequence_id_t sequence_id);
   void setFragmentID(fragment_id_t fragment_id);
+  void setTimestamp(timestamp_t timestamp);
 
   // Size of vals_ vector ( header + (optional) metadata + payload) in bytes. 
   std::size_t sizeBytes() const { return sizeof(RawDataType) * size(); }
@@ -288,7 +298,8 @@ public:
   dataFrag(sequence_id_t sequenceID,
            fragment_id_t fragID,
            RawDataType const * dataPtr,
-           size_t dataSize);
+           size_t dataSize,
+		   timestamp_t timestamp = Fragment::InvalidTimestamp);
 #endif
 
 private:
@@ -354,7 +365,8 @@ validatedMetadataSize_()
 template <class T>
 artdaq::Fragment::
 Fragment(std::size_t payload_size, sequence_id_t sequence_id,
-         fragment_id_t fragment_id, type_t type, const T & metadata) :
+         fragment_id_t fragment_id,
+		 type_t type, const T & metadata, timestamp_t timestamp) :
   vals_((artdaq::detail::RawFragmentHeader::num_words() + // Header
          validatedMetadataSize_<T>() + // Metadata
          payload_size), // User data
@@ -363,6 +375,7 @@ Fragment(std::size_t payload_size, sequence_id_t sequence_id,
   updateFragmentHeaderWC_();
   fragmentHeader()->sequence_id = sequence_id;
   fragmentHeader()->fragment_id = fragment_id;
+  fragmentHeader()->timestamp = timestamp;
   fragmentHeader()->type        = type;
 
   fragmentHeader()->metadata_word_count =
@@ -408,6 +421,13 @@ artdaq::Fragment::fragmentID() const
 }
 
 inline
+artdaq::Fragment::timestamp_t
+artdaq::Fragment::timestamp() const
+{
+  return fragmentHeader()->timestamp;
+}
+
+inline
 void
 artdaq::Fragment::setVersion(version_t version)
 {
@@ -441,6 +461,13 @@ void
 artdaq::Fragment::setFragmentID(fragment_id_t fragment_id)
 {
   fragmentHeader()->fragment_id = fragment_id;
+}
+
+inline
+void
+artdaq::Fragment::setTimestamp(timestamp_t timestamp)
+{
+  fragmentHeader()->timestamp = timestamp;
 }
 
 inline

@@ -8,7 +8,7 @@
 namespace artdaq {
   typedef std::vector<Fragment>     Fragments;
   typedef std::unique_ptr<Fragment> FragmentPtr;
-  typedef std::vector<FragmentPtr>  FragmentPtrs;
+  typedef std::list<FragmentPtr>  FragmentPtrs;
 }
 
 #endif /* artdaq_core_Data_Fragments_hh */
