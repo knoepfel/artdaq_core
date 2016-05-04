@@ -27,12 +27,14 @@ artdaq::Fragment::Fragment(std::size_t n) :
   fragmentHeader()->type        = Fragment::InvalidFragmentType;
   fragmentHeader()->sequence_id = Fragment::InvalidSequenceID;
   fragmentHeader()->fragment_id = Fragment::InvalidFragmentID;
+  fragmentHeader()->timestamp = Fragment::InvalidTimestamp;
   fragmentHeader()->metadata_word_count = 0;
 }
 
 artdaq::Fragment::Fragment(sequence_id_t sequenceID,
                            fragment_id_t fragID,
-                           type_t type) :
+                           type_t type,
+						   timestamp_t timestamp) :
   vals_(RawFragmentHeader::num_words(), 0)
 {
   updateFragmentHeaderWC_();
@@ -45,6 +47,7 @@ artdaq::Fragment::Fragment(sequence_id_t sequenceID,
   }
   fragmentHeader()->sequence_id = sequenceID;
   fragmentHeader()->fragment_id = fragID;
+  fragmentHeader()->timestamp = timestamp;
   fragmentHeader()->metadata_word_count = 0;
 }
 
@@ -73,9 +76,10 @@ artdaq::Fragment::
 dataFrag(sequence_id_t sequenceID,
          fragment_id_t fragID,
          RawDataType const * dataPtr,
-         size_t dataSize)
+         size_t dataSize,
+		 timestamp_t timestamp)
 {
-  Fragment result(sequenceID, fragID);
+  Fragment result(sequenceID, fragID, timestamp);
   result.resize(dataSize);
   memcpy(result.dataAddress(), dataPtr, (dataSize * sizeof(RawDataType)));
   return result;

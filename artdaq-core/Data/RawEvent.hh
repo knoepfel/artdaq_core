@@ -147,8 +147,10 @@ namespace artdaq {
   {
     std::unique_ptr<std::vector<Fragment>> result(new std::vector<Fragment>);
     result->reserve(fragments_.size());
-    for (size_t i = 0, sz = fragments_.size(); i < sz; ++i) {
-      result->emplace_back(std::move(*fragments_[i]));
+	// 03/08/2016 ELF: Moving to range-for for STL compatibility
+    //for (size_t i = 0, sz = fragments_.size(); i < sz; ++i) {
+	for(auto & i : fragments_) {
+      result->emplace_back(std::move(*i));
     }
     // It seems more hygenic to clear fragments_ rather than to leave
     // it full of unique_ptrs to Fragments that have been plundered by
@@ -160,8 +162,10 @@ namespace artdaq {
   inline
   void RawEvent::fragmentTypes(std::vector<Fragment::type_t>& type_list)
   {
-    for (size_t i = 0, sz = fragments_.size(); i < sz; ++i) {
-      Fragment::type_t fragType = fragments_[i]->type();
+	// 03/08/2016 ELF: Moving to range-for for STL compatibility
+    //for (size_t i = 0, sz = fragments_.size(); i < sz; ++i) {
+	for(auto& i : fragments_) {
+      Fragment::type_t fragType = i->type(); // fragments_[i]->type();
       if (std::find(type_list.begin(),type_list.end(),fragType) == type_list.end()) {
         type_list.push_back(fragType);
       }

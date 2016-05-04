@@ -28,6 +28,7 @@ struct artdaq::detail::RawFragmentHeader {
   typedef uint8_t  type_t;
   typedef uint16_t fragment_id_t;
   typedef uint8_t  metadata_word_count_t;
+  typedef uint32_t timestamp_t;
 
   // define special values for type_t
   static constexpr type_t INVALID_TYPE = 0;
@@ -43,6 +44,7 @@ struct artdaq::detail::RawFragmentHeader {
   static constexpr type_t EndOfSubrunFragmentType = FIRST_SYSTEM_TYPE+4;
   static constexpr type_t ShutdownFragmentType = FIRST_SYSTEM_TYPE+5;
   static constexpr type_t EmptyFragmentType = FIRST_SYSTEM_TYPE+6;
+  static constexpr type_t ContainerFragmentType = FIRST_SYSTEM_TYPE+7;
 
   // Each of the following invalid values is chosen based on the
   // size of the bitfield in which the corresponding data are
@@ -51,6 +53,7 @@ struct artdaq::detail::RawFragmentHeader {
   static const version_t InvalidVersion  = 0xFFFF;
   static const sequence_id_t InvalidSequenceID = 0xFFFFFFFFFFFF;
   static const fragment_id_t InvalidFragmentID = 0xFFFF;
+  static const timestamp_t InvalidTimestamp = 0xFFFFFFFF;
 
   RawDataType word_count          : 32; // number of RawDataTypes in this Fragment
   RawDataType version             : 16;
@@ -59,6 +62,7 @@ struct artdaq::detail::RawFragmentHeader {
 
   RawDataType sequence_id : 48;
   RawDataType fragment_id : 16;
+  RawDataType timestamp   : 32;
 
   // 27-Feb-2013, KAB - As we discussed recently, we will go ahead
   // and reserve another longword for future needs.  The choice of
@@ -66,8 +70,6 @@ struct artdaq::detail::RawFragmentHeader {
   // once we identify the future needs.
   RawDataType unused1     : 16;
   RawDataType unused2     : 16;
-  RawDataType unused3     : 16;
-  RawDataType unused4     : 16;
 
   constexpr static std::size_t num_words();
 
