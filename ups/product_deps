@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_core  v1_04_29
+parent artdaq_core  v1_04_30
 defaultqual	e9:s21
 
 # These optional lines define the installed directories where
@@ -124,6 +124,14 @@ e6:s11:prof              e6:prof         -std=c++1y
 nu:e6:s11:debug          nu:e6:debug     -std=c++1y
 nu:e6:s11:prof           nu:e6:prof      -std=c++1y
 end_qualifier_list
+
+
+
+table_fragment_begin
+# this is temporary until art and boost define ROOT_INCLUDE_PATH
+pathPrepend(ROOT_INCLUDE_PATH, ${ART_INC}:${FHICLCPP_INC}:${CETLIB_INC}:${BOOST_INC}:${ARTDAQ_CORE_INC})
+table_fragment_end
+#
 
 # Preserve tabs and formatting in emacs and vi / vim:
 
