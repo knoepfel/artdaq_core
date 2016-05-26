@@ -23,10 +23,17 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
+if( DEFINED ENV{CANVAS_DIR} )
 set(CMAKE_MODULE_PATH
   $ENV{CANVAS_DIR}/Modules
 	$ENV{CETBUILDTOOLS_DIR}/Modules
 	${CMAKE_MODULE_PATH})
+else()
+set(CMAKE_MODULE_PATH
+  $ENV{ART_DIR}/Modules
+	$ENV{CETBUILDTOOLS_DIR}/Modules
+	${CMAKE_MODULE_PATH})
+endif()
 
 include(CetCMakeEnv)
 cet_cmake_env()
