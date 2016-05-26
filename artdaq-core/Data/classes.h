@@ -1,6 +1,6 @@
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Data/QuickVec.hh"
-#include "art/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Wrapper.h"
 #include "artdaq-core/Data/PackageBuildInfo.hh"
 #include <vector>
 

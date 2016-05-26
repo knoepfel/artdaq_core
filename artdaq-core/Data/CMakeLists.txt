@@ -1,7 +1,7 @@
 art_make(
   LIB_LIBRARIES
-  art_Persistency_Common
-  art_Utilities
+  art_Persistency_Common canvas_Persistency_Common
+  art_Utilities canvas_Utilities
   cetlib
   )
 
