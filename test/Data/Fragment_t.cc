@@ -1,7 +1,7 @@
 #include "artdaq-core/Data/Fragment.hh"
 
 #define BOOST_TEST_MODULE(Fragment_t)
-#include "boost/test/auto_unit_test.hpp"
+#include "cetlib/quiet_unit_test.hpp"
 
 struct MetadataTypeOne {
   uint64_t field1;
