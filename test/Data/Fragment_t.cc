@@ -1,7 +1,11 @@
 #include "artdaq-core/Data/Fragment.hh"
 
 #define BOOST_TEST_MODULE(Fragment_t)
+#ifdef HAVE_CANVAS
 #include "cetlib/quiet_unit_test.hpp"
+#else
+#include "boost/test/auto_unit_test.hpp"
+#endif
 
 struct MetadataTypeOne {
   uint64_t field1;
