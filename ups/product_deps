@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_core  v1_04_30
+parent artdaq_core  v1_04_32
 defaultqual	e9:s21
 
 # These optional lines define the installed directories where
@@ -19,6 +19,7 @@ perllib  product_dir
 
 #
 product		version		optional
+art             v2_00_02        s33
 art		v1_18_05	s31
 art		v1_17_07	s30
 art		v1_17_06	s28
@@ -30,7 +31,7 @@ art		v1_16_02	s18
 art		v1_16_00	s16
 art		v1_15_02	s15
 art		v1_14_02	s11
-cetbuildtools	v5_01_03	-	only_for_build
+cetbuildtools	v5_02_02	-	only_for_build
 end_product_list
 
 # e6  - with gcc 4.9.1 and -std=c++1y
@@ -39,6 +40,14 @@ end_product_list
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
 qualifier		art		notes
+e9:s33:debug             e9:debug        -std=c++14
+e9:s33:prof              e9:prof         -std=c++14
+nu:e9:s33:debug          nu:e9:debug     -std=c++14
+nu:e9:s33:prof           nu:e9:prof      -std=c++14
+e10:s33:debug            e10:debug       -std=c++14
+e10:s33:prof             e10:prof        -std=c++14
+nu:e10:s33:debug         nu:e10:debug    -std=c++14
+nu:e10:s33:prof          nu:e10:prof     -std=c++14
 e9:s31:debug             e9:debug        -std=c++14
 e9:s31:prof              e9:prof         -std=c++14
 nu:e9:s31:debug          nu:e9:debug     -std=c++14

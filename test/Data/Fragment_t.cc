@@ -1,7 +1,11 @@
 #include "artdaq-core/Data/Fragment.hh"
 
 #define BOOST_TEST_MODULE(Fragment_t)
+#ifdef HAVE_CANVAS
+#include "cetlib/quiet_unit_test.hpp"
+#else
 #include "boost/test/auto_unit_test.hpp"
+#endif
 
 struct MetadataTypeOne {
   uint64_t field1;
@@ -489,6 +493,18 @@ BOOST_AUTO_TEST_CASE(Metadata)
   mdOneA.field1 =  5;
   mdOneA.field2 = 10;
   mdOneA.field3 = 15;
+
+  try {
+    f1.updateMetadata(mdOneA);
+    BOOST_REQUIRE(0 && "Should have thrown exception");
+  }
+  catch (cet::exception const & excpt) {
+  }
+  catch (...) {
+    BOOST_REQUIRE(0 && "Should have thrown cet::exception");
+  }
+
+
   f1.setMetadata(mdOneA);
   MetadataTypeOne* mdOnePtr = f1.metadata<MetadataTypeOne>();
   BOOST_REQUIRE_EQUAL(mdOnePtr->field1, (uint64_t) 5);
@@ -506,12 +522,25 @@ BOOST_AUTO_TEST_CASE(Metadata)
     BOOST_REQUIRE(0 && "Should have thrown cet::exception");
   }
 
+  f1.updateMetadata( *mdOnePtr );
+
   MetadataTypeTwo mdTwoA;
   mdTwoA.field1 = 10;
   mdTwoA.field2 = 20;
   mdTwoA.field3 = 30;
   mdTwoA.field4 = 40;
   mdTwoA.field5 = 50;
+
+  try {
+    f1.updateMetadata(mdTwoA);
+    BOOST_REQUIRE(0 && "Should have thrown exception");
+  }
+  catch (cet::exception const & excpt) {
+  }
+  catch (...) {
+    BOOST_REQUIRE(0 && "Should have thrown cet::exception");
+  }
+
   artdaq::Fragment f2(10, 1, 2, 3, mdTwoA);
   MetadataTypeTwo* mdTwoPtr = f2.metadata<MetadataTypeTwo>();
   BOOST_REQUIRE_EQUAL(mdTwoPtr->field1, (uint64_t)10);
@@ -589,6 +618,7 @@ BOOST_AUTO_TEST_CASE(Metadata)
     BOOST_REQUIRE(0 && "Should have thrown cet::exception");
   }
 }
+
 
 // JCF, 4/15/14 -- perform a set of tests concerning the new
 // byte-by-byte interface functions added to artdaq::Fragment

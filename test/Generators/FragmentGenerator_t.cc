@@ -1,5 +1,9 @@
 #define BOOST_TEST_MODULE ( FragmentGenerator_t )
+#ifdef HAVE_CANVAS
+#include "cetlib/quiet_unit_test.hpp"
+#else
 #include "boost/test/auto_unit_test.hpp"
+#endif
 
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Generators/FragmentGenerator.hh"

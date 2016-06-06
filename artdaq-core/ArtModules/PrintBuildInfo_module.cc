@@ -15,7 +15,11 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
+#ifdef HAVE_CANVAS
+#include "canvas/Utilities/InputTag.h"
+#else
 #include "art/Utilities/InputTag.h"
+#endif
 #include "fhiclcpp/ParameterSet.h"
 
 #include "artdaq-core/Data/PackageBuildInfo.hh"
