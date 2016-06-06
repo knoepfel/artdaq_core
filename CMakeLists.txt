@@ -23,19 +23,35 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
+if( DEFINED ENV{CANVAS_DIR} )
+set(CMAKE_MODULE_PATH
+  $ENV{CANVAS_DIR}/Modules
+	$ENV{CETBUILDTOOLS_DIR}/Modules
+	${CMAKE_MODULE_PATH})
+else()
 set(CMAKE_MODULE_PATH
   $ENV{ART_DIR}/Modules
 	$ENV{CETBUILDTOOLS_DIR}/Modules
 	${CMAKE_MODULE_PATH})
+endif()
 
 include(CetCMakeEnv)
 cet_cmake_env()
 
+if( DEFINED ENV{CANVAS_DIR} )
+cet_set_compiler_flags(DIAGS VIGILANT
+  WERROR
+  NO_UNDEFINED
+  EXTRA_FLAGS -pedantic
+  EXTRA_DEFINITIONS -DHAVE_CANVAS
+)
+else()
 cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
   NO_UNDEFINED
   EXTRA_FLAGS -pedantic
 )
+endif()
 
 # these are minimum required versions, not the actual product versions
 find_ups_boost(v1_53_0)
