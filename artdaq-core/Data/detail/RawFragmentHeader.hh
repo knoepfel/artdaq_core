@@ -104,7 +104,8 @@ artdaq::detail::RawFragmentHeader::setUserType(uint8_t utype)
   if (utype < FIRST_USER_TYPE || utype > LAST_USER_TYPE) {
     throw cet::exception("InvalidValue")
       << "RawFragmentHeader user types must be in the range of "
-      << ((int)FIRST_USER_TYPE) << " to " << ((int)LAST_USER_TYPE);
+      << ((int)FIRST_USER_TYPE) << " to " << ((int)LAST_USER_TYPE)
+      << " (bad type is " << ((int)utype) << ").";
   }
   type = utype;
 }
