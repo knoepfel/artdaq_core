@@ -79,7 +79,7 @@ dataFrag(sequence_id_t sequenceID,
          size_t dataSize,
 		 timestamp_t timestamp)
 {
-  Fragment result(sequenceID, fragID, timestamp);
+  Fragment result(sequenceID, fragID, Fragment::DataFragmentType, timestamp);
   result.resize(dataSize);
   memcpy(result.dataAddress(), dataPtr, (dataSize * sizeof(RawDataType)));
   return result;
