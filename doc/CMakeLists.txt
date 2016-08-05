@@ -1,0 +1,23 @@
+include(FindDoxygen)
+include(FindLATEX)
+
+if(DOXYGEN_FOUND)
+
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex 
+    		      COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                      COMMENT "Generating artdaq-core API documentation using Doxygen" VERBATIM)
+    add_custom_target(doc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex)
+    find_package(LATEX COMPONENTS PDFLATEX PS2PDF MAKEINDEX)
+    if(LATEX_FOUND)
+	add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf
+                           COMMAND make WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex 
+	              	   COMMAND mv refman.pdf API_Documentation.pdf
+		      	   DEPENDS doc
+		      	   COMMENT "Generating PDF API Documentation file" VERBATIM)
+        add_custom_target(pdf ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf)
+    	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf DESTINATION ${product}/${version}/doc/)
+    endif(LATEX_FOUND)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${product}/${version}/doc)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/man DESTINATION ${product}/${version}/doc)
+endif(DOXYGEN_FOUND)
