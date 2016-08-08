@@ -15,7 +15,8 @@ if(DOXYGEN_FOUND)
 	              	   COMMAND mv refman.pdf API_Documentation.pdf
 		      	   DEPENDS doc
 		      	   COMMENT "Generating PDF API Documentation file" VERBATIM)
-        add_custom_target(pdf ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf)
+               # ALL removed from this add_custom_target, as the PDF does not build correctly on woof
+               add_custom_target(pdf DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf)
     	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf DESTINATION ${product}/${version}/doc/)
     endif(LATEX_FOUND)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${product}/${version}/doc)
