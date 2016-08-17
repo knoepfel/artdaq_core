@@ -46,6 +46,20 @@ struct artdaq::detail::RawFragmentHeader {
   static constexpr type_t EmptyFragmentType = FIRST_SYSTEM_TYPE+6;
   static constexpr type_t ContainerFragmentType = FIRST_SYSTEM_TYPE+7;
 
+  static std::map<type_t, std::string> MakeSystemTypeMap()
+  {
+	  return std::map<type_t, std::string> {
+	  { 225, "EndOfData" },
+	  { 226, "Data" },
+	  { 227, "Init" },
+	  { 228, "EndOfRun" },
+	  { 229, "EndOfSubrun" },
+	  { 230,"Shutdown" },
+	  { 231, "Empty" },
+	  { 232, "Container" }
+	  };
+  }
+
   // Each of the following invalid values is chosen based on the
   // size of the bitfield in which the corresponding data are
   // encoded; if any of the sizes are changed, the corresponding
