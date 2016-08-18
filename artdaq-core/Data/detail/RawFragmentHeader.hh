@@ -46,17 +46,27 @@ struct artdaq::detail::RawFragmentHeader {
   static constexpr type_t EmptyFragmentType = FIRST_SYSTEM_TYPE+6;
   static constexpr type_t ContainerFragmentType = FIRST_SYSTEM_TYPE+7;
 
+  // These system types might actually show up in the data stream...
   static std::map<type_t, std::string> MakeSystemTypeMap()
   {
 	  return std::map<type_t, std::string> {
-	  { 225, "EndOfData" },
-	  { 226, "Data" },
-	  { 227, "Init" },
-	  { 228, "EndOfRun" },
-	  { 229, "EndOfSubrun" },
-	  { 230,"Shutdown" },
+		  { 226, "Data" },
 	  { 231, "Empty" },
 	  { 232, "Container" }
+	  };
+  }
+  // All system types
+  static std::map<type_t, std::string> MakeVerboseSystemTypeMap()
+  {
+	  return std::map<type_t, std::string> {
+		  { 225, "EndOfData" },
+		  { 226, "Data" },
+		  { 227, "Init" },
+		  { 228, "EndOfRun" },
+		  { 229, "EndOfSubrun" },
+		  { 230,"Shutdown" },
+		  { 231, "Empty" },
+		  { 232, "Container" }
 	  };
   }
 
