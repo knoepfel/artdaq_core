@@ -27,8 +27,9 @@ public:
 		typedef uint8_t data_t;
 		typedef uint64_t count_t;
 
-		count_t     block_count : 56;
+		count_t     block_count : 55;
 		count_t     fragment_type : 8;
+	    count_t     missing_data : 1;
 
 		size_t index[FRAGMENT_COUNT_MAX];
 
@@ -46,6 +47,7 @@ public:
 	Metadata const * metadata() const { return artdaq_Fragment_.metadata<Metadata>(); }
 	Metadata::count_t block_count()   const { return metadata()->block_count; }
 	Fragment::type_t  fragment_type() const { return static_cast<Fragment::type_t>(metadata()->fragment_type); }
+    bool              missing_data()  const { return static_cast<bool>(metadata()->missing_data); }
 
 	// Start of the Fragments
 	Fragment const * dataBegin() const {

@@ -37,6 +37,10 @@ public:
 		metadata()->fragment_type = type;
 	}
 
+  void set_missing_data(bool isDataMissing) {
+	metadata()->missing_data = isDataMissing;
+  }
+
 	void addFragment(artdaq::Fragment & frag);
 	void addFragment(artdaq::FragmentPtr& frag);
 	void addFragments(artdaq::FragmentPtrs & frags);
@@ -60,6 +64,7 @@ artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment& f) :
 	Metadata m;
 	m.block_count = 0;
 	m.fragment_type = Fragment::EmptyFragmentType;
+	m.missing_data = false;
 	for (int ii = 0; ii < FRAGMENT_COUNT_MAX; ++ii) {
 		m.index[ii] = 0;
 	}
