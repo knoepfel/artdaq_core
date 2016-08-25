@@ -98,5 +98,8 @@ add_subdirectory(artdaq-core)
 # ups - table and config files
 add_subdirectory(ups)
 
+# doc - Documentation
+add_subdirectory(doc)
+
 # packaging utility
 include(UseCPack)
