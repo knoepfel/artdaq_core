@@ -17,7 +17,7 @@ if(DOXYGEN_FOUND)
 		      	   COMMENT "Generating PDF API Documentation file" VERBATIM)
                # ALL removed from this add_custom_target, as the PDF does not build correctly on woof
                add_custom_target(pdf DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf)
-    	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf DESTINATION ${product}/${version}/doc/)
+               install(FILES ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf DESTINATION ${product}/${version}/doc/ OPTIONAL)
     endif(LATEX_FOUND)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${product}/${version}/doc)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/man DESTINATION ${product}/${version}/doc)
