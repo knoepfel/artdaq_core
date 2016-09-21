@@ -25,6 +25,7 @@ ENDIF()
 
 if( DEFINED ENV{CANVAS_DIR} )
 set(CMAKE_MODULE_PATH
+  $ENV{ART_DIR}/Modules
   $ENV{CANVAS_DIR}/Modules
 	$ENV{CETBUILDTOOLS_DIR}/Modules
 	${CMAKE_MODULE_PATH})
@@ -70,6 +71,15 @@ find_ups_root( v5_34_20 )
 check_ups_version(art "$ENV{ART_VERSION}" v1_11_00 PRODUCT_OLDER_VAR have_old_art)
 if (have_old_art)
   cmake_policy(SET CMP0046 OLD)
+endif()
+
+check_ups_version(art "$ENV{ART_VERSION}" v2_00_00 PRODUCT_OLDER_VAR no_canvas)
+if (no_canvas)
+  set(CANVAS "art")
+else (no_canvas)
+  find_ups_product( canvas v1_00_00 )
+  set(CANVAS "canvas")
+  add_definitions(-DCANVAS)
 endif()
 
 # Debug streamer.
