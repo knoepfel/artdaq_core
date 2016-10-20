@@ -17,8 +17,8 @@
 
 namespace artdaq {
 # include "QuickVec.hh"
-# define QUICKVEC_T QuickVec<RawDataType>
-# define DO_STDVEC 0
+# define DATAVEC_T QuickVec<RawDataType>
+//#define DATAVEC_T std::vector<RawDataType>
 	typedef detail::RawFragmentHeader::RawDataType RawDataType;
 
 	class Fragment;
@@ -83,21 +83,12 @@ public:
 		return detail::RawFragmentHeader::MakeSystemTypeMap();
 	}
 
-#if DO_STDVEC == 1
-	typedef std::vector<RawDataType>::reference       reference;
-	typedef std::vector<RawDataType>::iterator        iterator;
-	typedef std::vector<RawDataType>::const_iterator  const_iterator;
-	typedef std::vector<RawDataType>::value_type      value_type;
-	typedef std::vector<RawDataType>::difference_type difference_type;
-	typedef std::vector<RawDataType>::size_type       size_type;
-#else
-	typedef QUICKVEC_T::reference       reference;
-	typedef QUICKVEC_T::iterator        iterator;
-	typedef QUICKVEC_T::const_iterator  const_iterator;
-	typedef QUICKVEC_T::value_type      value_type;
-	typedef QUICKVEC_T::difference_type difference_type;
-	typedef QUICKVEC_T::size_type       size_type;
-#endif
+	typedef DATAVEC_T::reference       reference;
+	typedef DATAVEC_T::iterator        iterator;
+	typedef DATAVEC_T::const_iterator  const_iterator;
+	typedef DATAVEC_T::value_type      value_type;
+	typedef DATAVEC_T::difference_type difference_type;
+	typedef DATAVEC_T::size_type       size_type;
 
 	// Create a Fragment ready to hold n words (RawDataTypes) of payload, and with
 	// all values zeroed.
@@ -288,6 +279,7 @@ public:
 	bool empty();
 	void reserve(std::size_t cap);
 	void swap(Fragment & other);
+	void swap(DATAVEC_T & other) { vals_.swap(other); };
 
 	RawDataType * dataAddress();
 	RawDataType * metadataAddress();   // for internal use only
@@ -316,11 +308,8 @@ public:
 private:
 	template <typename T> static std::size_t validatedMetadataSize_();
 	void updateFragmentHeaderWC_();
-#if DO_STDVEC == 1
-	std::vector<RawDataType> vals_;
-#else
-	QUICKVEC_T                 vals_;
-#endif
+
+	DATAVEC_T                 vals_;
 
 #if HIDE_FROM_ROOT
 	detail::RawFragmentHeader * fragmentHeader();
