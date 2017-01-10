@@ -23,41 +23,26 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
-if( DEFINED ENV{CANVAS_DIR} )
 set(CMAKE_MODULE_PATH
   $ENV{ART_DIR}/Modules
   $ENV{CANVAS_DIR}/Modules
 	$ENV{CETBUILDTOOLS_DIR}/Modules
 	${CMAKE_MODULE_PATH})
-else()
-set(CMAKE_MODULE_PATH
-  $ENV{ART_DIR}/Modules
-	$ENV{CETBUILDTOOLS_DIR}/Modules
-	${CMAKE_MODULE_PATH})
-endif()
 
 include(CetCMakeEnv)
 cet_cmake_env()
 
-if( DEFINED ENV{CANVAS_DIR} )
-cet_set_compiler_flags(DIAGS VIGILANT
-  WERROR
-  NO_UNDEFINED
-  EXTRA_FLAGS -pedantic
-  EXTRA_DEFINITIONS -DHAVE_CANVAS
-)
-else()
 cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
   NO_UNDEFINED
   EXTRA_FLAGS -pedantic
 )
-endif()
 
 # these are minimum required versions, not the actual product versions
 find_ups_boost(v1_53_0)
 find_ups_product (cetbuildtools v4_09_02)
-find_ups_product( art v1_08_10 )
+find_ups_product( art v2_01_00 )
+  find_ups_product( canvas v1_00_00 )
 find_ups_product( cetlib v1_08_00 )
 find_ups_product( cetpkgsupport v1_08_03 )
 find_ups_product( clhep v2_2_0_3 )
@@ -67,29 +52,11 @@ find_ups_product( sqlite v3_08_05_00 )
 find_ups_product( tbb v4_1 )
 find_ups_root( v5_34_20 )
 
-# Needed if using old art with new cetbuildtools / CMake.
-check_ups_version(art "$ENV{ART_VERSION}" v1_11_00 PRODUCT_OLDER_VAR have_old_art)
-if (have_old_art)
-  cmake_policy(SET CMP0046 OLD)
-endif()
-
-check_ups_version(art "$ENV{ART_VERSION}" v2_00_00 PRODUCT_OLDER_VAR no_canvas)
-if (no_canvas)
-  set(CANVAS "art")
-else (no_canvas)
-  find_ups_product( canvas v1_00_00 )
-  set(CANVAS "canvas")
-  add_definitions(-DCANVAS)
-endif()
-
 # Debug streamer.
 string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
 if(BTYPE_UC STREQUAL DEBUG)
   add_definitions(-DDEBUGME)
-  #check_ups_version(art "$ENV{ART_VERSION}" v1_18_00 PRODUCT_OLDER_VAR have_old_art2)
-  #  if (have_old_art2)
   #   cet_add_compiler_flags(-fsanitize=address)
-  #endif()
 endif()
 
 cet_report_compiler_flags()
