@@ -88,10 +88,6 @@ struct artdaq::detail::RawFragmentHeader {
   RawDataType fragment_id : 16;
   RawDataType timestamp   : 32;
 
-  // 27-Feb-2013, KAB - As we discussed recently, we will go ahead
-  // and reserve another longword for future needs.  The choice of
-  // four 16-bit values is arbitrary and will most certainly change
-  // once we identify the future needs.
   RawDataType unused1     : 16;
   RawDataType unused2     : 16;
 
