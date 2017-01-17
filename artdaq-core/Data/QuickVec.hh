@@ -17,6 +17,7 @@ extern "C" {
 #include <strings.h>		// bzero
 #include <utility>		// std::swap 
 #include <memory>		// unique_ptr
+#include <malloc.h>		// memalign
 #include <vector>
 
 //#include "trace.h"		// TRACE
@@ -26,6 +27,7 @@ extern "C" {
 #endif
 
 #define USE_UNIQUE_PTR 0
+#define QV_ALIGN 512
 
 #ifndef QUICKVEC_DO_TEMPLATE
 # define QUICKVEC_DO_TEMPLATE    1
@@ -73,13 +75,15 @@ struct QuickVec
 #   define PTR_(xx) xx.get()
 #  endif
     QuickVec( std::vector<TT_> & other )
-	: size_(other.size()), data_(new TT_[other.capacity()]), capacity_(other.capacity())
+		//: size_(other.size()), data_(new TT_[other.capacity()]), capacity_(other.capacity())
+		: size_(other.size()), data_((TT_*)memalign(QV_ALIGN,other.capacity()*sizeof(TT_))), capacity_(other.capacity())
     {   memcpy( PTR_(data_), (void*)&other[0], size_*sizeof(TT_) );
     }
     void clear() { size_=0; }
 
     QuickVec( const QuickVec & other ) //= delete; // non construction-copyable
-	: size_(other.size_), data_(new TT_[other.capacity_]), capacity_(other.capacity_)
+		//: size_(other.size_), data_(new TT_[other.capacity_]), capacity_(other.capacity_)
+		: size_(other.size_), data_((TT_*)memalign(QV_ALIGN,other.capacity()*sizeof(TT_))), capacity_(other.capacity_)
     {	TRACE( 10, "QuickVec copy ctor this=%p data_=%p other.data_=%p size_=%d other.size_=%d"
 	      , (void*)this, (void*)PTR_(data_), (void*)PTR_(other.data_), size_, other.size_ );
 	memcpy( PTR_(data_), PTR_(other.data_), size_*sizeof(TT_) );
@@ -104,7 +108,8 @@ struct QuickVec
     {   TRACE( 10, "QuickVec move assign this=%p data_=%p other.data_=%p"
 	      , (void*)this, (void*)PTR_(data_), (void*)PTR_(other.data_) );
 	size_ = other.size_;
-	delete [] data_;
+	//delete [] data_;
+	free( data_ );
 	data_ = std::move(other.data_);
 	capacity_ = other.capacity_;
 #      if USE_UNIQUE_PTR == 0
@@ -149,12 +154,14 @@ private:
 
 QUICKVEC_TEMPLATE
 inline QUICKVEC::QuickVec( size_t sz )
-    : size_(sz), data_(new TT_[sz]), capacity_(sz)
+    //: size_(sz), data_(new TT_[sz]), capacity_(sz)
+    : size_(sz), data_((TT_*)memalign(QV_ALIGN,sz*sizeof(TT_))), capacity_(sz)
 {   TRACE( 15, "QuickVec %p ctor sz=%d data_=%p", (void*)this, size_, (void*)PTR_(data_) );
 }
 QUICKVEC_TEMPLATE
 inline QUICKVEC::QuickVec( size_t sz, TT_ val )
-    : size_(sz), data_(new TT_[sz]), capacity_(sz)
+	//: size_(sz), data_(new TT_[sz]), capacity_(sz)
+    : size_(sz), data_((TT_*)memalign(QV_ALIGN,sz*sizeof(TT_))), capacity_(sz)
 {   TRACE( 15, "QuickVec %p ctor sz=%d/v data_=%p", (void*)this, size_, (void*)PTR_(data_) );
     for (iterator ii=begin(); ii!=end(); ++ii) *ii=val;
     //bzero( &data_[0], (sz<4)?(sz*sizeof(TT_)):(4*sizeof(TT_)) );
@@ -165,7 +172,8 @@ QUICKVEC_TEMPLATE
 inline QUICKVEC::~QuickVec()
 {   TRACE( 15, "QuickVec %p dtor start data_=%p size_=%d"
 	  , (void*)this, (void*)PTR_(data_), size_ );
-    delete [] data_;
+    //delete [] data_;
+    free( data_ );
     TRACE( 15, "QuickVec %p dtor return", (void*)this );
 }
 #endif
@@ -201,14 +209,17 @@ inline void QUICKVEC::reserve( size_t size )
     {
 #      if USE_UNIQUE_PTR == 0
 	TT_ * old=data_;
-	data_ = new TT_[size];
+	//data_ = new TT_[size];
+	data_ = (TT_*)memalign(QV_ALIGN,size*sizeof(TT_));
 	memcpy( data_, old, size_*sizeof(TT_) );
 	TRACE( 13, "QUICKVEC::reserve this=%p old=%p data_=%p"
 	      , (void*)this, (void*)old, (void*)data_ );
-	delete [] old;
+	//delete [] old;
+	free( old );
 #      else
 	std::unique_ptr<TT_[]> old=std::move(data_);
-	data_ = std::unique_ptr<TT_[]>(new TT_[size]);
+	//data_ = std::unique_ptr<TT_[]>(new TT_[size]);
+	data_ = std::unique_ptr<TT_[]>((TT_*)memalign(QV_ALIGN,size*sizeof(TT_)));
 	memcpy( data_.get(), old.get(), size_*sizeof(TT_) );
 #      endif
 	capacity_ = size;
@@ -224,14 +235,17 @@ inline void QUICKVEC::resize( size_t size )
     {
 #      if USE_UNIQUE_PTR == 0
 	TT_ * old=data_;
-	data_ = new TT_[size];
+	//data_ = new TT_[size];
+	data_ = (TT_*)memalign(QV_ALIGN,size*sizeof(TT_));
 	memcpy( data_, old, size_*sizeof(TT_) );
 	TRACE( 13, "QUICKVEC::resize this=%p old=%p data_=%p"
 	      , (void*)this, (void*)old, (void*)data_ );
-	delete [] old;
+	//delete [] old;
+	free( old );
 #      else
 	std::unique_ptr<TT_[]> old=std::move(data_);
-	data_ = std::unique_ptr<TT_[]>(new TT_[size]);
+	//data_ = std::unique_ptr<TT_[]>(new TT_[size]);
+	data_ = std::unique_ptr<TT_[]>((TT_*)memalign(QV_ALIGN,size*sizeof(TT_)));
 	memcpy( data_.get(), old.get(), size_*sizeof(TT_) );
 #      endif
 	size_ = capacity_ = size;
