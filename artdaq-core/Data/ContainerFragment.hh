@@ -58,9 +58,20 @@ public:
 		return reinterpret_cast<Fragment const *>(reinterpret_cast<uint8_t const *>(dataBegin()) + lastFragmentIndex());
 	}
 
-	Fragment const * operator[](size_t index) const {
-		if (index > block_count()) throw cet::exception("Buffer overrun detected! ContainerFragment::operator[] was asked for a non-existant Fragment!");
+	Fragment const * at(size_t index) const {
+		if (index > block_count()) throw cet::exception("Buffer overrun detected! ContainerFragment::at was asked for a non-existant Fragment!");
 		return reinterpret_cast<Fragment const *>(reinterpret_cast<uint8_t const *>(dataBegin()) + fragmentIndex(index));
+	}
+
+	size_t fragSize(size_t index) const {
+		if(index >= block_count()) throw cet::exception("Buffer overrun detected! ContainerFragment::at was asked for a non-existant Fragment!");
+		size_t end = metadata()->index[index];
+		if (index == 0) return end;
+		return end - metadata()->index[index - 1];
+	}
+
+	Fragment const * operator[](size_t index) const {
+		return this->at(index);
 	}
 
 	size_t fragmentIndex(size_t index) const {
