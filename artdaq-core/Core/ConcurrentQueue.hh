@@ -285,10 +285,10 @@ namespace daqrate {
        ConcurrentQueue is always bounded. By default, the bound is
        absurdly large.
     */
-    explicit ConcurrentQueue
-    (
-      SizeType maxSize = std::numeric_limits<SizeType>::max(),
-      detail::MemoryType maxMemory = std::numeric_limits<detail::MemoryType>::max()
+	explicit ConcurrentQueue
+	(
+		SizeType maxSize = std::numeric_limits<SizeType>::max(),
+		detail::MemoryType maxMemory = std::numeric_limits<detail::MemoryType>::max()
     );
 
     /**
@@ -416,6 +416,23 @@ namespace daqrate {
     */
     void addExternallyDroppedEvents(SizeType);
 
+	/**
+		Indicate that the receiver is connected
+	*/
+	bool queueReaderIsReady() { return readerReady_; }
+
+	/**
+		Set Reader Ready
+	*/
+	void setReaderIsReady(bool rdy = true) { 
+		readyTime_ = std::chrono::steady_clock::now();
+		readerReady_ = rdy; 
+	}
+
+	/**
+		Gets the time at which the ready became ready
+	*/
+	std::chrono::steady_clock::time_point getReadyTime() { return readyTime_; }
 
   private:
     typedef std::lock_guard<std::mutex>  LockType;
@@ -425,6 +442,8 @@ namespace daqrate {
     mutable std::condition_variable queueNotEmpty_;
     mutable std::condition_variable queueNotFull_;
 
+	std::chrono::steady_clock::time_point readyTime_;
+	bool readerReady_;
     SequenceType elements_;
     SizeType capacity_;
     SizeType size_;
@@ -497,6 +516,8 @@ namespace daqrate {
     detail::MemoryType maxMemory
   ) :
     protectElements_(),
+	  readyTime_(std::chrono::steady_clock::now()),
+	  readerReady_(false),
     elements_(),
     capacity_(maxSize),
     size_(0),

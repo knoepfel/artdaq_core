@@ -34,7 +34,9 @@ namespace artdaq {
   SimpleQueueReader(std::size_t eec) :
     queue_(getGlobalQueue()),
     expectedEventCount_(eec)
-  {  }
+  { 
+	  queue_.setReaderIsReady();
+  }
 
   void SimpleQueueReader::run()
   {
