@@ -11,6 +11,7 @@ art_make(
   LIB_LIBRARIES
   artdaq-core_Data
   fhiclcpp
+  pthread
   ${Boost_THREAD_LIBRARY}
   ${Boost_SYSTEM_LIBRARY} 
   )
