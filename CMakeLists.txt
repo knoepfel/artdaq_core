@@ -42,7 +42,7 @@ cet_set_compiler_flags(DIAGS VIGILANT
 find_ups_boost(v1_53_0)
 find_ups_product (cetbuildtools v4_09_02)
 find_ups_product( art v2_01_00 )
-  find_ups_product( canvas v1_00_00 )
+find_ups_product( canvas v1_00_00 )
 find_ups_product( cetlib v1_08_00 )
 find_ups_product( cetpkgsupport v1_08_03 )
 find_ups_product( clhep v2_2_0_3 )
@@ -60,6 +60,12 @@ if(BTYPE_UC STREQUAL DEBUG)
 endif()
 
 cet_report_compiler_flags()
+
+if(DEFINED ENV{CETLIB_EXCEPT_DIR})
+set(CETLIB_LIBS cetlib cetlib_except)
+else()
+set(CETLIB_LIBS cetlib)
+endif()
 
 # macros for art_dictionary and simple_plugin
 include(ArtDictionary)
