@@ -51,6 +51,7 @@ find_ups_product( messagefacility v1_14_01 )
 find_ups_product( sqlite v3_08_05_00 )
 find_ups_product( tbb v4_1 )
 find_ups_root( v5_34_20 )
+find_ups_product( TRACE v3_03_00 )
 
 # Debug streamer.
 string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)

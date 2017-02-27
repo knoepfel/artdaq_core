@@ -9,6 +9,7 @@
 #include <list>
 
 #include <iostream> // debugging
+#include "trace.h"  // TRACE
 
 #include <chrono>
 #include <condition_variable>
@@ -116,7 +117,7 @@ namespace daqrate {
 
   template <class T>
   struct FailIfFull {
-    typedef void ReturnType;
+    typedef bool ReturnType;
 
     typedef T ValueType;
     typedef std::list<T> SequenceType;
@@ -162,6 +163,7 @@ namespace daqrate {
       else {
         doInsert(item, elements, size, itemSize, used, nonempty);
       }
+      return true;
     }
   };
 
@@ -536,72 +538,83 @@ namespace daqrate {
     elementsDropped_ = 0;
   }
 
+
+  // enqueue methods - 3 - enqNowait, enqWait, enqTimedWait
+
   template <class T, class EnqPolicy>
-  typename EnqPolicy::ReturnType
-  ConcurrentQueue<T, EnqPolicy>::enqNowait(T const & item)
+  typename EnqPolicy::ReturnType ConcurrentQueue<T, EnqPolicy>::enqNowait(T const & item)
   {
+    TRACE( 12, "ConcurrentQueue<T,EnqPolicy>::enqNowait enter size=%zu capacity=%zu used=%zu memory=%zu", size_, capacity_, used_, memory_  );
     LockType lock(protectElements_);
-    return EnqPolicy::doEnq
-           (item, elements_, size_, capacity_, used_, memory_,
+    auto retval = EnqPolicy::doEnq(item, elements_, size_, capacity_, used_, memory_,
             elementsDropped_, queueNotEmpty_);
+    TRACE( 12, "ConcurrentQueue<T,EnqPolicy>::enqNowait returning %zu", (SizeType)retval );
+    return retval;
   }
 
   template <class T, class EnqPolicy>
-  void
-  ConcurrentQueue<T, EnqPolicy>::enqWait(T const & item)
+  void ConcurrentQueue<T, EnqPolicy>::enqWait(T const & item)
   {
+    TRACE( 12, "ConcurrentQueue<T,EnqPolicy>::enqWait enter" );
     WaitLockType lock(protectElements_);
     while (isFull()) { queueNotFull_.wait(lock); }
     EnqPolicy::doInsert(item, elements_, size_,
                         detail::memoryUsage(item), used_, queueNotEmpty_);
+    TRACE( 12, "ConcurrentQueue<T,EnqPolicy>::enqWait returning" );
   }
 
   template <class T, class EnqPolicy>
-  bool
-  ConcurrentQueue<T, EnqPolicy>::enqTimedWait
-  (
-    T const & item,
-    seconds const & waitTime
-  )
+  bool ConcurrentQueue<T,EnqPolicy>::enqTimedWait( T const & item, seconds const & waitTime )
   {
+    TRACE( 12, "ConcurrentQueue<T,EnqPolicy>::enqTimedWait enter with waitTime=%ld ms size=%zu capacity=%zu used=%zu memory=%zu"
+	      , std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count(), size_, capacity_, used_, memory_ );
     WaitLockType lock(protectElements_);
     if (isFull()) {
       queueNotFull_.wait_for(lock, waitTime);
     }
-    return insertIfPossible(item);
+    bool retval=insertIfPossible(item);
+    TRACE( 12, "ConcurrentQueue<T,EnqPolicy>::enqTimedWait returning %d", retval );
+    return retval;
   }
 
+
+  // dequeue methods - 3 - deqNowait, deqWait, deqTimedWait
+
   template <class T, class EnqPolicy>
-  bool
-  ConcurrentQueue<T, EnqPolicy>::deqNowait(ValueType & item)
+  bool ConcurrentQueue<T, EnqPolicy>::deqNowait(ValueType & item)
   {
+    TRACE( 12, "ConcurrentQueue<T, EnqPolicy>::deqNowait enter" );
     LockType lock(protectElements_);
-    return removeHeadIfPossible(item);
+    bool retval = removeHeadIfPossible(item);
+    TRACE( 12, "ConcurrentQueue<T, EnqPolicy>::deqNowait returning %d", retval );
+    return retval;
   }
 
   template <class T, class EnqPolicy>
-  void
-  ConcurrentQueue<T, EnqPolicy>::deqWait(ValueType & item)
+  void ConcurrentQueue<T, EnqPolicy>::deqWait( ValueType & item )
   {
+    TRACE( 12, "ConcurrentQueue<T, EnqPolicy>::deqWait enter" );
     WaitLockType lock(protectElements_);
     while (size_ == 0) { queueNotEmpty_.wait(lock); }
     removeHead(item);
+    TRACE( 12, "ConcurrentQueue<T, EnqPolicy>::deqWait returning" );
   }
 
   template <class T, class EnqPolicy>
-  bool
-  ConcurrentQueue<T, EnqPolicy>::deqTimedWait
-  (
-    ValueType & item,
-    seconds const & waitTime
-  )
+  bool ConcurrentQueue<T, EnqPolicy>::deqTimedWait( ValueType & item, seconds const & waitTime )
   {
+    TRACE( 12, "ConcurrentQueue<T, EnqPolicy>::deqTimedWait enter with waitTime=%ld ms size=%zu"
+	      , std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count(), size_ );
     WaitLockType lock(protectElements_);
     if (size_ == 0) {
       queueNotEmpty_.wait_for(lock, waitTime);
     }
-    return removeHeadIfPossible(item);
+    bool retval=removeHeadIfPossible(item);
+    TRACE( 12, "ConcurrentQueue<T, EnqPolicy>::deqTimedWait returning %d size=%zu", retval, size_ );
+    return retval;
   }
+
+
 
   template <class T, class EnqPolicy>
   bool
