@@ -7,8 +7,8 @@
 # ----------------------------------------------------------------------
 # Build this project's library:
 
-art_make(
-  LIB_LIBRARIES
+cet_make(
+  LIBRARIES
   artdaq-core_Data
   fhiclcpp
   pthread

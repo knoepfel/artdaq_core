@@ -1,6 +1,5 @@
-art_make(
-  LIB_LIBRARIES 
-  art_Utilities 
+cet_make(
+  LIBRARIES 
   MF_MessageLogger
   MF_Utilities
   fhiclcpp

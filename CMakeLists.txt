@@ -24,7 +24,6 @@ IF (NOT CETBUILDTOOLS_VERSION)
 ENDIF()
 
 set(CMAKE_MODULE_PATH
-  $ENV{ART_DIR}/Modules
   $ENV{CANVAS_DIR}/Modules
 	$ENV{CETBUILDTOOLS_DIR}/Modules
 	${CMAKE_MODULE_PATH})
@@ -41,7 +40,6 @@ cet_set_compiler_flags(DIAGS VIGILANT
 # these are minimum required versions, not the actual product versions
 find_ups_boost(v1_53_0)
 find_ups_product (cetbuildtools v4_09_02)
-find_ups_product( art v2_01_00 )
 find_ups_product( canvas v1_00_00 )
 find_ups_product( cetlib v1_08_00 )
 find_ups_product( cetpkgsupport v1_08_03 )
@@ -62,6 +60,13 @@ endif()
 
 cet_report_compiler_flags()
 
+check_ups_version(canvas "$ENV{CANVAS_VERSION}" v1_06_00 PRODUCT_OLDER_VAR CANVAS_MULTILIB)
+if(CANVAS_MULTILIB)
+  set(CANVAS_LIB_LIST canvas_Utilities canvas_Persistency_Provenance)
+else()
+ set(CANVAS_LIB_LIST canvas)
+endif(CANVAS_MULTILIB)
+
 if(DEFINED ENV{CETLIB_EXCEPT_DIR})
 set(CETLIB_LIBS cetlib cetlib_except)
 else()
@@ -70,8 +75,7 @@ endif()
 
 # macros for art_dictionary and simple_plugin
 include(ArtDictionary)
-include(ArtMake)
-include(BuildPlugins)
+include(CetMake)
 
 # testing
 add_subdirectory(test)
