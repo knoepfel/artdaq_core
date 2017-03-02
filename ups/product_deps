@@ -19,7 +19,7 @@ perllib  product_dir
 
 #
 product		version		optional
-TRACE           v3_07_00	
+TRACE           v3_07_01
 canvas          v1_06_02        s46
 canvas          v1_05_01        s43
 canvas          v1_05_00        s44
