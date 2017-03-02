@@ -13,9 +13,6 @@ extern "C" {
 
 #include <string.h>		// memcpy
 #include <strings.h>		// bzero
-#if !defined(__APPLE__)
-#include <malloc.h>		// memalign
-#endif
 #include <stdlib.h>		// posix_memalign
 #include <cassert>
 #include <cstddef>		// ptrdiff_t

@@ -1,9 +1,7 @@
 
-art_make(
-  LIB_LIBRARIES
+cet_make(
+  LIBRARIES
   artdaq-core_Data
-  art_Persistency_Common 
-  art_Utilities 
   fhiclcpp
   cetlib
   MF_MessageLogger
