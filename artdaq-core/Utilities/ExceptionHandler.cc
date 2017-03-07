@@ -39,55 +39,58 @@
 
 #include <boost/exception/all.hpp>
 
-#include <stdexcept>
-
 namespace artdaq {
 
-  void ExceptionHandler(ExceptionHandlerRethrow decision, std::string optional_message) {
+	void ExceptionHandler(ExceptionHandlerRethrow decision, std::string optional_message) {
 
-    if (optional_message != "") {
-      mf::LogError("ExceptionHandler") << optional_message;
-    }
+		if (optional_message != "") {
+			mf::LogError("ExceptionHandler") << optional_message;
+		}
 
-    try {
-      throw;
-    } catch (const art::Exception& e) {
+		try {
+			throw;
+		}
+		catch (const art::Exception& e) {
 
-      mf::LogError("ExceptionHandler") << "art::Exception object caught:" <<
-	" returnCode = " << e.returnCode() <<
-	", categoryCode = " << e.categoryCode() << 
-	", category = " << e.category();
-      mf::LogError("ExceptionHandler") << "art::Exception object stream:" << e;
+			mf::LogError("ExceptionHandler") << "art::Exception object caught:" <<
+				" returnCode = " << std::to_string(e.returnCode()) <<
+				", categoryCode = " << e.categoryCode() <<
+				", category = " << e.category();
+			mf::LogError("ExceptionHandler") << "art::Exception object stream:" << e;
 
-      if (decision == ExceptionHandlerRethrow::yes) { throw; }
+			if (decision == ExceptionHandlerRethrow::yes) { throw; }
 
-    } catch (const cet::exception &e) {
+		}
+		catch (const cet::exception &e) {
 
-      mf::LogError("ExceptionHandler") << "cet::exception object caught:" <<
-	e.explain_self();
+			mf::LogError("ExceptionHandler") << "cet::exception object caught:" <<
+				e.explain_self();
 
-      if (decision == ExceptionHandlerRethrow::yes) { throw; }
+			if (decision == ExceptionHandlerRethrow::yes) { throw; }
 
-    } catch (const boost::exception& e) {
-      
-      mf::LogError("ExceptionHandler") << "boost::exception object caught: " <<
-	boost::diagnostic_information(e);
+		}
+		catch (const boost::exception& e) {
 
-      if (decision == ExceptionHandlerRethrow::yes) { throw; }
+			mf::LogError("ExceptionHandler") << "boost::exception object caught: " <<
+				boost::diagnostic_information(e);
 
-    } catch (const std::exception& e  ) {
+			if (decision == ExceptionHandlerRethrow::yes) { throw; }
 
-      mf::LogError ("ExceptionHandler") << "std::exception caught: " << e.what();
+		}
+		catch (const std::exception& e) {
 
-      if (decision == ExceptionHandlerRethrow::yes) { throw; }
+			mf::LogError("ExceptionHandler") << "std::exception caught: " << e.what();
 
-    } catch (...) {
+			if (decision == ExceptionHandlerRethrow::yes) { throw; }
 
-      mf::LogError ("ExceptionHandler") << "Exception of type unknown to artdaq::ExceptionHandler caught";
+		}
+		catch (...) {
 
-      if (decision == ExceptionHandlerRethrow::yes) { throw; }
+			mf::LogError("ExceptionHandler") << "Exception of type unknown to artdaq::ExceptionHandler caught";
 
-    }
-  }
+			if (decision == ExceptionHandlerRethrow::yes) { throw; }
+
+		}
+	}
 
 }

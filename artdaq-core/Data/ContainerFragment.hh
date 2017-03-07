@@ -4,8 +4,8 @@
 #include "artdaq-core/Data/Fragment.hh"
 #include "cetlib/exception.h"
 
-#include <ostream>
-#include <vector>
+//#include <ostream>
+//#include <vector>
 
 // Implementation of "ContainerFragment", an artdaq::Fragment overlay class
 
@@ -29,7 +29,7 @@ public:
 
 		count_t     block_count : 55;
 		count_t     fragment_type : 8;
-	    count_t     missing_data : 1;
+		count_t     missing_data : 1;
 
 		size_t index[FRAGMENT_COUNT_MAX];
 
@@ -47,7 +47,7 @@ public:
 	Metadata const * metadata() const { return artdaq_Fragment_.metadata<Metadata>(); }
 	Metadata::count_t block_count()   const { return metadata()->block_count; }
 	Fragment::type_t  fragment_type() const { return static_cast<Fragment::type_t>(metadata()->fragment_type); }
-    bool              missing_data()  const { return static_cast<bool>(metadata()->missing_data); }
+	bool              missing_data()  const { return static_cast<bool>(metadata()->missing_data); }
 
 	// Start of the Fragments
 	Fragment const * dataBegin() const {
@@ -64,7 +64,7 @@ public:
 	}
 
 	size_t fragSize(size_t index) const {
-		if(index >= block_count()) throw cet::exception("Buffer overrun detected! ContainerFragment::at was asked for a non-existant Fragment!");
+		if (index >= block_count()) throw cet::exception("Buffer overrun detected! ContainerFragment::at was asked for a non-existant Fragment!");
 		size_t end = metadata()->index[index];
 		if (index == 0) return end;
 		return end - metadata()->index[index - 1];
