@@ -19,12 +19,12 @@ perllib  product_dir
 
 #
 product		version		optional
-TRACE           v3_07_01
 canvas          v1_06_02        s46
 canvas          v1_05_01        s43
 canvas          v1_05_00        s44
 canvas          v1_05_00        s42
 canvas          v1_04_06        s41
+TRACE           v3_07_01        -       only_for_build
 cetbuildtools	v5_06_06	-	only_for_build
 end_product_list
 
@@ -33,47 +33,47 @@ end_product_list
 # e10 - with gcc 4.9.3a and -std=c++14
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
-qualifier		TRACE	    canvas		notes
-e14:s46:debug           -nq-	    e14:debug       -std=c++14
-e14:s46:prof            -nq-	     e14:prof        -std=c++14
-nu:e14:s46:debug        -nq-	     nu:e14:debug    -std=c++14
-nu:e14:s46:prof         -nq-	     nu:e14:prof     -std=c++14
-e10:s46:debug           -nq-	     e10:debug       -std=c++14
-e10:s46:prof            -nq-	     e10:prof        -std=c++14
-nu:e10:s46:debug        -nq-	     nu:e10:debug    -std=c++14
-nu:e10:s46:prof         -nq-	     nu:e10:prof     -std=c++14
-e9:s43:debug            -nq-	     e9:debug        -std=c++14
-e9:s43:prof             -nq-	     e9:prof         -std=c++14
-nu:e9:s43:debug         -nq-	     nu:e9:debug     -std=c++14
-nu:e9:s43:prof          -nq-	     nu:e9:prof      -std=c++14
-e10:s43:debug           -nq-	     e10:debug       -std=c++14
-e10:s43:prof            -nq-	     e10:prof        -std=c++14
-nu:e10:s43:debug        -nq-	     nu:e10:debug    -std=c++14
-nu:e10:s43:prof         -nq-	     nu:e10:prof     -std=c++14
-e9:s44:debug            -nq-	     e9:debug        -std=c++14
-e9:s44:prof             -nq-	     e9:prof         -std=c++14
-nu:e9:s44:debug         -nq-	     nu:e9:debug     -std=c++14
-nu:e9:s44:prof          -nq-	     nu:e9:prof      -std=c++14
-e10:s44:debug           -nq-	     e10:debug       -std=c++14
-e10:s44:prof           -nq-	      e10:prof        -std=c++14
-nu:e10:s44:debug        -nq-	     nu:e10:debug    -std=c++14
-nu:e10:s44:prof         -nq-	     nu:e10:prof     -std=c++14
-e9:s42:debug           -nq-	      e9:debug        -std=c++14
-e9:s42:prof             -nq-	     e9:prof         -std=c++14
-nu:e9:s42:debug         -nq-	     nu:e9:debug     -std=c++14
-nu:e9:s42:prof          -nq-	     nu:e9:prof      -std=c++14
-e10:s42:debug           -nq-	     e10:debug       -std=c++14
-e10:s42:prof            -nq-	     e10:prof        -std=c++14
-nu:e10:s42:debug       -nq-	      nu:e10:debug    -std=c++14
-nu:e10:s42:prof         -nq-	     nu:e10:prof     -std=c++14
-e9:s41:debug            -nq-	     e9:debug        -std=c++14
-e9:s41:prof             -nq-	     e9:prof         -std=c++14
-nu:e9:s41:debug         -nq-	     nu:e9:debug     -std=c++14
-nu:e9:s41:prof          -nq-	     nu:e9:prof      -std=c++14
-e10:s41:debug           -nq-	     e10:debug       -std=c++14
-e10:s41:prof            -nq-	     e10:prof        -std=c++14
-nu:e10:s41:debug        -nq-	     nu:e10:debug    -std=c++14
-nu:e10:s41:prof         -nq-	     nu:e10:prof     -std=c++14
+qualifier			canvas			TRACE		notes
+e14:s46:debug		e14:debug		-nq-		-std=c++14
+e14:s46:prof		e14:prof		-nq-		-std=c++14
+nu:e14:s46:debug	nu:e14:debug	-nq-		-std=c++14
+nu:e14:s46:prof		nu:e14:prof		-nq-		-std=c++14
+e10:s46:debug		e10:debug		-nq-		-std=c++14
+e10:s46:prof		e10:prof		-nq-		-std=c++14
+nu:e10:s46:debug	nu:e10:debug	-nq-		-std=c++14
+nu:e10:s46:prof		nu:e10:prof	 	-nq-		-std=c++14
+e9:s43:debug		e9:debug		-nq-		-std=c++14
+e9:s43:prof			e9:prof		 	-nq-		-std=c++14
+nu:e9:s43:debug		nu:e9:debug	 	-nq-		-std=c++14
+nu:e9:s43:prof		nu:e9:prof		-nq-		-std=c++14
+e10:s43:debug		e10:debug		-nq-		-std=c++14
+e10:s43:prof		e10:prof		-nq-		-std=c++14
+nu:e10:s43:debug	nu:e10:debug	-nq-		-std=c++14
+nu:e10:s43:prof		nu:e10:prof	 	-nq-		-std=c++14
+e9:s44:debug		e9:debug		-nq-		-std=c++14
+e9:s44:prof			e9:prof		 	-nq-		-std=c++14
+nu:e9:s44:debug		nu:e9:debug	 	-nq-		-std=c++14
+nu:e9:s44:prof		nu:e9:prof		-nq-		-std=c++14
+e10:s44:debug		e10:debug		-nq-		-std=c++14
+e10:s44:prof		e10:prof		-nq-		-std=c++14
+nu:e10:s44:debug	nu:e10:debug	-nq-		-std=c++14
+nu:e10:s44:prof		nu:e10:prof	 	-nq-		-std=c++14
+e9:s42:debug		e9:debug		-nq-		-std=c++14
+e9:s42:prof			e9:prof		 	-nq-		-std=c++14
+nu:e9:s42:debug		nu:e9:debug	 	-nq-		-std=c++14
+nu:e9:s42:prof		nu:e9:prof		-nq-		-std=c++14
+e10:s42:debug		e10:debug		-nq-		-std=c++14
+e10:s42:prof		e10:prof		-nq-		-std=c++14
+nu:e10:s42:debug	nu:e10:debug	-nq-		-std=c++14
+nu:e10:s42:prof		nu:e10:prof	 	-nq-		-std=c++14
+e9:s41:debug		e9:debug		-nq-		-std=c++14
+e9:s41:prof			e9:prof		 	-nq-		-std=c++14
+nu:e9:s41:debug		nu:e9:debug	 	-nq-		-std=c++14
+nu:e9:s41:prof		nu:e9:prof		-nq-		-std=c++14
+e10:s41:debug		e10:debug		-nq-		-std=c++14
+e10:s41:prof		e10:prof		-nq-		-std=c++14
+nu:e10:s41:debug	nu:e10:debug	-nq-		-std=c++14
+nu:e10:s41:prof		nu:e10:prof	 	-nq-		-std=c++14
 end_qualifier_list
 
 
