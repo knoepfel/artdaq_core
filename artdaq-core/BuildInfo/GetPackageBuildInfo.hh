@@ -3,8 +3,6 @@
 
 #include "artdaq-core/Data/PackageBuildInfo.hh"
 
-#include <string>
-
 namespace artdaqcore {
 
   struct GetPackageBuildInfo {

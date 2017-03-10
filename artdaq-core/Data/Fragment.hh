@@ -2,7 +2,7 @@
 #define artdaq_core_Data_Fragment_hh
 
 #include <algorithm>
-#include <cassert>
+//#include <cassert>
 #include <cstddef>
 #include <iosfwd>
 #include <iterator>
@@ -41,6 +41,14 @@ public:
 
 	// Hide most things from ROOT.
 #if HIDE_FROM_ROOT
+
+	// http://stackoverflow.com/questions/33939687
+	// This should generate an exception if artdaq::Fragment is not move-constructible
+	Fragment(const Fragment&) = default;
+	Fragment(Fragment&&) noexcept;
+	Fragment& operator=(const Fragment&) = default;
+	Fragment& operator=(Fragment&&) noexcept;
+
 	typedef detail::RawFragmentHeader::version_t     version_t;
 	typedef detail::RawFragmentHeader::type_t        type_t;
 	typedef detail::RawFragmentHeader::sequence_id_t sequence_id_t;
@@ -319,6 +327,13 @@ private:
 };
 
 #if HIDE_FROM_ROOT
+
+
+// http://stackoverflow.com/questions/33939687
+// This should generate an exception if artdaq::Fragment is not move-constructible
+inline artdaq::Fragment::Fragment(artdaq::Fragment&&) noexcept = default;
+inline artdaq::Fragment& artdaq::Fragment::operator=(artdaq::Fragment&&) noexcept = default;
+
 inline
 bool
 constexpr
