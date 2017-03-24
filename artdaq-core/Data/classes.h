@@ -6,6 +6,6 @@
 
 template class std::vector<artdaq::Fragment>;
 template class artdaq::QuickVec<artdaq::RawDataType>;
-template class art::Wrapper<std::vector<artdaq::Fragment> >;
-template class art::Wrapper<std::vector<artdaq::PackageBuildInfo> >;
+template class art::Wrapper<std::vector<artdaq::Fragment>>;
+template class art::Wrapper<std::vector<artdaq::PackageBuildInfo>>;
 template class art::Wrapper<artdaq::PackageBuildInfo>;

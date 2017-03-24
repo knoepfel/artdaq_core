@@ -1,14 +1,10 @@
 #ifndef artdaq_core_Data_Fragments_hh
 #define artdaq_core_Data_Fragments_hh
 
-#include <memory>
-#include <vector>
 #include "artdaq-core/Data/Fragment.hh"
-
-namespace artdaq {
-  typedef std::vector<Fragment>     Fragments;
-  typedef std::unique_ptr<Fragment> FragmentPtr;
-  typedef std::list<FragmentPtr>  FragmentPtrs;
-}
+/**
+ * \todo Increase header depreciation message severity in future version of artdaq_core
+ */
+#pragma message "The Fragments.hh header is deprecated, please change your #include to <artdaq-core/Data/Fragment.hh>"
 
 #endif /* artdaq_core_Data_Fragments_hh */

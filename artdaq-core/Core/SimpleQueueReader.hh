@@ -5,23 +5,50 @@
 #include <thread>
 #include <memory>
 
-namespace artdaq {
-  // simpleQueueReaderApp is a function that can be used in place of
-  // artapp(), to read RawEvents from the shared RawEvent queue.
-  // Note that it ignores both of its arguments.
-  int simpleQueueReaderApp(int, char **);
+namespace artdaq
+{
+	/**
+	* \brief An application which pops items off a RawEventQueue using the SimpleQueueReader
+	* \param argc Number of arguments (OS-provided)
+	* \param argv Array of argument strings (OS-provided)
+	* \return Status code: 0 success, 1 for any error
+	*
+	* simpleQueueReaderApp is a function that can be used in place of
+	* artapp(), to read RawEvent objects from the shared RawEvent queue.
+	* Note that it ignores both of its arguments.
+	*/
+	int simpleQueueReaderApp(int argc, char** argv);
 
-  // SimpleQueueReader will continue to read RawEvents off the queue
-  // until it encounters a null pointer, at which point it stops.
-  class SimpleQueueReader {
-  public:
-    explicit SimpleQueueReader(std::size_t eec = 0);
-    void run();
+	/**
+   * \brief SimpleQueueReader will continue to read RawEvent objects off the queue
+   * until it encounters a null pointer, at which point it stops.
+   */
+	class SimpleQueueReader
+	{
+	public:
+		/**
+		 * \brief Constructs a SimpleQueueReader
+		 * \param expectedEventCount The number of events the SimpleQueueReader should expect
+		 */
+		explicit SimpleQueueReader(std::size_t expectedEventCount = 0);
 
-  private:
-    RawEventQueue & queue_;
-    std::size_t     expectedEventCount_;
-  };
+		/**
+		 * \brief Run until a null pointer is popped off of the RawEventQueue. Throws an excpetion
+		 * if expectedEventCount is set and a different number of events come off the queue.
+		 * \exception std::string When the expectedEventCount is set and a different number of events come off the queue.
+		 */
+		void run();
+
+	private:
+		/**
+		 * \brief Reference to the queue of RawEvent_ptr objects
+		 */
+		RawEventQueue& queue_;
+		/**
+		 * \brief For testing purposes, the expected number of events
+		 */
+		std::size_t expectedEventCount_;
+	};
 }
 
 #endif /* artdaq_core_Core_SimpleQueueReader_hh */
