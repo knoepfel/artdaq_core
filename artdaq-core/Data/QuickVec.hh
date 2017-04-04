@@ -56,6 +56,8 @@ static inline void *QV_MEMALIGN(size_t boundary, size_t size) { void *retadr; po
 # define QUICKVEC_VERSION  static short Class_Version() { return 5; } // proper version for templates
 #endif
 
+namespace artdaq {
+ 
 QUICKVEC_TEMPLATE
 struct QuickVec
 {
@@ -353,6 +355,8 @@ inline void QUICKVEC::push_back(const value_type& val)
 	*end() = val;
 	++size_;
 }
+
+} // namespace
 
 #ifdef UNDEF_TRACE_AT_END
 # undef TRACE

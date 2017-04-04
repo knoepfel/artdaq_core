@@ -15,9 +15,9 @@
 
 #include "artdaq-core/Data/detail/RawFragmentHeader.hh"
 #include "artdaq-core/Data/dictionarycontrol.hh"
+# include "QuickVec.hh"
 
 namespace artdaq {
-# include "QuickVec.hh"
 # define DATAVEC_T QuickVec<RawDataType>
 //#define DATAVEC_T std::vector<RawDataType>
 	typedef detail::RawFragmentHeader::RawDataType RawDataType;
