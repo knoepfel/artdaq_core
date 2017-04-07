@@ -15,7 +15,7 @@
 
 #include "artdaq-core/Data/detail/RawFragmentHeader.hh"
 #include "artdaq-core/Data/dictionarycontrol.hh"
-# include "QuickVec.hh"
+#include "artdaq-core/Core/QuickVec.hh"
 
 /**
  * \brief The artdaq namespace.
