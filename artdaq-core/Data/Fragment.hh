@@ -15,13 +15,12 @@
 
 #include "artdaq-core/Data/detail/RawFragmentHeader.hh"
 #include "artdaq-core/Data/dictionarycontrol.hh"
+# include "QuickVec.hh"
 
 /**
  * \brief The artdaq namespace.
  */
-namespace artdaq
-{
-# include "QuickVec.hh"
+namespace artdaq {
 # define DATAVEC_T QuickVec<RawDataType>
 	//#define DATAVEC_T std::vector<RawDataType>
 

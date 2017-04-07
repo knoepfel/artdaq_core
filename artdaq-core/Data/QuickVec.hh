@@ -76,6 +76,8 @@ static inline void* QV_MEMALIGN(size_t boundary, size_t size)
 static short Class_Version() { return 5; } // proper version for templates
 #endif
 
+namespace artdaq {
+
 /**
  * \brief A QuickVec behaves like a std::vector, but does no initialization of its data, making it faster at
  * the cost of having to ensure that uninitialized data is not read.
@@ -551,6 +553,8 @@ inline void QUICKVEC::push_back(const value_type& val)
 	*end() = val;
 	++size_;
 }
+
+} // namespace
 
 #ifdef UNDEF_TRACE_AT_END
 # undef TRACE
