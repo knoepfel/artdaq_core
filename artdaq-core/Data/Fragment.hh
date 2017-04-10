@@ -99,7 +99,7 @@ public:
 	// This should generate an exception if artdaq::Fragment is not move-constructible
 	/**
 	 * \brief Default copy constructor
-	 * \toto Decide if Copy constructor should be declared =delete
+	 * \todo Decide if Copy constructor should be declared =delete
 	 */
 	Fragment(const Fragment&) = default;
 	/**
