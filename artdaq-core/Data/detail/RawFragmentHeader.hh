@@ -43,7 +43,7 @@ struct artdaq::detail::RawFragmentHeader
 	typedef uint8_t type_t; ///< type field is 8 bits
 	typedef uint16_t fragment_id_t; ///< fragment_id field is 16 bits
 	typedef uint8_t metadata_word_count_t; ///< metadata_word_count field is 8 bits
-	typedef uint32_t timestamp_t; ///< timestamp field is 32 bits
+	typedef uint64_t timestamp_t; ///< timestamp field is 32 bits
 
 	// define special values for type_t
 	static constexpr type_t INVALID_TYPE = 0; ///< Marks a Fragment as Invalid
@@ -100,7 +100,7 @@ struct artdaq::detail::RawFragmentHeader
 	static const version_t CurrentVersion = 0x1; ///< The CurrentVersion field should be incremented whenever the RawFragmentHeader changes
 	static const sequence_id_t InvalidSequenceID = 0xFFFFFFFFFFFF; ///< The sequence_id field is currently 48-bits
 	static const fragment_id_t InvalidFragmentID = 0xFFFF; ///< The fragment_id field is currently 16-bits
-	static const timestamp_t InvalidTimestamp = 0xFFFFFFFF; ///< The timestamp field is currently 32-bits
+	static const timestamp_t InvalidTimestamp = 0xFFFFFFFFFFFFFFFF; ///< The timestamp field is currently 32-bits
 
 	RawDataType word_count : 32; ///< number of RawDataType words in this Fragment
 	RawDataType version : 16; ///< The version of the fragment. Currently always InvalidVersion
@@ -109,10 +109,7 @@ struct artdaq::detail::RawFragmentHeader
 
 	RawDataType sequence_id : 48; ///< The 48-bit sequence_id uniquely identifies events within the _artdaq_ system
 	RawDataType fragment_id : 16; ///< The fragment_id uniquely identifies a particular piece of hardware within the _artdaq_ system
-	RawDataType timestamp : 32; ///< The 32-bit timestamp field is the output of a user-defined clock used for building time-correlated events
-
-	RawDataType unused1 : 16; ///< This field is currently unused
-	RawDataType unused2 : 16; ///< This field is currently unused
+	RawDataType timestamp : 64; ///< The 64-bit timestamp field is the output of a user-defined clock used for building time-correlated events
 
 	/**
 	 * \brief Returns the number of RawDataType words present in the header
