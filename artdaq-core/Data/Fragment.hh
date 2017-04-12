@@ -14,8 +14,10 @@
 #include <string.h>
 
 #include "artdaq-core/Data/detail/RawFragmentHeader.hh"
+#include "artdaq-core/Data/detail/RawFragmentHeaderV0.hh"
 #include "artdaq-core/Data/dictionarycontrol.hh"
 #include "artdaq-core/Core/QuickVec.hh"
+#include <iostream>
 
 /**
  * \brief The artdaq namespace.
@@ -104,8 +106,8 @@ public:
 	Fragment(const Fragment&) = default;
 	/**
 	 * \brief Move Constructor
-	 * 
-	 * Separate declaration and definition of Move Constructor: 
+	 *
+	 * Separate declaration and definition of Move Constructor:
 	 * http://stackoverflow.com/questions/33939687
 	 * This should generate an exception if artdaq::Fragment is not move-constructible
 	 */
@@ -119,8 +121,8 @@ public:
 	/**
 	 * \brief Move-assignment operator
 	 * \return Reference to Fragment
-	 * 
-	 * Separate declaration and definition of Move Constructor: 
+	 *
+	 * Separate declaration and definition of Move Constructor:
 	 * http://stackoverflow.com/questions/33939687
 	 * This should generate an exception if artdaq::Fragment is not move-constructible
 	 */
@@ -227,10 +229,10 @@ public:
 	 */
 	template <class T>
 	static FragmentPtr FragmentBytes(std::size_t payload_size_in_bytes,
-												   sequence_id_t sequence_id,
-												   fragment_id_t fragment_id,
-												   type_t type, const T& metadata,
-												   timestamp_t timestamp = Fragment::InvalidTimestamp)
+									 sequence_id_t sequence_id,
+									 fragment_id_t fragment_id,
+									 type_t type, const T& metadata,
+									 timestamp_t timestamp = Fragment::InvalidTimestamp)
 	{
 		RawDataType nwords = ceil(payload_size_in_bytes /
 								  static_cast<double>(sizeof(RawDataType)));
@@ -612,7 +614,7 @@ public:
 	/**
 	 * \brief Swaps two Fragment data vectors
 	 * \param other The data vector to swap with
-	 * 
+	 *
 	 * Since all Fragment header information is stored in the data vector, this is equivalent to swapping two Fragment objects
 	 */
 	void swap(DATAVEC_T& other) noexcept { vals_.swap(other); };
@@ -655,9 +657,9 @@ public:
 	 * \todo Change function access specifier to restrict access
 	 */
 	template<class InputIterator> static FragmentPtr dataFrag(sequence_id_t sequenceID,
-				 fragment_id_t fragID,
-				 InputIterator i,
-				 InputIterator e)
+															  fragment_id_t fragID,
+															  InputIterator i,
+															  InputIterator e)
 	{
 		FragmentPtr result(new Fragment(sequenceID, fragID));
 		result->vals_.reserve(std::distance(i, e) + detail::RawFragmentHeader::num_words());
@@ -675,10 +677,10 @@ public:
 	 * \return FragmentPtr to created Fragment
 	 */
 	static FragmentPtr dataFrag(sequence_id_t sequenceID,
-				 fragment_id_t fragID,
-				 RawDataType const* dataPtr,
-				 size_t dataSize,
-				 timestamp_t timestamp = Fragment::InvalidTimestamp);
+								fragment_id_t fragID,
+								RawDataType const* dataPtr,
+								size_t dataSize,
+								timestamp_t timestamp = Fragment::InvalidTimestamp);
 #endif
 
 private:
@@ -768,7 +770,7 @@ Fragment(std::size_t payload_size, sequence_id_t sequence_id,
 
 	fragmentHeader()->metadata_word_count =
 		vals_.size() -
-		(artdaq::detail::RawFragmentHeader::num_words() + payload_size);
+		(fragmentHeader()->num_words() + payload_size);
 
 	memcpy(metadataAddress(), &metadata, sizeof(T));
 }
@@ -865,7 +867,7 @@ inline
 std::size_t
 artdaq::Fragment::dataSize() const
 {
-	return vals_.size() - detail::RawFragmentHeader::num_words() -
+	return vals_.size() - fragmentHeader()->num_words() -
 		fragmentHeader()->metadata_word_count;
 }
 
@@ -887,7 +889,7 @@ artdaq::Fragment::metadata()
 	}
 
 	return reinterpret_cast_checked<T *>
-		(&vals_[detail::RawFragmentHeader::num_words()]);
+		(&vals_[fragmentHeader()->num_words()]);
 }
 
 template <class T>
@@ -900,7 +902,7 @@ artdaq::Fragment::metadata() const
 			<< "No metadata has been stored in this Fragment.";
 	}
 	return reinterpret_cast_checked<T const *>
-		(&vals_[detail::RawFragmentHeader::num_words()]);
+		(&vals_[fragmentHeader()->num_words()]);
 }
 
 template <class T>
@@ -945,7 +947,7 @@ inline void
 artdaq::Fragment::resize(std::size_t sz)
 {
 	vals_.resize(sz + fragmentHeader()->metadata_word_count +
-				 detail::RawFragmentHeader::num_words());
+				 fragmentHeader()->num_words());
 	updateFragmentHeaderWC_();
 }
 
@@ -954,7 +956,7 @@ void
 artdaq::Fragment::resize(std::size_t sz, RawDataType v)
 {
 	vals_.resize(sz + fragmentHeader()->metadata_word_count +
-				 detail::RawFragmentHeader::num_words(), v);
+				 fragmentHeader()->num_words(), v);
 	updateFragmentHeaderWC_();
 }
 
@@ -996,7 +998,7 @@ inline
 artdaq::Fragment::iterator
 artdaq::Fragment::dataBegin()
 {
-	return vals_.begin() + detail::RawFragmentHeader::num_words() +
+	return vals_.begin() + fragmentHeader()->num_words() +
 		fragmentHeader()->metadata_word_count;
 }
 
@@ -1018,7 +1020,7 @@ inline
 artdaq::Fragment::const_iterator
 artdaq::Fragment::dataBegin() const
 {
-	return vals_.begin() + detail::RawFragmentHeader::num_words() +
+	return vals_.begin() + fragmentHeader()->num_words() +
 		fragmentHeader()->metadata_word_count;
 }
 
@@ -1049,7 +1051,7 @@ inline
 bool
 artdaq::Fragment::empty()
 {
-	return (vals_.size() - detail::RawFragmentHeader::num_words() -
+	return (vals_.size() - fragmentHeader()->num_words() -
 			fragmentHeader()->metadata_word_count) == 0;
 }
 
@@ -1057,7 +1059,7 @@ inline
 void
 artdaq::Fragment::reserve(std::size_t cap)
 {
-	vals_.reserve(cap + detail::RawFragmentHeader::num_words() +
+	vals_.reserve(cap + fragmentHeader()->num_words() +
 				  fragmentHeader()->metadata_word_count);
 }
 
@@ -1072,7 +1074,7 @@ inline
 artdaq::RawDataType*
 artdaq::Fragment::dataAddress()
 {
-	return &vals_[0] + detail::RawFragmentHeader::num_words() +
+	return &vals_[0] + fragmentHeader()->num_words() +
 		fragmentHeader()->metadata_word_count;
 }
 
@@ -1085,7 +1087,7 @@ artdaq::Fragment::metadataAddress()
 		throw cet::exception("InvalidRequest")
 			<< "No metadata has been stored in this Fragment.";
 	}
-	return &vals_[0] + detail::RawFragmentHeader::num_words();
+	return &vals_[0] + fragmentHeader()->num_words();
 }
 
 inline
@@ -1099,14 +1101,63 @@ inline
 artdaq::detail::RawFragmentHeader*
 artdaq::Fragment::fragmentHeader()
 {
-	return reinterpret_cast_checked<detail::RawFragmentHeader *>(&vals_[0]);
+	auto hdr = reinterpret_cast_checked<detail::RawFragmentHeader *>(&vals_[0]);
+	if (hdr->version != detail::RawFragmentHeader::CurrentVersion)
+	{
+		switch (hdr->version)
+		{
+		case 0xFFFF:
+			std::cout << "Not upgrading InvalidVersion Fragment" << std::endl;
+			break;
+		case 0:
+		{
+			std::cout << "Upgrading RawFragmentHeaderV0 (non const)" << std::endl;
+			auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 *>(&vals_[0]);
+			auto new_hdr = old_hdr->upgrade();
+
+			auto szDiff = hdr->num_words() - old_hdr->num_words();
+			if (szDiff > 0) vals_.insert(vals_.begin(), szDiff, 0);
+			memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+		}
+		break;
+		default:
+			throw cet::exception("Fragment") << "A Fragment with an unknown version (" << std::to_string(hdr->version) << ") was received!";
+			break;
+		}
+	}
+	return hdr;
 }
 
 inline
 artdaq::detail::RawFragmentHeader const*
 artdaq::Fragment::fragmentHeader() const
 {
-	return reinterpret_cast_checked<detail::RawFragmentHeader const *>(&vals_[0]);
+	auto hdr = reinterpret_cast_checked<detail::RawFragmentHeader const*>(&vals_[0]);
+	if (hdr->version != detail::RawFragmentHeader::CurrentVersion)
+	{
+		switch (hdr->version)
+		{
+		case 0xFFFF:
+			std::cout << "Not upgrading InvalidVersion Fragment" << std::endl;
+			break;
+		case 0:
+		{
+			std::cout << "Upgrading RawFragmentHeaderV0 (const)" << std::endl;
+			auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 const*>(&vals_[0]);
+			auto new_hdr = old_hdr->upgrade();
+
+			auto szDiff = hdr->num_words() - old_hdr->num_words();
+			auto vals_nc = const_cast<DATAVEC_T*>(&vals_);
+			if (szDiff > 0) vals_nc->insert(vals_nc->begin(), szDiff, 0);
+			memcpy(&(*vals_nc)[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+		}
+		break;
+		default:
+			throw cet::exception("Fragment") << "A Fragment with an unknown version (" << std::to_string(hdr->version) << ") was received!";
+			break;
+		}
+	}
+	return hdr;
 }
 
 inline

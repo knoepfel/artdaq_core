@@ -11,7 +11,7 @@ bool artdaq::fragmentSequenceIDCompare(Fragment i, Fragment j)
 }
 
 artdaq::Fragment::Fragment() :
-	vals_(RawFragmentHeader::num_words(), 0)
+	vals_(RawFragmentHeader::num_words(), -1)
 {
 	updateFragmentHeaderWC_();
 	fragmentHeader()->metadata_word_count = 0;
@@ -24,7 +24,7 @@ artdaq::Fragment::Fragment(std::size_t n) :
 	// vals ctor w/o init val is used; make sure header is ALL initialized.
 	for (iterator ii = vals_.begin();
 		 ii != (vals_.begin() + RawFragmentHeader::num_words()); ++ii)
-		*ii = 0;
+		*ii = -1;
 	updateFragmentHeaderWC_();
 	fragmentHeader()->type = Fragment::InvalidFragmentType;
 	fragmentHeader()->sequence_id = Fragment::InvalidSequenceID;
@@ -38,7 +38,7 @@ artdaq::Fragment::Fragment(sequence_id_t sequenceID,
 						   fragment_id_t fragID,
 						   type_t type,
 						   timestamp_t timestamp) :
-	vals_(RawFragmentHeader::num_words(), 0)
+	vals_(RawFragmentHeader::num_words(), -1)
 {
 	updateFragmentHeaderWC_();
 	if (type == Fragment::DataFragmentType)
