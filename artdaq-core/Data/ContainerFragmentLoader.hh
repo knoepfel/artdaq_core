@@ -11,61 +11,107 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "artdaq-core/Data/Fragment.hh"
-#include "artdaq-core/Data/Fragments.hh"
 #include "artdaq-core/Data/ContainerFragment.hh"
 #include "trace.h"
 
 #include <iostream>
 
-namespace artdaq {
+namespace artdaq
+{
 	class ContainerFragmentLoader;
 }
 
 
-class artdaq::ContainerFragmentLoader : public artdaq::ContainerFragment {
+/**
+ * \brief A Read-Write version of the ContainerFragment, used for filling ContainerFragment objects with other Fragment objects
+ */
+class artdaq::ContainerFragmentLoader : public artdaq::ContainerFragment
+{
 public:
 
 
-	ContainerFragmentLoader(Fragment & f);
+	/**
+	 * \brief Constructs the ContainerFragmentLoader
+	 * \param f A Fragment object containing a Fragment header.
+	 * \exception cet::exception if the Fragment input has inconsistent Header information
+	 */
+	explicit ContainerFragmentLoader(Fragment& f);
 
-	Metadata * metadata() {
+	// ReSharper disable once CppMemberFunctionMayBeConst
+	/**
+	 * \brief Get the ContainerFragment metadata (includes information about the location of Fragment objects within the ContainerFragment)
+	 * \return The ContainerFragment metadata
+	 */
+	Metadata* metadata()
+	{
 		assert(artdaq_Fragment_.hasMetadata());
 		return reinterpret_cast<Metadata *>(&*artdaq_Fragment_.metadataAddress());
 	}
 
-	void set_fragment_type(Fragment::type_t type) {
+	/**
+	 * \brief Sets the type of Fragment which this ContainerFragment should contain
+	 * \param type The Fragment::type_t identifying the type of Fragment objects stored in this ContainerFragment
+	 */
+	void set_fragment_type(Fragment::type_t type)
+	{
 		metadata()->fragment_type = type;
 	}
 
-  void set_missing_data(bool isDataMissing) {
-	metadata()->missing_data = isDataMissing;
-  }
+	/**
+	 * \brief Sets the missing_data flag
+	 * \param isDataMissing The value of the missing_data flag
+	 *
+	 * The ContainerFragment::Metadata::missing_data flag is used for FragmentGenerators to indicate that the fragment is incomplete,
+	 * but the generator does not have the correct data to fill it. This happens for Window-mode FragmentGenerators when the window
+	 * requested is before the start of the FragmentGenerator's buffers, for example.
+	 */
+	void set_missing_data(bool isDataMissing)
+	{
+		metadata()->missing_data = isDataMissing;
+	}
 
-	void addFragment(artdaq::Fragment & frag);
+	/**
+	 * \brief Add a Fragment to the ContainerFragment by reference
+	 * \param frag A Fragment object to be added to the ContainerFragment
+	 * \exception cet::exception If the Fragment to be added has a different type than expected
+	 */
+	void addFragment(artdaq::Fragment& frag);
+
+	/**
+	 * \brief Add a Fragment to the ContainerFragment by smart pointer
+	 * \param frag A FragmentPtr to a Fragment to be added to the ContainerFragment
+	 */
 	void addFragment(artdaq::FragmentPtr& frag);
-	void addFragments(artdaq::FragmentPtrs & frags);
+
+	/**
+	 * \brief Add a collection of Fragment objects to the ContainerFragment
+	 * \param frags An artdaq::FragmentPtrs object containing Fragments to be added to the ContainerFragment
+	 */
+	void addFragments(artdaq::FragmentPtrs& frags);
 
 private:
 	// Note that this non-const reference hides the const reference in the base class
-	artdaq::Fragment & artdaq_Fragment_;
+	artdaq::Fragment& artdaq_Fragment_;
+
 	static size_t words_to_frag_words_(size_t nWords);
+
 	void addSpace_(size_t bytes);
+
 	uint8_t* dataBegin_() { return reinterpret_cast<uint8_t*>(&*artdaq_Fragment_.dataBegin()); }
 	void* dataEnd_() { return reinterpret_cast<void*>(dataBegin_() + lastFragmentIndex()); }
 };
 
-// The constructor will expect the artdaq::Fragment object it's been
-// passed to contain the artdaq::Fragment header + the
-// DTCFragment::Metadata object, otherwise it throws
-
-artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment& f) :
-	ContainerFragment(f), artdaq_Fragment_(f) {
+inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment& f) :
+	ContainerFragment(f)
+	, artdaq_Fragment_(f)
+{
 	artdaq_Fragment_.setSystemType(Fragment::ContainerFragmentType);
 	Metadata m;
 	m.block_count = 0;
 	m.fragment_type = Fragment::EmptyFragmentType;
 	m.missing_data = false;
-	for (int ii = 0; ii < FRAGMENT_COUNT_MAX; ++ii) {
+	for (int ii = 0; ii < CONTAINER_FRAGMENT_COUNT_MAX; ++ii)
+	{
 		m.index[ii] = 0;
 	}
 	artdaq_Fragment_.setMetadata<Metadata>(m);
@@ -90,22 +136,24 @@ inline size_t artdaq::ContainerFragmentLoader::words_to_frag_words_(size_t nWord
 		nWords / words_per_frag_word_();
 }
 
-void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
+inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 {
 	auto currSize = sizeof(artdaq::Fragment::value_type) * artdaq_Fragment_.dataSize(); // Resize takes into account header and metadata size
 	artdaq_Fragment_.resizeBytes(bytes + currSize);
 	TRACE(4, "ContainerFragmentLoader::addSpace_: dataEnd_ is now at %p", dataEnd_());
 }
 
-void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment & frag)
+inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 {
 	TRACE(4, "ContainerFragmentLoader::addFragment: Adding Fragment with payload size %llu to Container", (unsigned long long)frag.dataSizeBytes());
 	if (metadata()->fragment_type == Fragment::EmptyFragmentType) metadata()->fragment_type = frag.type();
-	else if (frag.type() != metadata()->fragment_type) {
+	else if (frag.type() != metadata()->fragment_type)
+	{
 		throw cet::exception("ContainerFragmentLoader::addFragment: Trying to add a fragment of different type than what's already been added!");
 	}
 	TRACE(4, "ContainerFragmentLoader::addFragment: Payload Size is %llu, lastFragmentIndex is %llu, and frag.size is %llu", (unsigned long long)artdaq_Fragment_.dataSizeBytes(), (unsigned long long)lastFragmentIndex(), (unsigned long long)frag.sizeBytes());
-	if (artdaq_Fragment_.dataSizeBytes() < lastFragmentIndex() + frag.sizeBytes()) {
+	if (artdaq_Fragment_.dataSizeBytes() < lastFragmentIndex() + frag.sizeBytes())
+	{
 		addSpace_(frag.sizeBytes());
 	}
 	frag.setSequenceID(artdaq_Fragment_.sequenceID());
@@ -115,14 +163,14 @@ void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment & frag)
 	metadata()->block_count++;
 }
 
-void artdaq::ContainerFragmentLoader::addFragment(artdaq::FragmentPtr & frag)
+inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::FragmentPtr& frag)
 {
 	addFragment(*frag);
 }
 
-void artdaq::ContainerFragmentLoader::addFragments(artdaq::FragmentPtrs & frags)
+inline void artdaq::ContainerFragmentLoader::addFragments(artdaq::FragmentPtrs& frags)
 {
-	for (auto & frag : frags)
+	for (auto& frag : frags)
 	{
 		addFragment((*frag));
 	}

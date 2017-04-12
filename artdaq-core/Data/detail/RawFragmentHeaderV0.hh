@@ -1,6 +1,6 @@
-#ifndef artdaq_core_Data_detail_RawFragmentHeader_hh
-#define artdaq_core_Data_detail_RawFragmentHeader_hh
-// detail::RawFragmentHeader is an overlay that provides the user's view
+#ifndef artdaq_core_Data_detail_RawFragmentHeaderV0_hh
+#define artdaq_core_Data_detail_RawFragmentHeaderV0_hh
+// detail::RawFragmentHeaderV0 is an overlay that provides the user's view
 // of the data contained within a Fragment. It is intended to be hidden
 // from the user of Fragment, as an implementation detail. The interface
 // of Fragment is intended to be used to access the data.
@@ -9,6 +9,7 @@
 #include "artdaq-core/Data/dictionarycontrol.hh"
 #include "cetlib/exception.h"
 #include <map>
+#include "artdaq-core/Data/detail/RawFragmentHeader.hh"
 
 extern "C"
 {
@@ -19,18 +20,19 @@ namespace artdaq
 {
 	namespace detail
 	{
-		struct RawFragmentHeader;
+		struct RawFragmentHeaderV0;
 	}
 }
 
 /**
- * \brief The RawFragmentHeader class contains the basic fields used by _artdaq_ for routing Fragment objects through the system.
+ * \brief The RawFragmentHeaderV0 class contains the basic fields used by _artdaq_ for routing Fragment objects through the system.
  *
- * The RawFragmentHeader class contains the basic fields used by _artdaq_ for routing Fragment objects through the system. It also
+ * The RawFragmentHeaderV0 class contains the basic fields used by _artdaq_ for routing Fragment objects through the system. It also
  * contains static value definitions of values used in those fields.
+ * This is an old version of RawFragmentHeader, provided for compatibility
  *
  */
-struct artdaq::detail::RawFragmentHeader
+struct artdaq::detail::RawFragmentHeaderV0
 {
 	/**
 	 * \brief The RawDataType (currently a 64-bit integer) is the basic unit of data representation within _artdaq_
@@ -43,7 +45,7 @@ struct artdaq::detail::RawFragmentHeader
 	typedef uint8_t type_t; ///< type field is 8 bits
 	typedef uint16_t fragment_id_t; ///< fragment_id field is 16 bits
 	typedef uint8_t metadata_word_count_t; ///< metadata_word_count field is 8 bits
-	typedef uint64_t timestamp_t; ///< timestamp field is 32 bits
+	typedef uint32_t timestamp_t; ///< timestamp field is 32 bits
 
 	// define special values for type_t
 	static constexpr type_t INVALID_TYPE = 0; ///< Marks a Fragment as Invalid
@@ -97,10 +99,10 @@ struct artdaq::detail::RawFragmentHeader
 	// encoded; if any of the sizes are changed, the corresponding
 	// values must be updated.
 	static const version_t InvalidVersion = 0xFFFF; ///< The version field is currently 16-bits.
-	static const version_t CurrentVersion = 0x1; ///< The CurrentVersion field should be incremented whenever the RawFragmentHeader changes
+	static const version_t CurrentVersion = 0x0; ///< The CurrentVersion field should be incremented whenever the RawFragmentHeader changes
 	static const sequence_id_t InvalidSequenceID = 0xFFFFFFFFFFFF; ///< The sequence_id field is currently 48-bits
 	static const fragment_id_t InvalidFragmentID = 0xFFFF; ///< The fragment_id field is currently 16-bits
-	static const timestamp_t InvalidTimestamp = 0xFFFFFFFFFFFFFFFF; ///< The timestamp field is currently 32-bits
+	static const timestamp_t InvalidTimestamp = 0xFFFFFFFF; ///< The timestamp field is currently 32-bits
 
 	RawDataType word_count : 32; ///< number of RawDataType words in this Fragment
 	RawDataType version : 16; ///< The version of the fragment. Currently always InvalidVersion
@@ -109,18 +111,16 @@ struct artdaq::detail::RawFragmentHeader
 
 	RawDataType sequence_id : 48; ///< The 48-bit sequence_id uniquely identifies events within the _artdaq_ system
 	RawDataType fragment_id : 16; ///< The fragment_id uniquely identifies a particular piece of hardware within the _artdaq_ system
-	RawDataType timestamp : 64; ///< The 64-bit timestamp field is the output of a user-defined clock used for building time-correlated events
+	RawDataType timestamp : 32; ///< The 64-bit timestamp field is the output of a user-defined clock used for building time-correlated events
 
-
-	// ****************************************************
-	// New fields MUST be added to the END of this list!!!
-	// ****************************************************
+	RawDataType unused1 : 16; ///< Extra space
+	RawDataType unused2 : 16; ///< Extra space
 
 	/**
 	 * \brief Returns the number of RawDataType words present in the header
 	 * \return The number of RawDataType words present in the header
 	 */
-	static constexpr std::size_t num_words();
+	constexpr static std::size_t num_words();
 
 	/**
 	 * \brief Sets the type field to the specified user type
@@ -135,7 +135,9 @@ struct artdaq::detail::RawFragmentHeader
 	* \exception cet::exception if stype is not in the allowed range for system types
 	*/
 	void setSystemType(uint8_t stype);
-	
+
+	RawFragmentHeader upgrade() const;
+
 #endif /* HIDE_FROM_ROOT */
 };
 
@@ -143,23 +145,22 @@ struct artdaq::detail::RawFragmentHeader
 inline
 constexpr
 std::size_t
-artdaq::detail::RawFragmentHeader::num_words()
+artdaq::detail::RawFragmentHeaderV0::num_words()
 {
-	return sizeof(detail::RawFragmentHeader) / sizeof(RawDataType);
+	return sizeof(detail::RawFragmentHeaderV0) / sizeof(RawDataType);
 }
-
 
 // Compile-time check that the assumption made in num_words() above is
 // actually true.
-static_assert((artdaq::detail::RawFragmentHeader::num_words() *
-			   sizeof(artdaq::detail::RawFragmentHeader::RawDataType)) ==
-			  sizeof(artdaq::detail::RawFragmentHeader),
+static_assert((artdaq::detail::RawFragmentHeaderV0::num_words() *
+			   sizeof(artdaq::detail::RawFragmentHeaderV0::RawDataType)) ==
+			  sizeof(artdaq::detail::RawFragmentHeaderV0),
 			  "sizeof(RawFragmentHeader) is not an integer "
 			  "multiple of sizeof(RawDataType)!");
 
 inline
 void
-artdaq::detail::RawFragmentHeader::setUserType(uint8_t utype)
+artdaq::detail::RawFragmentHeaderV0::setUserType(uint8_t utype)
 {
 	if (utype < FIRST_USER_TYPE || utype > LAST_USER_TYPE)
 	{
@@ -173,7 +174,7 @@ artdaq::detail::RawFragmentHeader::setUserType(uint8_t utype)
 
 inline
 void
-artdaq::detail::RawFragmentHeader::setSystemType(uint8_t stype)
+artdaq::detail::RawFragmentHeaderV0::setSystemType(uint8_t stype)
 {
 	if (stype < FIRST_SYSTEM_TYPE /*|| stype > LAST_SYSTEM_TYPE*/)
 	{
@@ -183,6 +184,23 @@ artdaq::detail::RawFragmentHeader::setSystemType(uint8_t stype)
 	}
 	type = stype;
 }
+
+inline
+artdaq::detail::RawFragmentHeader
+artdaq::detail::RawFragmentHeaderV0::upgrade() const
+{
+	RawFragmentHeader output;
+	output.word_count = word_count;
+	output.version = RawFragmentHeader::CurrentVersion;
+	output.type = type;
+	output.metadata_word_count = metadata_word_count;
+
+	output.sequence_id = sequence_id;
+	output.fragment_id = fragment_id;
+	output.timestamp = timestamp;
+
+	return output;
+}
 #endif
 
-#endif /* artdaq_core_Data_detail_RawFragmentHeader_hh */
+#endif /* artdaq_core_Data_detail_RawFragmentHeaderV0_hh */
