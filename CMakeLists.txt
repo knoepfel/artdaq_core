@@ -60,18 +60,7 @@ endif()
 
 cet_report_compiler_flags()
 
-check_ups_version(canvas "$ENV{CANVAS_VERSION}" v1_06_00 PRODUCT_OLDER_VAR CANVAS_MULTILIB)
-if(CANVAS_MULTILIB)
-  set(CANVAS_LIB_LIST canvas_Utilities canvas_Persistency_Provenance)
-else()
- set(CANVAS_LIB_LIST canvas)
-endif(CANVAS_MULTILIB)
-
-if(DEFINED ENV{CETLIB_EXCEPT_DIR})
 set(CETLIB_LIBS cetlib cetlib_except)
-else()
-set(CETLIB_LIBS cetlib)
-endif()
 
 # macros for art_dictionary and simple_plugin
 include(ArtDictionary)
