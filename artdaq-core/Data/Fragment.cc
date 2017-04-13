@@ -14,6 +14,7 @@ artdaq::Fragment::Fragment() :
 	vals_(RawFragmentHeader::num_words(), -1)
 {
 	updateFragmentHeaderWC_();
+	fragmentHeader()->type = InvalidFragmentType;
 	fragmentHeader()->metadata_word_count = 0;
 	fragmentHeader()->version = RawFragmentHeader::CurrentVersion;
 }

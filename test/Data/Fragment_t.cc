@@ -1,4 +1,5 @@
 #include "artdaq-core/Data/Fragment.hh"
+#include "artdaq-core/Data/detail/RawFragmentHeader.hh"
 
 #define BOOST_TEST_MODULE(Fragment_t)
 #include "cetlib/quiet_unit_test.hpp"
@@ -44,17 +45,17 @@ BOOST_AUTO_TEST_SUITE(Fragment_test)
 		// wonder if these truly correspond to the behavior that we want.
 		artdaq::Fragment f1;
 		BOOST_REQUIRE_EQUAL(f1.dataSize(), (size_t)0);
-		BOOST_REQUIRE_EQUAL(f1.size(), (size_t)3);
-		BOOST_REQUIRE_EQUAL(f1.version(), (artdaq::Fragment::version_t) 0);
-		BOOST_REQUIRE_EQUAL(f1.type(), (artdaq::Fragment::type_t) 0);
-		BOOST_REQUIRE_EQUAL(f1.sequenceID(), (artdaq::Fragment::sequence_id_t) 0);
-		BOOST_REQUIRE_EQUAL(f1.fragmentID(), (artdaq::Fragment::fragment_id_t) 0);
+		BOOST_REQUIRE_EQUAL(f1.size(), (size_t)artdaq::detail::RawFragmentHeader::num_words());
+		BOOST_REQUIRE_EQUAL(f1.version(), (artdaq::Fragment::version_t) artdaq::detail::RawFragmentHeader::CurrentVersion);
+		BOOST_REQUIRE_EQUAL(f1.type(), (artdaq::Fragment::type_t) artdaq::Fragment::InvalidFragmentType);
+		BOOST_REQUIRE_EQUAL(f1.sequenceID(), (artdaq::Fragment::sequence_id_t) artdaq::Fragment::InvalidSequenceID);
+		BOOST_REQUIRE_EQUAL(f1.fragmentID(), (artdaq::Fragment::fragment_id_t) artdaq::Fragment::InvalidFragmentID);
 		BOOST_REQUIRE_EQUAL(f1.hasMetadata(), false);
 
 		artdaq::Fragment f2(7);
 		BOOST_REQUIRE_EQUAL(f2.dataSize(), (size_t)7);
-		BOOST_REQUIRE_EQUAL(f2.size(), (size_t)10);
-		BOOST_REQUIRE_EQUAL(f2.version(), (artdaq::Fragment::version_t) 0);
+		BOOST_REQUIRE_EQUAL(f2.size(), (size_t)artdaq::detail::RawFragmentHeader::num_words() + 7);
+		BOOST_REQUIRE_EQUAL(f2.version(), (artdaq::Fragment::version_t)  artdaq::detail::RawFragmentHeader::CurrentVersion);
 		BOOST_REQUIRE(f2.type() == artdaq::Fragment::InvalidFragmentType);
 		BOOST_REQUIRE(f2.sequenceID() == artdaq::Fragment::InvalidSequenceID);
 		BOOST_REQUIRE(f2.fragmentID() == artdaq::Fragment::InvalidFragmentID);
@@ -62,8 +63,8 @@ BOOST_AUTO_TEST_SUITE(Fragment_test)
 
 		artdaq::Fragment f3(101, 202);
 		BOOST_REQUIRE_EQUAL(f3.dataSize(), (size_t)0);
-		BOOST_REQUIRE_EQUAL(f3.size(), (size_t)3);
-		BOOST_REQUIRE_EQUAL(f3.version(), (artdaq::Fragment::version_t) 0);
+		BOOST_REQUIRE_EQUAL(f3.size(), (size_t)artdaq::detail::RawFragmentHeader::num_words());
+		BOOST_REQUIRE_EQUAL(f3.version(), (artdaq::Fragment::version_t) artdaq::detail::RawFragmentHeader::CurrentVersion);
 		BOOST_REQUIRE(f3.type() == artdaq::Fragment::DataFragmentType);
 		BOOST_REQUIRE_EQUAL(f3.sequenceID(), (artdaq::Fragment::sequence_id_t) 101);
 		BOOST_REQUIRE_EQUAL(f3.fragmentID(), (artdaq::Fragment::fragment_id_t) 202);
