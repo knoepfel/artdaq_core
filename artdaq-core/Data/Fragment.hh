@@ -761,8 +761,13 @@ Fragment(std::size_t payload_size, sequence_id_t sequence_id,
 		   payload_size), // User data
 		  0)
 {
-	updateFragmentHeaderWC_();
+	// vals ctor w/o init val is used; make sure header is ALL initialized.
+	for (iterator ii = vals_.begin();
+		 ii != (vals_.begin() + detail::RawFragmentHeader::num_words()); ++ii) {
+		*ii = -1;
+	}
 	fragmentHeader()->version = detail::RawFragmentHeader::CurrentVersion;
+	updateFragmentHeaderWC_();
 	fragmentHeader()->sequence_id = sequence_id;
 	fragmentHeader()->fragment_id = fragment_id;
 	fragmentHeader()->timestamp = timestamp;
@@ -1138,7 +1143,7 @@ artdaq::Fragment::fragmentHeader() const
 		switch (hdr->version)
 		{
 		case 0xFFFF:
-			std::cout << "Not upgrading InvalidVersion Fragment" << std::endl;
+			//std::cout << "Not upgrading InvalidVersion Fragment" << std::endl;
 			break;
 		case 0:
 		{
