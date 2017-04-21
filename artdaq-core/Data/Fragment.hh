@@ -1107,7 +1107,7 @@ artdaq::Fragment::fragmentHeader()
 		switch (hdr->version)
 		{
 		case 0xFFFF:
-			std::cout << "Not upgrading InvalidVersion Fragment" << std::endl;
+			//std::cout << "Not upgrading InvalidVersion Fragment" << std::endl;
 			break;
 		case 0:
 		{
