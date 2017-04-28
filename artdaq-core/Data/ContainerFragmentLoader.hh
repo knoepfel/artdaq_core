@@ -12,7 +12,7 @@
 
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Data/ContainerFragment.hh"
-#include "trace.h"
+#include "tracemf.h"
 
 #include <iostream>
 
