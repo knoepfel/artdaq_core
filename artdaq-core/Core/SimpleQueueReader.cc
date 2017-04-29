@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <thread>     // for sleep_for
+#include "trace.h"    // TRACE
 
 namespace artdaq
 {
@@ -40,6 +41,7 @@ namespace artdaq
 	                                   , expectedEventCount_(eec)
 	{
 		queue_.setReaderIsReady();
+		TRACE( 50, "SimpleQueueReader ctor done (after queue_.setReaderIsReady())" );
 	}
 
 	void SimpleQueueReader::run()
