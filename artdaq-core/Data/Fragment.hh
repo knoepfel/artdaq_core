@@ -18,6 +18,7 @@
 #include "artdaq-core/Data/dictionarycontrol.hh"
 #include "artdaq-core/Core/QuickVec.hh"
 #include <iostream>
+#include "trace.h"		// TRACE
 
 /**
  * \brief The artdaq namespace.
@@ -758,9 +759,11 @@ Fragment(std::size_t payload_size, sequence_id_t sequence_id,
 		 type_t type, const T& metadata, timestamp_t timestamp) :
 	vals_((artdaq::detail::RawFragmentHeader::num_words() + // Header
 		   validatedMetadataSize_<T>() + // Metadata
-		   payload_size), // User data
-		  0)
+		   payload_size) // User data
+		  )
 {
+  TRACE( 50, "Fragment ctor num_word()=%zu MetadataSize_=%zu payload_size=%zu"
+	 ,artdaq::detail::RawFragmentHeader::num_words(), validatedMetadataSize_<T>(), payload_size );
 	// vals ctor w/o init val is used; make sure header is ALL initialized.
 	for (iterator ii = vals_.begin();
 		 ii != (vals_.begin() + detail::RawFragmentHeader::num_words()); ++ii) {
@@ -865,6 +868,7 @@ artdaq::Fragment::updateFragmentHeaderWC_()
 	// Make sure vals_.size() fits inside 32 bits. Left-shift here should
 	// match bitfield size of word_count in RawFragmentHeader.
 	assert(vals_.size() < (1ULL << 32));
+	TRACE( 50, "Fragment::updateFragmentHeaderWC_ adjusting fragmentHeader()->word_count from %u to %zu", (unsigned)(fragmentHeader()->word_count), vals_.size() );
 	fragmentHeader()->word_count = vals_.size();
 }
 
