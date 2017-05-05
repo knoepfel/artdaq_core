@@ -140,7 +140,7 @@ struct artdaq::detail::RawFragmentHeaderV0
 	 * \brief Upgrades the RawFragmentHeaderV0 to a RawFragmentHeader (Current version)
 	 * \return Current-version RawFragmentHeader
 	 * 
-	 * The constraints on RawFragmentHeader upgrades is that no field may shrink in size
+	 * The constraints on RawFragmentHeader upgrades are that no field may shrink in size
 	 * or be deleted. Therefore, there will always be an upgrade path from old RawFragmentHeaders
 	 * to new ones. By convention, all fields are initialized to the Invalid defines, and then
 	 * the old data (guarenteed to be smaller) is cast to the new header. In the case of added
