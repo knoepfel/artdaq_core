@@ -22,7 +22,7 @@ product		version		optional
 canvas          v1_06_04        s48
 canvas          v1_06_03        s47
 canvas          v1_06_02        s46
-TRACE           v3_08_00        -nq-    only_for_build
+TRACE           v3_08_01        -nq-    only_for_build
 cetbuildtools	v5_06_07	-	only_for_build
 end_product_list
 
