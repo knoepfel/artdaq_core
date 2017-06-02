@@ -1,7 +1,7 @@
 #ifndef artdaq_core_Core_MonitoredQuantity_hh
 #define artdaq_core_Core_MonitoredQuantity_hh
 
-#include "boost/thread/mutex.hpp"
+#include <boost/thread/mutex.hpp>
 
 #include <math.h>
 #include <stdint.h>

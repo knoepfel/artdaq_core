@@ -12,6 +12,7 @@ cet_make(
   artdaq-core_Data
   fhiclcpp
   pthread
+  ${MF_MESSAGELOGGER}
   ${Boost_THREAD_LIBRARY}
   ${Boost_SYSTEM_LIBRARY} 
   )

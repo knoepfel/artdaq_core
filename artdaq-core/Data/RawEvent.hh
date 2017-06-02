@@ -52,8 +52,7 @@ namespace artdaq
 		                                    , sequence_id(event)
 		                                    , is_complete(false) { }
 	};
-
-
+	
 	/**
 	 * \brief RawEvent is the artdaq view of a generic event, containing a header and zero or more Fragments.
 	 * 
