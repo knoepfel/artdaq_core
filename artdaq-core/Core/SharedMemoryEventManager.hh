@@ -8,7 +8,7 @@ namespace artdaq {
 	class SharedMemoryEventManager : public SharedMemoryManager
 	{
 	public:
-		SharedMemoryEventManager();
+		SharedMemoryEventManager(int shm_key, size_t buffer_count, size_t max_buffer_size);
 		virtual ~SharedMemoryEventManager();
 
 		void AddNewEvent(detail::RawEventHeader header);
