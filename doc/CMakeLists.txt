@@ -3,8 +3,8 @@ include(FindLATEX)
 
 #get_cmake_property(_variableNames VARIABLES)
 #foreach (_variableName ${_variableNames})
-	#message(STATUS "${_variableName}=${${_variableName}}")
-	#endforeach()
+    #message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
 
 if(DOXYGEN_FOUND)
 
@@ -13,6 +13,10 @@ if(DOXYGEN_FOUND)
 				  COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 					  COMMENT "Generating ${project} API documentation using Doxygen" VERBATIM)
 	add_custom_target(${product}_doc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex)
+	add_custom_command(TARGET ${product}_doc POST_BUILD
+                       COMMAND echo Copying ${CMAKE_CURRENT_BINARY_DIR}/man to ${LIBRARY_OUTPUT_PATH}/../share/man
+					   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/man ${LIBRARY_OUTPUT_PATH}/../share/man
+					   )
 	find_package(LATEX COMPONENTS PDFLATEX PS2PDF MAKEINDEX)
 	if(LATEX_FOUND)
 	add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/API_Documentation.pdf
@@ -29,5 +33,5 @@ if(DOXYGEN_FOUND)
 		PATTERN "Doxyfile.in" EXCLUDE
 		)
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${product}/${version}/doc)
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/man DESTINATION ${product}/${version}/doc)
+	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/man DESTINATION ${${product}_lib_dir}/../share)
 endif(DOXYGEN_FOUND)
