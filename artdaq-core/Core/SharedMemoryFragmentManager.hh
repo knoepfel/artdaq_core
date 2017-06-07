@@ -9,10 +9,10 @@ namespace artdaq {
 	{
 	public:
 		SharedMemoryFragmentManager(int shm_key, size_t buffer_count, size_t max_buffer_size);
-		virtual ~SharedMemoryFragmentManager();
+		virtual ~SharedMemoryFragmentManager() =default;
 
-		void WriteFragment(FragmentPtr frag);
-		FragmentPtr ReadFragment();
+		int WriteFragment(Fragment&& fragment, bool overwrite);
+		int ReadFragment(Fragment& fragment);
 
 	};
 }

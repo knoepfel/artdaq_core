@@ -32,19 +32,26 @@ namespace artdaq
 		 */
 		virtual ~SharedMemoryManager() noexcept;
 
-		int GetBufferForReading();
-		int GetBufferForWriting();
-		bool ReadyForRead() { return GetBufferForReading() != -1; }
-		bool ReadyForWrite() { return GetBufferForWriting() != -1; }
+		int GetBufferForReading() const;
+		int GetBufferForWriting(bool overwrite) const;
+		bool ReadyForRead() const;
+		bool ReadyForWrite(bool overwrite) const;
 
-		void* GetNextWritePos(size_t buffer);
-		void* GetReadPos(size_t buffer);
+		void* GetNextWritePos(int buffer);
+		void* GetReadPos(int buffer);
 
-		void SetBufferDestination(size_t buffer, uint16_t destination_id);
-		void MarkBufferFull(size_t buffer);
-		void MarkBufferEmpty(size_t buffer);
+		void SetBufferDestination(int buffer, uint16_t destination_id);
+		void MarkBufferFull(int buffer);
+		void MarkBufferEmpty(int buffer);
+		void ReleaseBuffer(int buffer);
 
 		void GetNewId() { manager_id_ = shm_ptr_->next_id.fetch_add(1); }
+
+		bool IsValid() const { return shm_ptr_ ? true : false; }
+
+	protected:
+		size_t Write(int buffer, void* data, size_t size);
+		size_t Read(int buffer, void* data, size_t size);
 
 	private:
 		struct ShmBuffer
@@ -60,15 +67,16 @@ namespace artdaq
 			std::atomic<unsigned int> reader_pos;
 			std::atomic<unsigned int> writer_pos;
 			std::atomic<uint16_t> next_id;
-			size_t buffer_count;
+			int buffer_count;
 			size_t buffer_size;
+			unsigned ready_magic;
 		};
 
 		uint8_t* dataStart_() const;
 
-		ShmBuffer* getBufferInfo_(size_t buffer) const;
+		ShmBuffer* getBufferInfo_(int buffer) const;
 
-		uint8_t* bufferStart_(size_t buffer) const;
+		uint8_t* bufferStart_(int buffer) const;
 
 		int shm_segment_id_;
 		ShmStruct* shm_ptr_;

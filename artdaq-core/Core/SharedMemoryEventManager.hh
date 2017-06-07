@@ -9,7 +9,7 @@ namespace artdaq {
 	{
 	public:
 		SharedMemoryEventManager(int shm_key, size_t buffer_count, size_t max_buffer_size);
-		virtual ~SharedMemoryEventManager();
+		virtual ~SharedMemoryEventManager() = default;
 
 		void AddNewEvent(detail::RawEventHeader header);
 		void AddFragment(FragmentPtr frag);

@@ -4,7 +4,7 @@
 #include "artdaq-core/Data/dictionarycontrol.hh"
 #include "artdaq-core/Data/Fragment.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <iosfwd>
 #include <memory>
