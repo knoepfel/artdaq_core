@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <string>
+#include <deque>
 
 namespace artdaq
 {
@@ -37,6 +38,8 @@ namespace artdaq
 		bool ReadyForRead() const;
 		size_t ReadReadyCount() const;
 		bool ReadyForWrite(bool overwrite) const;
+		size_t WriteReadyCount(bool overwrite) const;
+		std::deque<int> GetBuffersOwnedByManager();
 
 		void* GetNextWritePos(int buffer);
 		void* GetReadPos(int buffer);

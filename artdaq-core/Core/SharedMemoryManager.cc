@@ -187,6 +187,33 @@ bool artdaq::SharedMemoryManager::ReadyForWrite(bool overwrite) const
 
 }
 
+size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite) const
+{
+	size_t count = 0;
+	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
+	{
+		auto buf = getBufferInfo_(ii);
+		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
+			|| (overwrite && buf->sem == BufferSemaphoreFlags::Reading))
+		{
+			++count;
+		}
+	}
+	return count;
+}
+
+std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager()
+{
+	std::deque<int> output;
+	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
+	{
+		auto buf = getBufferInfo_(ii);
+		if (buf->sem_id == manager_id_) output.push_back(ii);
+	}
+
+	return output;
+}
+
 void* artdaq::SharedMemoryManager::GetNextWritePos(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
@@ -214,7 +241,7 @@ void artdaq::SharedMemoryManager::IncrementReadPos(int buffer, size_t read)
 bool artdaq::SharedMemoryManager::MoreDataInBuffer(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
-	return buf->readPos < buf->writePos;	
+	return buf->readPos < buf->writePos;
 }
 
 void artdaq::SharedMemoryManager::SetBufferDestination(int buffer, uint16_t destination_id)
@@ -274,6 +301,8 @@ size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 	auto shmBuf = getBufferInfo_(buffer);
 	if (shmBuf->sem_id != manager_id_) throw cet::exception("AccessViolation") << "Shared Memory buffer is not owned by this manager instance!";
 	if (shmBuf->sem != BufferSemaphoreFlags::Writing) throw cet::exception("AccessViolation") << "Shared Memory buffer is not in the correct state to be Written!";
+	if (shmBuf->writePos + size > shm_ptr_->buffer_size) throw cet::exception("SharedMemoryWrite") << "Attempted to write more data than fits into Shared Memory! "
+		<< std::endl << "Re-run with a larger buffer size!";
 
 	auto pos = GetNextWritePos(buffer);
 	memcpy(pos, data, size);
@@ -287,6 +316,7 @@ size_t artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 	auto shmBuf = getBufferInfo_(buffer);
 	if (shmBuf->sem_id != manager_id_) throw cet::exception("AccessViolation") << "Shared Memory buffer is not owned by this manager instance!";
 	if (shmBuf->sem != BufferSemaphoreFlags::Reading) throw cet::exception("AccessViolation") << "Shared Memory buffer is not in the correct state to be Read!";
+	if (shmBuf->readPos + size > shm_ptr_->buffer_size) throw cet::exception("SharedMemoryWrite") << "Attempted to read more data than exists in Shared Memory!";
 
 	auto pos = GetReadPos(buffer);
 	memcpy(data, pos, size);
