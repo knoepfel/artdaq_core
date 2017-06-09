@@ -14,6 +14,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <type_traits>
+#include "artdaq-core/Utilities/TimeUtils.hh"
 
 // #include <boost/date_time/posix_time/posix_time_types.hpp>
 // #include <boost/utility/enable_if.hpp>
@@ -49,17 +50,6 @@ namespace artdaq
 
 	namespace detail
 	{
-		/**
-		 * We shall use artdaq::detail::seconds as our "standard" duration
-		 * type. Note that this differs from std::chrono::seconds, which has
-		 * a representation in some integer type of at least 35 bits.
-		 *
-		 * daqrate::duration dur(1.0) represents a duration of 1 second.
-		 * daqrate::duration dur2(0.001) represents a duration of 1
-		 * millisecond.
-		*/
-		typedef std::chrono::duration<double> seconds;
-
 		typedef size_t MemoryType; ///< Basic unit of data storage and pointer types
 
 		/**
@@ -478,7 +468,7 @@ namespace artdaq
 		 * false if the timeout has expired. This may throw any exception
 		 * thrown by the assignment operator of T, or badAlloc.
 		 */
-		bool enqTimedWait(T const& item, detail::seconds const& wait);
+		bool enqTimedWait(T const& item, TimeUtils::seconds const& wait);
 
 		/**
 		 * \brief Assign the value at the head of the queue to item and then
@@ -519,7 +509,7 @@ namespace artdaq
 		 * or false if the timeout has expired. This may throw any
 		 * exception thrown by the assignment operator of type EnqPolicy::ValueType.
 		 */
-		bool deqTimedWait(ValueType& item, detail::seconds const& wait);
+		bool deqTimedWait(ValueType& item, TimeUtils::seconds const& wait);
 
 		/**
 		   Return true if the queue is empty, and false if it is not.
@@ -755,7 +745,7 @@ namespace artdaq
 	}
 
 	template <class T, class EnqPolicy>
-	bool ConcurrentQueue<T, EnqPolicy>::enqTimedWait(T const& item, detail::seconds const& waitTime)
+	bool ConcurrentQueue<T, EnqPolicy>::enqTimedWait(T const& item, TimeUtils::seconds const& waitTime)
 	{
 		TRACE(12, "ConcurrentQueue<T,EnqPolicy>::enqTimedWait enter with waitTime=%ld ms size=%zu capacity=%zu used=%zu memory=%zu"
 			, std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count(), size_, capacity_, used_, memory_);
@@ -793,7 +783,7 @@ namespace artdaq
 	}
 
 	template <class T, class EnqPolicy>
-	bool ConcurrentQueue<T, EnqPolicy>::deqTimedWait(ValueType& item, detail::seconds const& waitTime)
+	bool ConcurrentQueue<T, EnqPolicy>::deqTimedWait(ValueType& item, TimeUtils::seconds const& waitTime)
 	{
 		TRACE(12, "ConcurrentQueue<T, EnqPolicy>::deqTimedWait enter with waitTime=%ld ms size=%zu"
 			, std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count(), size_);

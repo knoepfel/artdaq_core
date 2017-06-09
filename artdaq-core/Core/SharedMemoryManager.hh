@@ -35,10 +35,14 @@ namespace artdaq
 		int GetBufferForReading() const;
 		int GetBufferForWriting(bool overwrite) const;
 		bool ReadyForRead() const;
+		size_t ReadReadyCount() const;
 		bool ReadyForWrite(bool overwrite) const;
 
 		void* GetNextWritePos(int buffer);
 		void* GetReadPos(int buffer);
+		void ResetReadPos(int buffer);
+		void IncrementReadPos(int buffer, size_t read);
+		bool MoreDataInBuffer(int buffer);
 
 		void SetBufferDestination(int buffer, uint16_t destination_id);
 		void MarkBufferFull(int buffer);
@@ -48,6 +52,7 @@ namespace artdaq
 		void GetNewId() { manager_id_ = shm_ptr_->next_id.fetch_add(1); }
 
 		bool IsValid() const { return shm_ptr_ ? true : false; }
+		size_t size() const { return IsValid() ? shm_ptr_->buffer_count : 0; }
 
 	protected:
 		size_t Write(int buffer, void* data, size_t size);
@@ -73,10 +78,9 @@ namespace artdaq
 		};
 
 		uint8_t* dataStart_() const;
-
+		uint8_t* bufferStart_(int buffer) const;
 		ShmBuffer* getBufferInfo_(int buffer) const;
 
-		uint8_t* bufferStart_(int buffer) const;
 
 		int shm_segment_id_;
 		ShmStruct* shm_ptr_;

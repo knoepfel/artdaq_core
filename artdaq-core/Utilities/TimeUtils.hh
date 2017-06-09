@@ -3,6 +3,7 @@
 
 #include <sys/time.h>
 #include <string>
+#include <chrono>
 
 namespace artdaq
 {
@@ -11,6 +12,17 @@ namespace artdaq
  */
 	namespace TimeUtils
 	{
+		/**
+		* We shall use artdaq::detail::seconds as our "standard" duration
+		* type. Note that this differs from std::chrono::seconds, which has
+		* a representation in some integer type of at least 35 bits.
+		*
+		* daqrate::duration dur(1.0) represents a duration of 1 second.
+		* daqrate::duration dur2(0.001) represents a duration of 1
+		* millisecond.
+		*/
+		typedef std::chrono::duration<double> seconds;
+		
 		/**
 	   * \brief Converts a Unix time to its string representation, in UTC
 	   * \param inputUnixTime A time_t Unix time variable
