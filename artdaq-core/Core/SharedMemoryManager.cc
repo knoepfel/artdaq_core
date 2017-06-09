@@ -134,6 +134,12 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite) const
 	return -1;
 }
 
+size_t artdaq::SharedMemoryManager::BufferDataSize(int buffer)
+{
+	auto buf = getBufferInfo_(buffer);
+	return buf->writePos;
+}
+
 bool artdaq::SharedMemoryManager::ReadyForRead() const
 {
 	auto rp = shm_ptr_->reader_pos.load();

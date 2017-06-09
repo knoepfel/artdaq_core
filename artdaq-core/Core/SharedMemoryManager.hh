@@ -42,6 +42,7 @@ namespace artdaq
 		std::deque<int> GetBuffersOwnedByManager();
 
 		void* GetNextWritePos(int buffer);
+		size_t BufferDataSize(int buffer);
 		void* GetReadPos(int buffer);
 		void ResetReadPos(int buffer);
 		void IncrementReadPos(int buffer, size_t read);
@@ -53,6 +54,8 @@ namespace artdaq
 		void ReleaseBuffer(int buffer);
 
 		void GetNewId() { manager_id_ = shm_ptr_->next_id.fetch_add(1); }
+		uint16_t GetMaxId() const { return shm_ptr_->next_id.load(); }
+		uint16_t GetMyId() const { return manager_id_; }
 
 		bool IsValid() const { return shm_ptr_ ? true : false; }
 		size_t size() const { return IsValid() ? shm_ptr_->buffer_count : 0; }
