@@ -8,7 +8,7 @@ namespace artdaq {
 	class SharedMemoryFragmentManager : public SharedMemoryManager
 	{
 	public:
-		SharedMemoryFragmentManager(int shm_key, size_t buffer_count, size_t max_buffer_size);
+		SharedMemoryFragmentManager(int shm_key, size_t buffer_count, size_t max_buffer_size, size_t stale_buffer_touch_count = 0x10000);
 		virtual ~SharedMemoryFragmentManager() =default;
 
 		int WriteFragment(Fragment&& fragment, bool overwrite);

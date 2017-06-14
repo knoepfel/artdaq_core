@@ -3,11 +3,12 @@
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "tracemf.h"
 
-artdaq::SharedMemoryManager::SharedMemoryManager(int shm_key, size_t buffer_count, size_t max_buffer_size)
+artdaq::SharedMemoryManager::SharedMemoryManager(int shm_key, size_t buffer_count, size_t max_buffer_size, size_t stale_buffer_touch_count)
 	: shm_segment_id_(-1)
 	, shm_ptr_(NULL)
 	, shm_key_(shm_key)
 	, manager_id_(-1)
+	, max_ping_count_(stale_buffer_touch_count)
 {
 	size_t shmSize = buffer_count * (max_buffer_size + sizeof(ShmBuffer)) + sizeof(ShmStruct);
 
@@ -88,14 +89,17 @@ artdaq::SharedMemoryManager::~SharedMemoryManager()
 	TRACE(5, "SharedMemoryManager::~SharedMemoryManager done");
 }
 
-int artdaq::SharedMemoryManager::GetBufferForReading() const
+int artdaq::SharedMemoryManager::GetBufferForReading()
 {
 	auto rp = shm_ptr_->reader_pos.load();
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
 		auto buffer = (ii + rp) % shm_ptr_->buffer_count;
+
+		ResetBuffer(buffer);
+
 		auto buf = getBufferInfo_(buffer);
-		if (buf->sem == BufferSemaphoreFlags::Full && buf->sem_id == -1)
+		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_))
 		{
 			buf->sem_id = manager_id_;
 			buf->sem = BufferSemaphoreFlags::Reading;
@@ -109,16 +113,18 @@ int artdaq::SharedMemoryManager::GetBufferForReading() const
 	return -1;
 }
 
-int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite) const
+int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 {
 	TLOG_ARB(13, "SharedMemoryManager") << "GetBufferForWriting BEGIN" << TLOG_ENDL;
 	auto wp = shm_ptr_->writer_pos.load();
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
 		auto buffer = (ii + wp) % shm_ptr_->buffer_count;
+
+		ResetBuffer(buffer);
+
 		auto buf = getBufferInfo_(buffer);
-		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
-			|| (overwrite && buf->sem == BufferSemaphoreFlags::Reading))
+		if (buf->sem == BufferSemaphoreFlags::Empty || (overwrite && buf->sem == BufferSemaphoreFlags::Reading))
 		{
 			buf->sem_id = manager_id_;
 			buf->sem = BufferSemaphoreFlags::Writing;
@@ -134,12 +140,6 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite) const
 	return -1;
 }
 
-size_t artdaq::SharedMemoryManager::BufferDataSize(int buffer)
-{
-	auto buf = getBufferInfo_(buffer);
-	return buf->writePos;
-}
-
 bool artdaq::SharedMemoryManager::ReadyForRead() const
 {
 	auto rp = shm_ptr_->reader_pos.load();
@@ -147,7 +147,7 @@ bool artdaq::SharedMemoryManager::ReadyForRead() const
 	{
 		auto buffer = (ii + rp) % shm_ptr_->buffer_count;
 		auto buf = getBufferInfo_(buffer);
-		if (buf->sem == BufferSemaphoreFlags::Full && buf->sem_id == -1)
+		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_))
 		{
 			TLOG_ARB(13, "SharedMemoryManager") << "ReadyForRead returning true because buffer " << ii << " is ready." << TLOG_ENDL;
 			return true;
@@ -165,7 +165,7 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount() const
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
 		auto buf = getBufferInfo_(ii);
-		if (buf->sem == BufferSemaphoreFlags::Full && buf->sem_id == -1)
+		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_))
 		{
 			++count;
 		}
@@ -214,63 +214,64 @@ std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager()
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
 		auto buf = getBufferInfo_(ii);
-		if (buf->sem_id == manager_id_) output.push_back(ii);
+		if (buf->sem_id == manager_id_) {
+			buf->buffer_ping_count = 0;
+			output.push_back(ii);
+		}
 	}
 
 	return output;
 }
 
-void* artdaq::SharedMemoryManager::GetNextWritePos(int buffer)
+size_t artdaq::SharedMemoryManager::BufferDataSize(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
-	return bufferStart_(buffer) + buf->writePos;
+	buf->buffer_ping_count = 0;
+	return buf->writePos;
 }
 
-void* artdaq::SharedMemoryManager::GetReadPos(int buffer)
-{
-	auto buf = getBufferInfo_(buffer);
-	return bufferStart_(buffer) + buf->readPos;
-}
 
 void artdaq::SharedMemoryManager::ResetReadPos(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
+	buf->buffer_ping_count = 0;
 	buf->readPos = 0;
 }
 
 void artdaq::SharedMemoryManager::IncrementReadPos(int buffer, size_t read)
 {
 	auto buf = getBufferInfo_(buffer);
+	buf->buffer_ping_count = 0;
 	buf->readPos += read;
 }
 
 bool artdaq::SharedMemoryManager::MoreDataInBuffer(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
+	buf->buffer_ping_count = 0;
 	return buf->readPos < buf->writePos;
 }
 
-void artdaq::SharedMemoryManager::SetBufferDestination(int buffer, uint16_t destination_id)
+bool artdaq::SharedMemoryManager::CheckBuffer(int buffer, BufferSemaphoreFlags flags)
 {
-	auto buf = getBufferInfo_(buffer);
-	buf->sem_id = destination_id;
+	return checkBuffer_(getBufferInfo_(buffer), flags, false);
 }
 
-void artdaq::SharedMemoryManager::MarkBufferFull(int buffer)
+void artdaq::SharedMemoryManager::MarkBufferFull(int buffer, int destination)
 {
 	auto shmBuf = getBufferInfo_(buffer);
-	if (shmBuf->sem != BufferSemaphoreFlags::Writing) throw cet::exception("AccessViolation") << "Shared Memory buffer is not in the correct state to be marked full!";
-	if (shmBuf->sem_id != manager_id_) throw cet::exception("AccessViolation") << "Shared Memory buffer is not owned by this manager instance!";
+	checkBuffer_(shmBuf, BufferSemaphoreFlags::Writing);
+	shmBuf->buffer_ping_count = 0;
 
-	shmBuf->sem_id = -1;
+	shmBuf->sem_id = destination;
 	shmBuf->sem = BufferSemaphoreFlags::Full;
 }
 
 void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer)
 {
 	auto shmBuf = getBufferInfo_(buffer);
-	if (shmBuf->sem != BufferSemaphoreFlags::Reading) throw cet::exception("AccessViolation") << "Shared Memory buffer is not in the correct state to be marked empty!";
-	if (shmBuf->sem_id != manager_id_) throw cet::exception("AccessViolation") << "Shared Memory buffer is not owned by this manager instance!";
+	checkBuffer_(shmBuf, BufferSemaphoreFlags::Reading);
+	shmBuf->buffer_ping_count = 0;
 
 	shmBuf->readPos = 0;
 	shmBuf->writePos = 0;
@@ -278,67 +279,70 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer)
 	shmBuf->sem = BufferSemaphoreFlags::Empty;
 }
 
-void artdaq::SharedMemoryManager::ReleaseBuffer(int buffer)
+void artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 {
 	auto shmBuf = getBufferInfo_(buffer);
-	if (shmBuf->sem_id != manager_id_) throw cet::exception("AccessViolation") << "Shared Memory buffer is not owned by this manager instance!";
+	if (shmBuf->sem_id != manager_id_ && shmBuf->buffer_ping_count < max_ping_count_) return;
 
 	if (shmBuf->sem == BufferSemaphoreFlags::Reading)
 	{
 		shmBuf->readPos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Full;
+		shmBuf->sem_id = -1;
 	}
 	else if (shmBuf->sem == BufferSemaphoreFlags::Writing)
 	{
 		shmBuf->writePos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Empty;
+		shmBuf->sem_id = -1;
 	}
-	else
-	{
-		throw cet::exception("AccessViolation") << "Shared Memory buffer is not in the correct state to be marked released!";
-	}
-
-	shmBuf->sem_id = -1;
 }
 
 size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 {
 	TLOG_ARB(13, "SharedMemoryManager") << "Write BEGIN" << TLOG_ENDL;
 	auto shmBuf = getBufferInfo_(buffer);
-	if (shmBuf->sem_id != manager_id_) throw cet::exception("AccessViolation") << "Shared Memory buffer is not owned by this manager instance!";
-	if (shmBuf->sem != BufferSemaphoreFlags::Writing) throw cet::exception("AccessViolation") << "Shared Memory buffer is not in the correct state to be Written!";
-	if (shmBuf->writePos + size > shm_ptr_->buffer_size) throw cet::exception("SharedMemoryWrite") << "Attempted to write more data than fits into Shared Memory! "
+	checkBuffer_(shmBuf, BufferSemaphoreFlags::Writing);
+	shmBuf->buffer_ping_count = 0;
+	if (shmBuf->writePos + size > shm_ptr_->buffer_size) throw cet::exception("SharedMemoryWrite") << "Attempted to write more data than fits into Shared Memory!"
 		<< std::endl << "Re-run with a larger buffer size!";
 
-	auto pos = GetNextWritePos(buffer);
+	auto pos = GetWritePos(buffer);
 	memcpy(pos, data, size);
 	shmBuf->writePos += size;
 	TLOG_ARB(13, "SharedMemoryManager") << "Write END" << TLOG_ENDL;
 	return size;
 }
 
-size_t artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
+bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 {
 	auto shmBuf = getBufferInfo_(buffer);
-	if (shmBuf->sem_id != manager_id_) throw cet::exception("AccessViolation") << "Shared Memory buffer is not owned by this manager instance!";
-	if (shmBuf->sem != BufferSemaphoreFlags::Reading) throw cet::exception("AccessViolation") << "Shared Memory buffer is not in the correct state to be Read!";
-	if (shmBuf->readPos + size > shm_ptr_->buffer_size) throw cet::exception("SharedMemoryWrite") << "Attempted to read more data than exists in Shared Memory!";
+	checkBuffer_(shmBuf, BufferSemaphoreFlags::Reading);
+	shmBuf->buffer_ping_count = 0;
+	if (shmBuf->readPos + size > shm_ptr_->buffer_size) throw cet::exception("SharedMemoryRead") << "Attempted to read more data than exists in Shared Memory!";
 
 	auto pos = GetReadPos(buffer);
 	memcpy(data, pos, size);
 	shmBuf->readPos += size;
-	return size;
+	return checkBuffer_(shmBuf, BufferSemaphoreFlags::Reading, false);
+}
+
+void* artdaq::SharedMemoryManager::GetReadPos(int buffer)
+{
+	auto buf = getBufferInfo_(buffer);
+	buf->buffer_ping_count = 0;
+	return bufferStart_(buffer) + buf->readPos;
+}
+void* artdaq::SharedMemoryManager::GetWritePos(int buffer)
+{
+	auto buf = getBufferInfo_(buffer);
+	buf->buffer_ping_count = 0;
+	return bufferStart_(buffer) + buf->writePos;
 }
 
 uint8_t* artdaq::SharedMemoryManager::dataStart_() const
 {
 	return reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + shm_ptr_->buffer_count * sizeof(ShmBuffer);
-}
-
-artdaq::SharedMemoryManager::ShmBuffer* artdaq::SharedMemoryManager::getBufferInfo_(int buffer) const
-{
-	if (buffer >= shm_ptr_->buffer_count) throw cet::exception("ArgumentOutOfRange") << "The specified buffer does not exist!";
-	return reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + buffer * sizeof(ShmBuffer));
 }
 
 uint8_t* artdaq::SharedMemoryManager::bufferStart_(int buffer) const
@@ -347,7 +351,23 @@ uint8_t* artdaq::SharedMemoryManager::bufferStart_(int buffer) const
 	return dataStart_() + buffer * shm_ptr_->buffer_size;
 }
 
+artdaq::SharedMemoryManager::ShmBuffer* artdaq::SharedMemoryManager::getBufferInfo_(int buffer) const
+{
+	if (buffer >= shm_ptr_->buffer_count) throw cet::exception("ArgumentOutOfRange") << "The specified buffer does not exist!";
+	auto buf = reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + buffer * sizeof(ShmBuffer));
+	++buf->buffer_ping_count;
+	return buf;
+}
 
+bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphoreFlags flags, bool exceptions)
+{
+	if (exceptions)
+	{
+		if (buffer->sem != flags) throw cet::exception("StateAccessViolation") << "Shared Memory buffer is not in the correct state!";
+		if (buffer->sem_id != manager_id_) throw cet::exception("OwnerAccessViolation") << "Shared Memory buffer is not owned by this manager instance!";
+	}
+	return buffer->sem_id == manager_id_ && buffer->sem == flags;
+}
 
 
 

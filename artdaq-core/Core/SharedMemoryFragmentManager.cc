@@ -2,8 +2,8 @@
 #include "tracemf.h"
 
 
-artdaq::SharedMemoryFragmentManager::SharedMemoryFragmentManager(int shm_key, size_t buffer_count, size_t max_buffer_size)
-	: SharedMemoryManager(shm_key, buffer_count, max_buffer_size)
+artdaq::SharedMemoryFragmentManager::SharedMemoryFragmentManager(int shm_key, size_t buffer_count, size_t max_buffer_size, size_t stale_buffer_touch_count)
+	: SharedMemoryManager(shm_key, buffer_count, max_buffer_size, stale_buffer_touch_count)
 {
 
 }
@@ -35,29 +35,11 @@ int artdaq::SharedMemoryFragmentManager::ReadFragment(Fragment& fragment)
 	auto buf = GetBufferForReading();
 
 	auto sts = Read(buf, fragment.headerAddress(), hdrSize);
-	while(sts < hdrSize)
-	{
-		auto res = Read(buf, reinterpret_cast<uint8_t*>(fragment.headerAddress()) + sts, hdrSize - sts);
-		if(res == 0)
-		{
-			ReleaseBuffer(buf);
-			return -1;
-		}
-		sts += res;
-	}
+	if (!sts) return -1;
 
 	fragment.autoResize(); 
 	sts = Read(buf, fragment.headerAddress() + hdrSize, hdrSize) + hdrSize;
-	while (sts < fragment.sizeBytes())
-	{
-		auto res = Read(buf, reinterpret_cast<uint8_t*>(fragment.headerAddress()) + sts, fragment.sizeBytes() - sts);
-		if (res == 0)
-		{
-			ReleaseBuffer(buf);
-			return -1;
-		}
-		sts += res;
-	}
+	if (!sts) return -1;
 
 	MarkBufferEmpty(buf);
 	return 0;
