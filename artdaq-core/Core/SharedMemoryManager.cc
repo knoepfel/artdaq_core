@@ -124,7 +124,7 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 		ResetBuffer(buffer);
 
 		auto buf = getBufferInfo_(buffer);
-		if (buf->sem == BufferSemaphoreFlags::Empty || (overwrite && buf->sem == BufferSemaphoreFlags::Reading))
+		if (buf->sem == BufferSemaphoreFlags::Empty || (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
 		{
 			buf->sem_id = manager_id_;
 			buf->sem = BufferSemaphoreFlags::Writing;
@@ -181,7 +181,7 @@ bool artdaq::SharedMemoryManager::ReadyForWrite(bool overwrite) const
 		auto buffer = (ii + wp) % shm_ptr_->buffer_count;
 		auto buf = getBufferInfo_(buffer);
 		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
-			|| (overwrite && buf->sem == BufferSemaphoreFlags::Reading))
+			|| (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
 		{
 			TLOG_ARB(13, "SharedMemoryManager") << "ReadyForWrite returning true because buffer " << ii << " is ready." << TLOG_ENDL;
 			return true;
@@ -200,7 +200,7 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite) const
 	{
 		auto buf = getBufferInfo_(ii);
 		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
-			|| (overwrite && buf->sem == BufferSemaphoreFlags::Reading))
+			|| (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
 		{
 			++count;
 		}
