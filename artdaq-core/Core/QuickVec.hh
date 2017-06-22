@@ -11,10 +11,10 @@
 //#include <stdint.h>
 //}
 
-//#include <string.h>		// memcpy
+#include <string.h>		// memcpy
 //#include <strings.h>		// bzero
 //#include <stdlib.h>		// posix_memalign
-//#include <cstddef>		// ptrdiff_t
+#include <cstddef>		// ptrdiff_t
 //#include <utility>		// std::swap 
 //#include <memory>		// unique_ptr
 /** \cond  */
