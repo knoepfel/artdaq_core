@@ -28,7 +28,6 @@
 # define UNDEF_TRACE_AT_END
 #endif
 
-#define USE_UNIQUE_PTR 0
 #define QV_ALIGN 512
 
 /**
@@ -106,17 +105,12 @@ struct QuickVec
 	 * \param val Value with which to initialize elements
 	 */
 	QuickVec(size_t sz, TT_ val);
-#  if USE_UNIQUE_PTR == 0
+
 	/**
-	 * \brief Destructor calls free on data. QuickVec compiled in non-unique_ptr mode.
+	 * \brief Destructor calls free on data.
 	 */
 	virtual ~QuickVec() noexcept;
 
-#   define PTR_(xx) xx
-#  else
-#   define PTR_(xx) xx.get()
-#  endif
-		//: size_(other.size()), data_(new TT_[other.capacity()]), capacity_(other.capacity())
 	/**
 	 * \brief Copies the contents of a std::vector into a new QuickVec object
 	 * \param other The vector to copy
@@ -126,7 +120,7 @@ struct QuickVec
 		, data_((TT_*)QV_MEMALIGN(QV_ALIGN, other.capacity() * sizeof(TT_)))
 		, capacity_(other.capacity())
 	{
-		memcpy(PTR_(data_), (void*)&other[0], size_ * sizeof(TT_));
+		memcpy( data_, (void*)&other[0], size_ * sizeof(TT_));
 	}
 
 	/**
@@ -145,8 +139,8 @@ struct QuickVec
 		, capacity_(other.capacity_)
 	{
 		TRACE(10, "QuickVec copy ctor this=%p data_=%p other.data_=%p size_=%d other.size_=%d"
-			  , (void*)this, (void*)PTR_(data_), (void*)PTR_(other.data_), size_, other.size_);
-		memcpy(PTR_(data_), PTR_(other.data_), size_ * sizeof(TT_));
+			  , (void*)this, (void*)data_, (void*)other.data_, size_, other.size_);
+		memcpy( data_, other.data_, size_ * sizeof(TT_));
 	}
 
 	/**
@@ -157,9 +151,9 @@ struct QuickVec
 	QUICKVEC& operator=(const QuickVec& other) //= delete; // non copyable
 	{
 		TRACE(10, "QuickVec copy assign this=%p data_=%p other.data_=%p size_=%d other.size_=%d"
-			  , (void*)this, (void*)PTR_(data_), (void*)PTR_(other.data_), size_, other.size_);
+			  , (void*)this, (void*)data_, (void*)other.data_, size_, other.size_);
 		resize(other.size_);
-		memcpy(PTR_(data_), PTR_(other.data_), size_ * sizeof(TT_));
+		memcpy( data_, other.data_, size_ * sizeof(TT_));
 		return *this;
 	}
 #  if NOT_OLD_CXXSTD
@@ -173,10 +167,8 @@ struct QuickVec
 		, capacity_(other.capacity_)
 	{
 		TRACE(10, "QuickVec move ctor this=%p data_=%p other.data_=%p"
-			  , (void*)this, (void*)PTR_(data_), (void*)PTR_(other.data_));
-#      if USE_UNIQUE_PTR == 0
+			  , (void*)this, (void*)data_, (void*)other.data_ );
 		other.data_ = nullptr;
-#      endif
 	}
 
 	/**
@@ -187,15 +179,13 @@ struct QuickVec
 	QUICKVEC& operator=(QuickVec&& other) noexcept // assign movable
 	{
 		TRACE(10, "QuickVec move assign this=%p data_=%p other.data_=%p"
-			  , (void*)this, (void*)PTR_(data_), (void*)PTR_(other.data_));
+			  , (void*)this, (void*)data_, (void*)other.data_ );
 		size_ = other.size_;
 		//delete [] data_;
 		free(data_);
 		data_ = std::move(other.data_);
 		capacity_ = other.capacity_;
-#      if USE_UNIQUE_PTR == 0
 		other.data_ = nullptr;
-#      endif
 		return *this;
 	}
 #  endif
@@ -338,47 +328,38 @@ private:
 	// Root then needs the [size_] comment after data_.
 	// Note: NO SPACE between "//" and "[size_]"
 	unsigned size_;
-#  if USE_UNIQUE_PTR == 0
 	TT_* data_; //[size_]
-#  else
-	std::unique_ptr<TT_[]> data_;
-#  endif
 	unsigned capacity_;
 };
 
 QUICKVEC_TEMPLATE
 inline QUICKVEC::QuickVec(size_t sz)
-//: size_(sz), data_(new TT_[sz]), capacity_(sz)
 	: size_(sz)
 	, data_((TT_*)QV_MEMALIGN(QV_ALIGN, sz * sizeof(TT_)))
 	, capacity_(sz)
 {
-	TRACE(15, "QuickVec %p ctor sz=%d data_=%p", (void*)this, size_, (void*)PTR_(data_));
+	TRACE(15, "QuickVec %p ctor sz=%d data_=%p", (void*)this, size_, (void*)data_ );
 }
 
 QUICKVEC_TEMPLATE
 inline QUICKVEC::QuickVec(size_t sz, TT_ val)
-//: size_(sz), data_(new TT_[sz]), capacity_(sz)
 	: size_(sz)
 	, data_((TT_*)QV_MEMALIGN(QV_ALIGN, sz * sizeof(TT_)))
 	, capacity_(sz)
 {
-	TRACE(15, "QuickVec %p ctor sz=%d/v data_=%p", (void*)this, size_, (void*)PTR_(data_));
+	TRACE(15, "QuickVec %p ctor sz=%d/v data_=%p", (void*)this, size_, (void*)data_ );
 	for (iterator ii = begin(); ii != end(); ++ii) *ii = val;
 	//bzero( &data_[0], (sz<4)?(sz*sizeof(TT_)):(4*sizeof(TT_)) );
 }
 
-#if USE_UNIQUE_PTR == 0
 QUICKVEC_TEMPLATE
 inline QUICKVEC::~QuickVec() noexcept
 {
 	TRACE(15, "QuickVec %p dtor start data_=%p size_=%d"
-		  , (void*)this, (void*)PTR_(data_), size_);
-	//delete [] data_;
+		  , (void*)this, (void*)data_, size_);
 	free(data_);
 	TRACE(15, "QuickVec %p dtor return", (void*)this);
 }
-#endif
 
 QUICKVEC_TEMPLATE
 inline TT_& QUICKVEC::operator[](int idx)
@@ -401,39 +382,30 @@ QUICKVEC_TEMPLATE
 inline size_t QUICKVEC::capacity() const { return capacity_; }
 
 QUICKVEC_TEMPLATE
-inline QUICKVEC_TN::iterator QUICKVEC::begin() { return iterator(PTR_(data_)); }
+inline QUICKVEC_TN::iterator QUICKVEC::begin() { return iterator(data_); }
 
 QUICKVEC_TEMPLATE
-inline QUICKVEC_TN::const_iterator QUICKVEC::begin() const { return iterator(PTR_(data_)); }
+inline QUICKVEC_TN::const_iterator QUICKVEC::begin() const { return iterator(data_); }
 
 QUICKVEC_TEMPLATE
-inline QUICKVEC_TN::iterator QUICKVEC::end() { return iterator(PTR_(data_) + size_); }
+inline QUICKVEC_TN::iterator QUICKVEC::end() { return iterator(data_+size_); }
 
 QUICKVEC_TEMPLATE
-inline QUICKVEC_TN::const_iterator QUICKVEC::end() const { return const_iterator(PTR_(data_) + size_); }
+inline QUICKVEC_TN::const_iterator QUICKVEC::end() const { return const_iterator(data_+size_); }
 
 QUICKVEC_TEMPLATE
 inline void QUICKVEC::reserve(size_t size)
 {
 	if (size > capacity_) // reallocation if true
 	{
-#      if USE_UNIQUE_PTR == 0
 		TT_* old = data_;
 		//data_ = new TT_[size];
 		data_ = (TT_*)QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_));
 		memcpy(data_, old, size_ * sizeof(TT_));
 		TRACE(13, "QUICKVEC::reserve this=%p old=%p data_=%p"
 			  , (void*)this, (void*)old, (void*)data_);
-		//delete [] old;
 		free(old);
-#      else
-		std::unique_ptr<TT_[]> old = std::move(data_);
-		//data_ = std::unique_ptr<TT_[]>(new TT_[size]);
-		data_ = std::unique_ptr<TT_[]>((TT_*)QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_)));
-		memcpy(data_.get(), old.get(), size_ * sizeof(TT_));
-#      endif
 		capacity_ = size;
-		// bye to old(unique_ptr)
 	}
 }
 
@@ -444,23 +416,13 @@ inline void QUICKVEC::resize(size_t size)
 	else if (size <= capacity_) size_ = size;
 	else // increase/reallocate 
 	{
-#      if USE_UNIQUE_PTR == 0
 		TT_* old = data_;
-		//data_ = new TT_[size];
 		data_ = (TT_*)QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_));
 		memcpy(data_, old, size_ * sizeof(TT_));
 		TRACE(13, "QUICKVEC::resize this=%p old=%p data_=%p"
 			  , (void*)this, (void*)old, (void*)data_);
-		//delete [] old;
 		free(old);
-#      else
-		std::unique_ptr<TT_[]> old = std::move(data_);
-		//data_ = std::unique_ptr<TT_[]>(new TT_[size]);
-		data_ = std::unique_ptr<TT_[]>((TT_*)QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_)));
-		memcpy(data_.get(), old.get(), size_ * sizeof(TT_));
-#      endif
 		size_ = capacity_ = size;
-		// bye to old(unique_ptr)
 	}
 }
 
@@ -535,12 +497,12 @@ QUICKVEC_TEMPLATE
 inline void QUICKVEC::swap(QuickVec& x) noexcept
 {
 	TRACE(12, "QUICKVEC::swap this=%p enter data_=%p x.data_=%p"
-		  , (void*)this, (void*)PTR_(data_), (void*)PTR_(x.data_));
+		  , (void*)this, (void*)data_, (void*)x.data_ );
 	std::swap(data_, x.data_);
 	std::swap(size_, x.size_);
 	std::swap(capacity_, x.capacity_);
 	TRACE(12, "QUICKVEC::swap return data_=%p x.data_=%p"
-		  , (void*)PTR_(data_), (void*)PTR_(x.data_));
+		  , (void*)data_, (void*)x.data_ );
 }
 
 QUICKVEC_TEMPLATE
