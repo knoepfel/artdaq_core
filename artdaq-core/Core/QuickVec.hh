@@ -120,6 +120,8 @@ struct QuickVec
 		, data_((TT_*)QV_MEMALIGN(QV_ALIGN, other.capacity() * sizeof(TT_)))
 		, capacity_(other.capacity())
 	{
+		TRACE(10, "QuickVec std::vector ctor b4 memcpy this=%p data_=%p &other[0]=%p size_=%d other.size()=%d"
+		      , (void*)this, (void*)data_, (void*)&other[0], size_, other.size());
 		memcpy( data_, (void*)&other[0], size_ * sizeof(TT_));
 	}
 
@@ -138,7 +140,7 @@ struct QuickVec
 		, data_((TT_*)QV_MEMALIGN(QV_ALIGN, other.capacity() * sizeof(TT_)))
 		, capacity_(other.capacity_)
 	{
-		TRACE(10, "QuickVec copy ctor this=%p data_=%p other.data_=%p size_=%d other.size_=%d"
+		TRACE(10, "QuickVec copy ctor b4 memcpy this=%p data_=%p other.data_=%p size_=%d other.size_=%d"
 			  , (void*)this, (void*)data_, (void*)other.data_, size_, other.size_);
 		memcpy( data_, other.data_, size_ * sizeof(TT_));
 	}
@@ -150,7 +152,7 @@ struct QuickVec
 	 */
 	QUICKVEC& operator=(const QuickVec& other) //= delete; // non copyable
 	{
-		TRACE(10, "QuickVec copy assign this=%p data_=%p other.data_=%p size_=%d other.size_=%d"
+		TRACE(10, "QuickVec copy assign b4 resize/memcpy this=%p data_=%p other.data_=%p size_=%d other.size_=%d"
 			  , (void*)this, (void*)data_, (void*)other.data_, size_, other.size_);
 		resize(other.size_);
 		memcpy( data_, other.data_, size_ * sizeof(TT_));
@@ -402,7 +404,7 @@ inline void QUICKVEC::reserve(size_t size)
 		//data_ = new TT_[size];
 		data_ = (TT_*)QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_));
 		memcpy(data_, old, size_ * sizeof(TT_));
-		TRACE(13, "QUICKVEC::reserve this=%p old=%p data_=%p"
+		TRACE(13, "QUICKVEC::reserve after memcpy this=%p old=%p data_=%p"
 			  , (void*)this, (void*)old, (void*)data_);
 		free(old);
 		capacity_ = size;
@@ -419,7 +421,7 @@ inline void QUICKVEC::resize(size_t size)
 		TT_* old = data_;
 		data_ = (TT_*)QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_));
 		memcpy(data_, old, size_ * sizeof(TT_));
-		TRACE(13, "QUICKVEC::resize this=%p old=%p data_=%p"
+		TRACE(13, "QUICKVEC::resize after memcpy this=%p old=%p data_=%p"
 			  , (void*)this, (void*)old, (void*)data_);
 		free(old);
 		size_ = capacity_ = size;
@@ -431,8 +433,10 @@ inline void QUICKVEC::resize(size_type size, TT_ val)
 {
 	size_type old_size = size;
 	resize(size);
-	if (size > old_size)
+	if (size > old_size) {
+		TRACE( 13, "QUICKVEC::resize initializing %zu elements", size-old_size );
 		for (iterator ii = begin() + old_size; ii != end(); ++ii) *ii = val;
+	}
 }
 
 QUICKVEC_TEMPLATE
