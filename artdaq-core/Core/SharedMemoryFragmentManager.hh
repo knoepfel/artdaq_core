@@ -41,6 +41,21 @@ namespace artdaq {
 		 */
 		int ReadFragment(Fragment& fragment);
 
+		/**
+		 * \brief Read a Fragment Header from the Shared Memory
+		 * \param header Output Fragment Header
+		 * \return 0 on success
+		 */
+		int ReadFragmentHeader(detail::RawFragmentHeader& header);
+
+		/**
+		* \brief Read Fragment Data from the Shared Memory
+		* \param destination Destination for data
+		* \param words RawDataType Word count to read
+		* \return 0 on success
+		*/
+		int ReadFragmentData(RawDataType* destination, size_t words);
+
 	};
 }
 

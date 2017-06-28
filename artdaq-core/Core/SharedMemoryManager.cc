@@ -3,12 +3,12 @@
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "tracemf.h"
 
-artdaq::SharedMemoryManager::SharedMemoryManager(int shm_key, size_t buffer_count, size_t max_buffer_size, size_t stale_buffer_touch_count)
+artdaq::SharedMemoryManager::SharedMemoryManager(int shm_key, size_t buffer_count, size_t max_buffer_size, uint64_t buffer_timeout_us)
 	: shm_segment_id_(-1)
 	, shm_ptr_(NULL)
 	, shm_key_(shm_key)
 	, manager_id_(-1)
-	, max_ping_count_(stale_buffer_touch_count)
+	, buffer_timeout_us_(buffer_timeout_us)
 {
 	size_t shmSize = buffer_count * (max_buffer_size + sizeof(ShmBuffer)) + sizeof(ShmStruct);
 
@@ -215,7 +215,7 @@ std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager()
 	{
 		auto buf = getBufferInfo_(ii);
 		if (buf->sem_id == manager_id_) {
-			buf->buffer_ping_count = 0;
+			touchBuffer_(buf);
 			output.push_back(ii);
 		}
 	}
@@ -226,7 +226,7 @@ std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager()
 size_t artdaq::SharedMemoryManager::BufferDataSize(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
-	buf->buffer_ping_count = 0;
+	touchBuffer_(buf);
 	return buf->writePos;
 }
 
@@ -234,21 +234,28 @@ size_t artdaq::SharedMemoryManager::BufferDataSize(int buffer)
 void artdaq::SharedMemoryManager::ResetReadPos(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
-	buf->buffer_ping_count = 0;
+	touchBuffer_(buf);
 	buf->readPos = 0;
 }
 
 void artdaq::SharedMemoryManager::IncrementReadPos(int buffer, size_t read)
 {
 	auto buf = getBufferInfo_(buffer);
-	buf->buffer_ping_count = 0;
+	touchBuffer_(buf);
 	buf->readPos += read;
+}
+
+void artdaq::SharedMemoryManager::IncrementWritePos(int buffer, size_t written)
+{
+	auto buf = getBufferInfo_(buffer);
+	touchBuffer_(buf);
+	buf->writePos += written;
 }
 
 bool artdaq::SharedMemoryManager::MoreDataInBuffer(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
-	buf->buffer_ping_count = 0;
+	touchBuffer_(buf);
 	return buf->readPos < buf->writePos;
 }
 
@@ -261,7 +268,7 @@ void artdaq::SharedMemoryManager::MarkBufferFull(int buffer, int destination)
 {
 	auto shmBuf = getBufferInfo_(buffer);
 	checkBuffer_(shmBuf, BufferSemaphoreFlags::Writing);
-	shmBuf->buffer_ping_count = 0;
+	touchBuffer_(shmBuf);
 
 	shmBuf->sem_id = destination;
 	shmBuf->sem = BufferSemaphoreFlags::Full;
@@ -271,7 +278,7 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer)
 {
 	auto shmBuf = getBufferInfo_(buffer);
 	checkBuffer_(shmBuf, BufferSemaphoreFlags::Reading);
-	shmBuf->buffer_ping_count = 0;
+	touchBuffer_(shmBuf);
 
 	shmBuf->readPos = 0;
 	shmBuf->writePos = 0;
@@ -282,7 +289,7 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer)
 void artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 {
 	auto shmBuf = getBufferInfo_(buffer);
-	if (shmBuf->sem_id != manager_id_ && shmBuf->buffer_ping_count < max_ping_count_) return;
+	if (shmBuf->sem_id != manager_id_ && shmBuf->buffer_touch_time > TimeUtils::gettimeofday_us() - buffer_timeout_us_) return;
 
 	if (shmBuf->sem == BufferSemaphoreFlags::Reading)
 	{
@@ -303,7 +310,7 @@ size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 	TLOG_ARB(13, "SharedMemoryManager") << "Write BEGIN" << TLOG_ENDL;
 	auto shmBuf = getBufferInfo_(buffer);
 	checkBuffer_(shmBuf, BufferSemaphoreFlags::Writing);
-	shmBuf->buffer_ping_count = 0;
+	touchBuffer_(shmBuf);
 	if (shmBuf->writePos + size > shm_ptr_->buffer_size) throw cet::exception("SharedMemoryWrite") << "Attempted to write more data than fits into Shared Memory!"
 		<< std::endl << "Re-run with a larger buffer size!";
 
@@ -318,7 +325,7 @@ bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 {
 	auto shmBuf = getBufferInfo_(buffer);
 	checkBuffer_(shmBuf, BufferSemaphoreFlags::Reading);
-	shmBuf->buffer_ping_count = 0;
+	touchBuffer_(shmBuf);
 	if (shmBuf->readPos + size > shm_ptr_->buffer_size) throw cet::exception("SharedMemoryRead") << "Attempted to read more data than exists in Shared Memory!";
 
 	auto pos = GetReadPos(buffer);
@@ -330,13 +337,13 @@ bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 void* artdaq::SharedMemoryManager::GetReadPos(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
-	buf->buffer_ping_count = 0;
+	touchBuffer_(buf);
 	return bufferStart_(buffer) + buf->readPos;
 }
 void* artdaq::SharedMemoryManager::GetWritePos(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
-	buf->buffer_ping_count = 0;
+	touchBuffer_(buf);
 	return bufferStart_(buffer) + buf->writePos;
 }
 
@@ -355,7 +362,6 @@ artdaq::SharedMemoryManager::ShmBuffer* artdaq::SharedMemoryManager::getBufferIn
 {
 	if (buffer >= shm_ptr_->buffer_count) throw cet::exception("ArgumentOutOfRange") << "The specified buffer does not exist!";
 	auto buf = reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + buffer * sizeof(ShmBuffer));
-	++buf->buffer_ping_count;
 	return buf;
 }
 
@@ -367,6 +373,11 @@ bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphor
 		if (buffer->sem_id != manager_id_) throw cet::exception("OwnerAccessViolation") << "Shared Memory buffer is not owned by this manager instance!";
 	}
 	return buffer->sem_id == manager_id_ && buffer->sem == flags;
+}
+
+void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
+{
+	buffer->buffer_touch_time = TimeUtils::gettimeofday_us();
 }
 
 

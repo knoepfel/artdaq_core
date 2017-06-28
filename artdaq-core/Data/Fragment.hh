@@ -7,6 +7,7 @@
 #include <iosfwd>
 #include <iterator>
 #include <vector>
+#include <list>
 #include <memory>
 #include <map>
 #include <cmath>

@@ -4,6 +4,7 @@
 #include <atomic>
 #include <string>
 #include <deque>
+#include "artdaq-core/Utilities/TimeUtils.hh"
 
 namespace artdaq
 {
@@ -31,10 +32,10 @@ namespace artdaq
 		 * \param shm_key The key to use when attaching/creating the shared memory segment
 		 * \param buffer_count The number of buffers in the shared memory
 		 * \param max_buffer_size The size of each buffer
-		 * \param stale_buffer_touch_count The maximum number of times a locked buffer can be 
-		 * scanned before being returned to its previous state. This counter is reset upon any operation by the owning SharedMemoryManager.
+		 * \param stale_buffer_timeout The maximum amount of time a buffer can be left untouched by its owner
+		 * before being returned to its previous state.
 		 */
-		SharedMemoryManager(int shm_key, size_t buffer_count, size_t max_buffer_size, size_t stale_buffer_touch_count = 0x10000);
+		SharedMemoryManager(int shm_key, size_t buffer_count, size_t max_buffer_size, uint64_t buffer_timeout_us = 10 * 1000000);
 
 		/**
 		 * \brief SharedMemoryManager Destructor
@@ -97,6 +98,12 @@ namespace artdaq
 		 * \param read Number of bytes by which to increment read position
 		 */
 		void IncrementReadPos(int buffer, size_t read);
+		/**
+		* \brief Increment the write position for a given buffer
+		* \param buffer Buffer ID of buffer
+		* \param written Number of bytes by which to increment write position
+		*/
+		void IncrementWritePos(int buffer, size_t written);
 		/**
 		 * \brief Determine if more data is available to be read, based on the read position and data size
 		 * \param buffer Buffer ID of buffer
@@ -194,7 +201,7 @@ namespace artdaq
 			size_t readPos;
 			std::atomic<BufferSemaphoreFlags> sem;
 			std::atomic<int16_t> sem_id;
-			std::atomic<size_t> buffer_ping_count;
+			std::atomic<uint64_t> buffer_touch_time;
 		};
 
 		struct ShmStruct
@@ -211,13 +218,14 @@ namespace artdaq
 		uint8_t* bufferStart_(int buffer) const;
 		ShmBuffer* getBufferInfo_(int buffer) const;
 		bool checkBuffer_(ShmBuffer* buffer, BufferSemaphoreFlags flags, bool exceptions = true);
+		void touchBuffer_(ShmBuffer* buffer);
 
 
 		int shm_segment_id_;
 		ShmStruct* shm_ptr_;
 		int shm_key_;
 		uint16_t manager_id_;
-		size_t max_ping_count_;
+		uint64_t buffer_timeout_us_;
 	};
 
 }

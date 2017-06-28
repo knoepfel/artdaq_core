@@ -43,6 +43,12 @@ namespace artdaq
 		* \return std::string representation of Unix time, in UTC
 		*/
 		std::string convertUnixTimeToString(struct timespec const& inputUnixTime);
+
+		/**
+		* \brief Get the current time of day in microseconds (from gettimeofday system call)
+		* \return The current time of day in microseconds
+		*/
+		uint64_t gettimeofday_us();
 	}
 }
 

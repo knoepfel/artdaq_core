@@ -45,3 +45,31 @@ int artdaq::SharedMemoryFragmentManager::ReadFragment(Fragment& fragment)
 	return 0;
 }
 
+int artdaq::SharedMemoryFragmentManager::ReadFragmentHeader(detail::RawFragmentHeader& header)
+{
+	if (!IsValid()) return -1;
+
+	size_t hdrSize = artdaq::detail::RawFragmentHeader::num_words() * sizeof(artdaq::RawDataType);
+	auto buf = GetBufferForReading();
+
+	auto sts = Read(buf, &header, hdrSize);
+	if (!sts) return -1;
+
+
+	MarkBufferEmpty(buf);
+	return 0;
+}
+
+int artdaq::SharedMemoryFragmentManager::ReadFragmentData(RawDataType* destination, size_t words)
+{
+	if (!IsValid()) return -1;
+
+	auto buf = GetBufferForReading();
+
+	auto sts = Read(buf, destination, words * sizeof(RawDataType));
+	if (!sts) return -1;
+
+	MarkBufferEmpty(buf);
+	return 0;
+}
+

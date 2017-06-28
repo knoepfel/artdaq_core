@@ -10,6 +10,7 @@
 cet_make(
   LIBRARIES
   artdaq-core_Data
+  artdaq-core_Utilities
   fhiclcpp
   pthread
   ${MF_MESSAGELOGGER}
