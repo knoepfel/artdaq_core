@@ -4,6 +4,7 @@
 
 artdaq::SharedMemoryFragmentManager::SharedMemoryFragmentManager(int shm_key, size_t buffer_count, size_t max_buffer_size, size_t stale_buffer_touch_count)
 	: SharedMemoryManager(shm_key, buffer_count, max_buffer_size, stale_buffer_touch_count)
+, active_buffer_(-1)
 {
 
 }
@@ -47,29 +48,28 @@ int artdaq::SharedMemoryFragmentManager::ReadFragment(Fragment& fragment)
 
 int artdaq::SharedMemoryFragmentManager::ReadFragmentHeader(detail::RawFragmentHeader& header)
 {
-	if (!IsValid()) return -1;
+	if (!IsValid()) return -3;
 
 	size_t hdrSize = artdaq::detail::RawFragmentHeader::num_words() * sizeof(artdaq::RawDataType);
-	auto buf = GetBufferForReading();
+	active_buffer_ = GetBufferForReading();
 
-	auto sts = Read(buf, &header, hdrSize);
-	if (!sts) return -1;
+	if (active_buffer_ == -1) return -1;
 
+	auto sts = Read(active_buffer_, &header, hdrSize);
+	if (!sts) return -2;
 
-	MarkBufferEmpty(buf);
 	return 0;
 }
 
 int artdaq::SharedMemoryFragmentManager::ReadFragmentData(RawDataType* destination, size_t words)
 {
-	if (!IsValid()) return -1;
+	if (!IsValid() || active_buffer_ == -1 || !CheckBuffer(active_buffer_, BufferSemaphoreFlags::Reading)) return -3;
+	
+	auto sts = Read(active_buffer_, destination, words * sizeof(RawDataType));
+	if (!sts) return -2;
 
-	auto buf = GetBufferForReading();
-
-	auto sts = Read(buf, destination, words * sizeof(RawDataType));
-	if (!sts) return -1;
-
-	MarkBufferEmpty(buf);
+	MarkBufferEmpty(active_buffer_);
+	active_buffer_ = -1;
 	return 0;
 }
 

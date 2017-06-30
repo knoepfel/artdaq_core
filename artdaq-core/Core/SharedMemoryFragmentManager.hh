@@ -16,10 +16,10 @@ namespace artdaq {
 		* \param shm_key The key to use when attaching/creating the shared memory segment
 		* \param buffer_count The number of buffers in the shared memory
 		* \param max_buffer_size The size of each buffer
-		* \param stale_buffer_touch_count The maximum number of times a locked buffer can be
-		* scanned before being returned to its previous state. This counter is reset upon any operation by the owning SharedMemoryManager.
+		* \param buffer_timeout_us The maximum amount of time a buffer may be locked
+		* before being returned to its previous state. This timer is reset upon any operation by the owning SharedMemoryManager.
 		*/
-		SharedMemoryFragmentManager(int shm_key, size_t buffer_count, size_t max_buffer_size, size_t stale_buffer_touch_count = 0x10000);
+		SharedMemoryFragmentManager(int shm_key, size_t buffer_count, size_t max_buffer_size, uint64_t buffer_timeout_us = 10 * 1000000);
 
 		/**
 		 * \brief SharedMemoryFragmentManager destructor
@@ -55,6 +55,9 @@ namespace artdaq {
 		* \return 0 on success
 		*/
 		int ReadFragmentData(RawDataType* destination, size_t words);
+
+	private:
+		int active_buffer_;
 
 	};
 }
