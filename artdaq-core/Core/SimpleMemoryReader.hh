@@ -1,36 +1,36 @@
-#ifndef artdaq_core_Core_SimpleQueueReader_hh
-#define artdaq_core_Core_SimpleQueueReader_hh
+#ifndef artdaq_core_Core_SimpleMemoryReader_hh
+#define artdaq_core_Core_SimpleMemoryReader_hh
 
-#include "artdaq-core/Core/GlobalQueue.hh"
+#include "artdaq-core/Core/SharedMemoryEventReceiver.hh"
 #include <thread>
 #include <memory>
 
 namespace artdaq
 {
 	/**
-	* \brief An application which pops items off a RawEventQueue using the SimpleQueueReader
+	* \brief An application which pops items off a RawEventQueue using the SimpleMemoryReader
 	* \param argc Number of arguments (OS-provided)
 	* \param argv Array of argument strings (OS-provided)
 	* \return Status code: 0 success, 1 for any error
 	*
-	* simpleQueueReaderApp is a function that can be used in place of
+	* SimpleMemoryReaderApp is a function that can be used in place of
 	* artapp(), to read RawEvent objects from the shared RawEvent queue.
 	* Note that it ignores both of its arguments.
 	*/
-	int simpleQueueReaderApp(int argc, char** argv);
+	int SimpleMemoryReaderApp(int argc, char** argv);
 
 	/**
-   * \brief SimpleQueueReader will continue to read RawEvent objects off the queue
+   * \brief SimpleMemoryReader will continue to read RawEvent objects off the queue
    * until it encounters a null pointer, at which point it stops.
    */
-	class SimpleQueueReader
+	class SimpleMemoryReader
 	{
 	public:
 		/**
-		 * \brief Constructs a SimpleQueueReader
-		 * \param expectedEventCount The number of events the SimpleQueueReader should expect
+		 * \brief Constructs a SimpleMemoryReader
+		 * \param expectedEventCount The number of events the SimpleMemoryReader should expect
 		 */
-		explicit SimpleQueueReader(std::size_t expectedEventCount = 0);
+		explicit SimpleMemoryReader( int shm_key, size_t buffer_count, size_t max_buffer_size, std::size_t expectedEventCount = 0);
 
 		/**
 		 * \brief Run until a null pointer is popped off of the RawEventQueue. Throws an excpetion
@@ -41,9 +41,9 @@ namespace artdaq
 
 	private:
 		/**
-		 * \brief Reference to the queue of RawEvent_ptr objects
+		 * \brief Reference to the SharedMemoryEventReceiver
 		 */
-		RawEventQueue& queue_;
+		std::shared_ptr<SharedMemoryEventReceiver> incoming_events_;
 		/**
 		 * \brief For testing purposes, the expected number of events
 		 */
@@ -51,4 +51,4 @@ namespace artdaq
 	};
 }
 
-#endif /* artdaq_core_Core_SimpleQueueReader_hh */
+#endif /* artdaq_core_Core_SimpleMemoryReader_hh */
