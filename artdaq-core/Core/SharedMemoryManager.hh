@@ -32,7 +32,7 @@ namespace artdaq
 		 * \param shm_key The key to use when attaching/creating the shared memory segment
 		 * \param buffer_count The number of buffers in the shared memory
 		 * \param max_buffer_size The size of each buffer
-		 * \param stale_buffer_timeout The maximum amount of time a buffer can be left untouched by its owner
+		 * \param buffer_timeout_us The maximum amount of time a buffer can be left untouched by its owner
 		 * before being returned to its previous state.
 		 */
 		SharedMemoryManager(int shm_key, size_t buffer_count, size_t max_buffer_size, uint64_t buffer_timeout_us = 10 * 1000000);
@@ -153,6 +153,18 @@ namespace artdaq
 		uint16_t GetMyId() const { return manager_id_; }
 
 		/**
+		 * \brief Get the rank of the owner of the Shared Memory (artdaq assigns rank to each artdaq process for data flow)
+		 * \return The rank of the owner of the Shared Memory
+		 */
+		int GetRank() const { return shm_ptr_->rank; }
+
+		/**
+		 * \brief Set the rank stored in the Shared Memory, if the current instance is the owner of the shared memory
+		 * \param rank Rank to set
+		 */
+		void SetRank(int rank) const { if (manager_id_ == 0) shm_ptr_->rank = rank; }
+
+		/**
 		 * \brief Is the shared memory pointer valid?
 		 * \return Whether the shared memory pointer is valid
 		 */
@@ -211,6 +223,7 @@ namespace artdaq
 			std::atomic<uint16_t> next_id;
 			int buffer_count;
 			size_t buffer_size;
+			int rank;
 			unsigned ready_magic;
 		};
 
