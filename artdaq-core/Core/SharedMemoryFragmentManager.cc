@@ -21,29 +21,26 @@ int artdaq::SharedMemoryFragmentManager::WriteFragment(Fragment&& fragment, bool
 	auto sts = Write(buf, fragAddr, fragSize);
 	if(sts == fragSize)
 	{
+		TLOG_ARB(13, "SharedMemoryFragmentManager") << "Done sending Fragment with seqID=" << fragment.sequenceID() << TLOG_ENDL;
 		MarkBufferFull(buf);
 		return 0;
 	}
+	TLOG_ERROR("SharedMemoryFragmentManager") << "Unexpected status from SharedMemory Write call!" << TLOG_ENDL;
 	return -2;
 }
 
 int artdaq::SharedMemoryFragmentManager::ReadFragment(Fragment& fragment)
 {
-	if (!IsValid()) return -1;
+	TLOG_ARB(13, "SharedMemoryFragmentManager") << "ReadFragment BEGIN" << TLOG_ENDL;
+	detail::RawFragmentHeader tmpHdr;
 
-	size_t hdrSize = artdaq::detail::RawFragmentHeader::num_words() * sizeof(artdaq::RawDataType);
-	fragment.resizeBytes(0);
-	auto buf = GetBufferForReading();
-
-	auto sts = Read(buf, fragment.headerAddress(), hdrSize);
-	if (!sts) return -1;
-
-	fragment.autoResize(); 
-	sts = Read(buf, fragment.headerAddress() + hdrSize, hdrSize) + hdrSize;
-	if (!sts) return -1;
-
-	MarkBufferEmpty(buf);
-	return 0;
+	TLOG_ARB(13, "SharedMemoryFragmentManager") << "Reading Fragment Header" << TLOG_ENDL;
+	auto sts = ReadFragmentHeader(tmpHdr);
+	if (sts != 0) return sts;
+	fragment.resize(tmpHdr.word_count - tmpHdr.num_words());
+	memcpy(fragment.headerAddress(), &tmpHdr, tmpHdr.num_words() * sizeof(artdaq::RawDataType));
+	TLOG_ARB(13, "SharedMemoryFragmentManager") << "Reading Fragment Body" << TLOG_ENDL;
+	return ReadFragmentData(fragment.headerAddress() + tmpHdr.num_words(), tmpHdr.word_count - tmpHdr.num_words());
 }
 
 int artdaq::SharedMemoryFragmentManager::ReadFragmentHeader(detail::RawFragmentHeader& header)
@@ -63,10 +60,16 @@ int artdaq::SharedMemoryFragmentManager::ReadFragmentHeader(detail::RawFragmentH
 
 int artdaq::SharedMemoryFragmentManager::ReadFragmentData(RawDataType* destination, size_t words)
 {
-	if (!IsValid() || active_buffer_ == -1 || !CheckBuffer(active_buffer_, BufferSemaphoreFlags::Reading)) return -3;
+	if (!IsValid() || active_buffer_ == -1 || !CheckBuffer(active_buffer_, BufferSemaphoreFlags::Reading)) {
+		TLOG_ERROR("SharedMemoryFragmentManager") << "ReadFragmentData: Buffer " << active_buffer_ << " failed status checks: IsValid()=" << std::boolalpha << IsValid() << ", CheckBuffer=" << CheckBuffer(active_buffer_, BufferSemaphoreFlags::Reading) << TLOG_ENDL;
+		return -3;
+	}
 	
 	auto sts = Read(active_buffer_, destination, words * sizeof(RawDataType));
-	if (!sts) return -2;
+	if (!sts) {
+		TLOG_ERROR("SharedMemoryFragmentManager") << "ReadFragmentData: Buffer " << active_buffer_ << " returned bad status code from Read" << TLOG_ENDL;
+		return -2;
+	}
 
 	MarkBufferEmpty(active_buffer_);
 	active_buffer_ = -1;

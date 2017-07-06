@@ -11,10 +11,11 @@ using std::string;
 artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(int shm_key, size_t buffer_count, size_t max_buffer_size)
 	: SharedMemoryManager(shm_key, buffer_count, max_buffer_size)
 	, current_read_buffer_(-1)
+	, current_header_(nullptr)
 {
 }
 
-std::shared_ptr<artdaq::detail::RawEventHeader> artdaq::SharedMemoryEventReceiver::ReadHeader(bool& err)
+artdaq::detail::RawEventHeader* artdaq::SharedMemoryEventReceiver::ReadHeader(bool& err)
 {
 	if (current_read_buffer_ != -1) {
 		err = !CheckBuffer(current_read_buffer_, BufferSemaphoreFlags::Reading);
@@ -25,7 +26,7 @@ std::shared_ptr<artdaq::detail::RawEventHeader> artdaq::SharedMemoryEventReceive
 	if (buf == -1) throw cet::exception("OutOfEvents") << "ReadHeader called but no events are ready! (Did you check ReadyForRead()?)";
 	current_read_buffer_ = buf;
 	ResetReadPos(current_read_buffer_);
-	current_header_ = std::shared_ptr<detail::RawEventHeader>(reinterpret_cast<detail::RawEventHeader*>(GetReadPos(buf)));
+	current_header_ = reinterpret_cast<detail::RawEventHeader*>(GetReadPos(buf));
 	return current_header_;
 }
 
@@ -61,7 +62,7 @@ std::unique_ptr<artdaq::Fragments> artdaq::SharedMemoryEventReceiver::GetFragmen
 	ResetReadPos(current_read_buffer_);
 	IncrementReadPos(current_read_buffer_, sizeof(detail::RawEventHeader));
 
-	Fragments output;
+	std::unique_ptr<Fragments> output(new Fragments());
 
 	while (MoreDataInBuffer(current_read_buffer_))
 	{
@@ -69,13 +70,16 @@ std::unique_ptr<artdaq::Fragments> artdaq::SharedMemoryEventReceiver::GetFragmen
 		if (err) return nullptr;
 		auto fragHdr = reinterpret_cast<artdaq::detail::RawFragmentHeader*>(GetReadPos(current_read_buffer_));
 		if (fragHdr->type == type || type == Fragment::InvalidFragmentType) {
-			output.emplace_back(fragHdr->word_count - detail::RawFragmentHeader::num_words());
-			Read(current_read_buffer_, output.back().headerAddress(), fragHdr->word_count * sizeof(RawDataType));
+			output->emplace_back(fragHdr->word_count - detail::RawFragmentHeader::num_words());
+			Read(current_read_buffer_, output->back().headerAddress(), fragHdr->word_count * sizeof(RawDataType));
+			output->back().autoResize();
 		}
-		IncrementReadPos(current_read_buffer_, fragHdr->word_count * sizeof(RawDataType));
+		else {
+			IncrementReadPos(current_read_buffer_, fragHdr->word_count * sizeof(RawDataType));
+		}
 	}
 
-	return std::unique_ptr<Fragments>(&output);
+	return std::move(output);
 }
 
 void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()
@@ -88,5 +92,5 @@ void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()
 		TLOG_WARNING("SharedMemoryEventReceiver") << "A cet::exception occured while trying to release the buffer: " << e << TLOG_ENDL;
 	}
 	current_read_buffer_ = -1;
-	current_header_.reset();
+	current_header_ = nullptr;
 }

@@ -30,9 +30,9 @@ namespace artdaq
 			/**
 			 * \brief Get the Event header
 			 * \param err Flag used to indicate if an error has occurred
-			 * \return Shared pointer to RawEventHeader from buffer
+			 * \return Pointer to RawEventHeader from buffer
 			 */
-			std::shared_ptr<detail::RawEventHeader> ReadHeader(bool& err);
+			detail::RawEventHeader* ReadHeader(bool& err);
 			/**
 			 * \brief Get a set of Fragment Types present in the event
 			 * \param err Flag used to indicate if an error has occurred
@@ -55,7 +55,7 @@ namespace artdaq
 
 		private:
 			int current_read_buffer_;
-			std::shared_ptr<detail::RawEventHeader> current_header_;
+			detail::RawEventHeader* current_header_;
 		};
 } // artdaq
 

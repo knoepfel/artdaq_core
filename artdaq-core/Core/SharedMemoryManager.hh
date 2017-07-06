@@ -5,6 +5,8 @@
 #include <string>
 #include <deque>
 #include "artdaq-core/Utilities/TimeUtils.hh"
+#include <mutex>
+#include <unordered_map>
 
 namespace artdaq
 {
@@ -26,6 +28,21 @@ namespace artdaq
 			Full, ///< The buffer is full, and waiting for a reader
 			Reading ///< The buffer is currently being read from
 		};
+		static std::string FlagToString(BufferSemaphoreFlags flag)
+		{
+			switch(flag)
+			{
+			case BufferSemaphoreFlags::Empty:
+				return "Empty";
+			case BufferSemaphoreFlags::Writing:
+				return "Writing";
+			case BufferSemaphoreFlags::Full:
+				return "Full";
+			case BufferSemaphoreFlags::Reading:
+				return "Reading";
+			}
+			return "Unknown";
+		}
 
 		/**
 		 * \brief SharedMemoryManager Constructor
@@ -206,6 +223,13 @@ namespace artdaq
 		 */
 		void* GetWritePos(int buffer);
 
+		/**
+		 * \brief Get a pointer to the start position of the buffer
+		 * \param buffer Buffer ID of buffer
+		 * \return void* pointer to buffer start position
+		 */
+		void* GetBufferStart(int buffer);
+
 	private:
 		struct ShmBuffer
 		{
@@ -239,6 +263,8 @@ namespace artdaq
 		int shm_key_;
 		uint16_t manager_id_;
 		uint64_t buffer_timeout_us_;
+		mutable std::unordered_map<int, std::mutex> buffer_mutexes_;
+		mutable std::mutex search_mutex_;
 	};
 
 }

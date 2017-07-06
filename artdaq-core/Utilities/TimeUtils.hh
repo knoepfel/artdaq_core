@@ -21,7 +21,7 @@ namespace artdaq
 		* daqrate::duration dur2(0.001) represents a duration of 1
 		* millisecond.
 		*/
-		typedef std::chrono::duration<double> seconds;
+		typedef std::chrono::duration<double, std::ratio<1>> seconds;
 		
 		/**
 	   * \brief Converts a Unix time to its string representation, in UTC

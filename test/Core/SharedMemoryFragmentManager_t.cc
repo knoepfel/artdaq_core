@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(Attach)
 
 BOOST_AUTO_TEST_CASE(DataFlow)
 {
-	std::cout << "Initializing SharedMemoryFragmentManagers" << std::endl;
+	std::cout << "Initializing SharedMemoryFragmentManagers for DataFlow test" << std::endl;
 	int key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryFragmentManager man(key, 10, 0x1000);
 	artdaq::SharedMemoryFragmentManager man2(key, 10, 0x1000);
@@ -79,6 +79,51 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 	for(size_t ii = 0; ii < fragSizeWords; ++ii)
 	{
 		BOOST_REQUIRE_EQUAL(*(frag.dataBegin() + ii), *(frag2.dataBegin() + ii));
+	}
+	std::cout << "SharedMemoryFragmentManager test complete" << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(WholeFragment)
+{
+	std::cout << "Initializing SharedMemoryFragmentManagers for WholeFragment Test" << std::endl;
+	int key = 0x7357 + rand() % 0x10000000;
+	artdaq::SharedMemoryFragmentManager man(key, 10, 0x1000);
+	artdaq::SharedMemoryFragmentManager man2(key, 10, 0x1000);
+
+	auto fragSizeWords = 0x1000 / sizeof(artdaq::RawDataType) - artdaq::detail::RawFragmentHeader::num_words() - 1;
+
+	std::cout << "Creating test Fragment" << std::endl;
+	artdaq::Fragment frag(fragSizeWords);
+	frag.setSequenceID(0x10);
+	frag.setFragmentID(0x20);
+	auto type = artdaq::Fragment::DataFragmentType;
+	frag.setSystemType(type);
+	frag.setTimestamp(0x30);
+	for (size_t ii = 0; ii < fragSizeWords; ++ii)
+	{
+		*(frag.dataBegin() + ii) = ii;
+	}
+
+	std::cout << "Writing Test Fragment to Shared Memory" << std::endl;
+	man.WriteFragment(std::move(frag), false);
+
+	std::cout << "Reading Test Fragment Header" << std::endl;
+	artdaq::Fragment recvdFrag;
+	auto sts = man2.ReadFragment(recvdFrag);
+
+	std::cout << "Checking Test Fragment Header Contents" << std::endl;
+	BOOST_REQUIRE_EQUAL(sts, 0);
+	BOOST_REQUIRE_EQUAL(recvdFrag.size(), frag.size());
+	BOOST_REQUIRE_EQUAL(recvdFrag.sequenceID(), 0x10);
+	BOOST_REQUIRE_EQUAL(recvdFrag.fragmentID(), 0x20);
+	BOOST_REQUIRE_EQUAL(recvdFrag.type(), type);
+	BOOST_REQUIRE_EQUAL(recvdFrag.timestamp(), 0x30);
+
+	std::cout << "Checking Test Fragment Data Contents" << std::endl;
+	for (size_t ii = 0; ii < fragSizeWords; ++ii)
+	{
+		//std::cout << std::to_string(*(frag.dataBegin() + ii)) << " =?= " << *(recvdFrag.dataBegin() + ii) << std::endl;
+		BOOST_REQUIRE_EQUAL(*(frag.dataBegin() + ii), *(recvdFrag.dataBegin() + ii));
 	}
 	std::cout << "SharedMemoryFragmentManager test complete" << std::endl;
 }

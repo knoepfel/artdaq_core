@@ -40,7 +40,7 @@ namespace artdaq
 		incoming_events_(new SharedMemoryEventReceiver(shm_key, buffer_count, max_buffer_size))
 		, expectedEventCount_(eec)
 	{
-		TRACE(50, "SimpleMemoryReader ctor done (after queue_.setReaderIsReady())");
+		TLOG_ARB(50, "SimpleMemoryReader") <<"ctor done (after queue_.setReaderIsReady())" << TLOG_ENDL;
 	}
 
 	void SimpleMemoryReader::run()

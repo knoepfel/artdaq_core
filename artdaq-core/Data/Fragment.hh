@@ -666,6 +666,7 @@ public:
 		FragmentPtr result(new Fragment(sequenceID, fragID));
 		result->vals_.reserve(std::distance(i, e) + detail::RawFragmentHeader::num_words());
 		std::copy(i, e, std::back_inserter(result->vals_));
+		result->updateFragmentHeaderWC_();
 		return result;
 	}
 
