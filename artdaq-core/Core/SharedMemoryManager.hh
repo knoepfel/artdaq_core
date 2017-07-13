@@ -209,6 +209,12 @@ namespace artdaq
 		 */
 		bool Read(int buffer, void* data, size_t size);
 
+		/**
+		 *\brief Write information about the SharedMemory to a string
+		 *\return String describing current state of SharedMemory and buffers
+		 */
+		virtual std::string toString();
+
 	protected:
 		/**
 		 * \brief Get a pointer to the current read position of the buffer

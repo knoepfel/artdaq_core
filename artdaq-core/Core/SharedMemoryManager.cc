@@ -362,6 +362,28 @@ bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 	return checkBuffer_(shmBuf, BufferSemaphoreFlags::Reading, false);
 }
 
+std::string artdaq::SharedMemoryManager::toString()
+{
+	std::ostringstream ostr;
+	ostr << "ShmStruct: " << std::endl
+		<< "Buffer Count: " << shm_ptr_->buffer_count << std::endl
+		<< "Buffer Size: " << std::to_string(shm_ptr_->buffer_size) << " bytes" << std::endl
+		<< "Rank of Writer: " << shm_ptr_->rank << std::endl
+		<< "Ready Magic Bytes: " << std::to_string(shm_ptr_->ready_magic) << std::endl << std::endl;
+
+	for(auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
+	{
+		auto buf = getBufferInfo_(ii);
+		ostr << "ShmBuffer " << ii << std::endl
+			<< "writePos: " << std::to_string(buf->writePos) << std::endl
+			<< "readPos: " << std::to_string(buf->readPos) << std::endl
+			<< "sem: " << FlagToString(buf->sem) << std::endl
+			<< "Owner: " << std::to_string(buf->sem_id.load()) << std::endl
+			<< "Last Touch Time: " << std::to_string(buf->buffer_touch_time) << std::endl << std::endl;
+	}
+	return ostr.str();
+}
+
 void* artdaq::SharedMemoryManager::GetReadPos(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
