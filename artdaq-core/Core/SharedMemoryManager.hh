@@ -159,10 +159,10 @@ namespace artdaq
 		 */
 		void GetNewId() { if(manager_id_ == 0xFFFF) manager_id_ = shm_ptr_->next_id.fetch_add(1); }
 		/**
-		 * \brief Get the largest ID number of attached SharedMemoryManagers
-		 * \return The largest ID number of attached SharedMemoryManagers (if looping over all managers, end condition <= GetMaxId())
+		 * \brief Get the number of attached SharedMemoryManagers
+		 * \return The number of attached SharedMemoryManagers
 		 */
-		uint16_t GetMaxId() const { return shm_ptr_->next_id.load() - 1; }
+		uint16_t GetAttachedCount() const { return shm_ptr_->next_id.load() - 1; }
 		/**
 		 * \brief Get the ID number of the current SharedMemoryManager
 		 * \return The ID number of the current SharedMemoryManager

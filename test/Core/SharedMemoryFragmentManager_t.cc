@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE(Construct)
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man.GetMyId(), 0);
 	BOOST_REQUIRE_EQUAL(man.size(), 10);
-	BOOST_REQUIRE_EQUAL(man.GetMaxId(), 0);
+	BOOST_REQUIRE_EQUAL(man.GetAttachedCount(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(Attach)
@@ -25,12 +25,12 @@ BOOST_AUTO_TEST_CASE(Attach)
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man.GetMyId(), 0);
 	BOOST_REQUIRE_EQUAL(man.size(), 10);
-	BOOST_REQUIRE_EQUAL(man.GetMaxId(), 1);
+	BOOST_REQUIRE_EQUAL(man.GetAttachedCount(), 1);
 
 	BOOST_REQUIRE_EQUAL(man2.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man2.GetMyId(), 1);
 	BOOST_REQUIRE_EQUAL(man2.size(), 10);
-	BOOST_REQUIRE_EQUAL(man2.GetMaxId(), 1);
+	BOOST_REQUIRE_EQUAL(man2.GetAttachedCount(), 1);
 
 }
 
