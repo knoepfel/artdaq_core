@@ -52,7 +52,7 @@ namespace artdaq
 		 * \param buffer_timeout_us The maximum amount of time a buffer can be left untouched by its owner
 		 * before being returned to its previous state.
 		 */
-		SharedMemoryManager(int shm_key, size_t buffer_count, size_t max_buffer_size, uint64_t buffer_timeout_us = 10 * 1000000);
+		SharedMemoryManager(uint32_t shm_key, size_t buffer_count, size_t max_buffer_size, uint64_t buffer_timeout_us = 10 * 1000000);
 
 		/**
 		 * \brief SharedMemoryManager Destructor
@@ -266,7 +266,7 @@ namespace artdaq
 
 		int shm_segment_id_;
 		ShmStruct* shm_ptr_;
-		int shm_key_;
+		uint32_t shm_key_;
 		uint16_t manager_id_;
 		uint64_t buffer_timeout_us_;
 		mutable std::unordered_map<int, std::mutex> buffer_mutexes_;

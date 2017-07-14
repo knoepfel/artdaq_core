@@ -3,7 +3,7 @@
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "tracemf.h"
 
-artdaq::SharedMemoryManager::SharedMemoryManager(int shm_key, size_t buffer_count, size_t max_buffer_size, uint64_t buffer_timeout_us)
+artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer_count, size_t max_buffer_size, uint64_t buffer_timeout_us)
 	: shm_segment_id_(-1)
 	, shm_ptr_(NULL)
 	, shm_key_(shm_key)
@@ -17,12 +17,12 @@ artdaq::SharedMemoryManager::SharedMemoryManager(int shm_key, size_t buffer_coun
 
 	if (shm_segment_id_ == -1)
 	{
-		TLOG_DEBUG("SharedMemoryManager") << "Creating shared memory segment with key " << shm_key_ << TLOG_ENDL;
+		TLOG_DEBUG("SharedMemoryManager") << "Creating shared memory segment with key 0x" << std::hex << std::to_string(shm_key_) << TLOG_ENDL;
 		shm_segment_id_ = shmget(shm_key_, shmSize, IPC_CREAT | 0666);
 		manager_id_ = 0;
 	}
 
-	TLOG_DEBUG("SharedMemoryManager") << "shm_key == " << shm_key_ << ", shm_segment_id == " << shm_segment_id_ << TLOG_ENDL;
+	TLOG_DEBUG("SharedMemoryManager") << "shm_key == 0x" << std::hex << std::to_string(shm_key_) << ", shm_segment_id == " << shm_segment_id_ << TLOG_ENDL;
 
 	if (shm_segment_id_ > -1)
 	{
