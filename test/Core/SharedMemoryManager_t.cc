@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(Construct)
 
 BOOST_AUTO_TEST_CASE(Attach)
 {
-	int key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
 
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(Attach)
 
 BOOST_AUTO_TEST_CASE(DataFlow)
 {
-	int key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
 
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 
 BOOST_AUTO_TEST_CASE(Exceptions)
 {
-	int key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
 	BOOST_REQUIRE_EQUAL(man.ReadyForWrite(false), true);

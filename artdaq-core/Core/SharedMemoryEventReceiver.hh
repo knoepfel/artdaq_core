@@ -21,7 +21,7 @@ namespace artdaq
 			 * \param buffer_count 
 			 * \param max_buffer_size 
 			 */
-			SharedMemoryEventReceiver(int shm_key, size_t buffer_count, size_t max_buffer_size);
+			SharedMemoryEventReceiver(uint32_t shm_key, size_t buffer_count, size_t max_buffer_size);
 			/**
 			 * \brief SharedMemoryEventReceiver Destructor
 			 */
