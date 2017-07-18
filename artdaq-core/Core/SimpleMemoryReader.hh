@@ -28,9 +28,10 @@ namespace artdaq
 	public:
 		/**
 		 * \brief Constructs a SimpleMemoryReader
+		 * \param shm_key Key of the shared memory to connect to
 		 * \param expectedEventCount The number of events the SimpleMemoryReader should expect
 		 */
-		explicit SimpleMemoryReader( int shm_key, size_t buffer_count, size_t max_buffer_size, std::size_t expectedEventCount = 0);
+		explicit SimpleMemoryReader( uint32_t shm_key, std::size_t expectedEventCount = 0);
 
 		/**
 		 * \brief Run until a null pointer is popped off of the RawEventQueue. Throws an excpetion

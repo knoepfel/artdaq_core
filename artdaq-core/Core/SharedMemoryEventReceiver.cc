@@ -8,8 +8,8 @@
 
 using std::string;
 
-artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(uint32_t shm_key, size_t buffer_count, size_t max_buffer_size)
-	: SharedMemoryManager(shm_key, buffer_count, max_buffer_size)
+artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(uint32_t shm_key, size_t buffer_count, size_t max_event_size_bytes)
+	: SharedMemoryManager(shm_key,buffer_count, max_event_size_bytes)
 	, current_read_buffer_(-1)
 	, current_header_(nullptr)
 {

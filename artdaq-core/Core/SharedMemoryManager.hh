@@ -28,6 +28,13 @@ namespace artdaq
 			Full, ///< The buffer is full, and waiting for a reader
 			Reading ///< The buffer is currently being read from
 		};
+
+
+		/**
+		 * \brief Convert a BufferSemaphoreFlags variable to its string represenatation
+		 * \param flag BufferSemaphoreFlags variable to convert
+		 * \return String representation of flag
+		 */
 		static std::string FlagToString(BufferSemaphoreFlags flag)
 		{
 			switch(flag)
@@ -52,7 +59,7 @@ namespace artdaq
 		 * \param buffer_timeout_us The maximum amount of time a buffer can be left untouched by its owner
 		 * before being returned to its previous state.
 		 */
-		SharedMemoryManager(uint32_t shm_key, size_t buffer_count, size_t max_buffer_size, uint64_t buffer_timeout_us = 10 * 1000000);
+		SharedMemoryManager(uint32_t shm_key, size_t buffer_count = 0, size_t max_buffer_size = 0, uint64_t buffer_timeout_us = 10 * 1000000);
 
 		/**
 		 * \brief SharedMemoryManager Destructor
@@ -164,6 +171,10 @@ namespace artdaq
 		 */
 		uint16_t GetAttachedCount() const { return shm_ptr_->next_id.load() - 1; }
 		/**
+		 * \brief Reset the attached manager count to 0
+		 */
+		void ResetAttachedCount() { if(manager_id_ == 0) shm_ptr_->next_id = 1; }
+		/**
 		 * \brief Get the ID number of the current SharedMemoryManager
 		 * \return The ID number of the current SharedMemoryManager
 		 */
@@ -214,6 +225,13 @@ namespace artdaq
 		 *\return String describing current state of SharedMemory and buffers
 		 */
 		virtual std::string toString();
+
+
+		/**
+		 * \brief Get the key of the shared memory attached to this SharedMemoryManager
+		 * \return The shared memory key
+		 */
+		uint32_t GetKey() const { return shm_key_; }
 
 	protected:
 		/**

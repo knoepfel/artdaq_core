@@ -8,15 +8,19 @@ BOOST_AUTO_TEST_SUITE(SharedMemoryManager_test)
 
 BOOST_AUTO_TEST_CASE(Construct)
 {
-	artdaq::SharedMemoryManager man(0x7357 + rand() % 0x10000000, 10, 0x1000,0x10000);
+	srand(time(0));
+	uint32_t key = 0x7357 + rand() % 0x10000000;
+	artdaq::SharedMemoryManager man(key, 10, 0x1000,0x10000);
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man.GetMyId(), 0);
 	BOOST_REQUIRE_EQUAL(man.size(), 10);
 	BOOST_REQUIRE_EQUAL(man.GetAttachedCount(), 0);
+	BOOST_REQUIRE_EQUAL(man.GetKey(), key);
 }
 
 BOOST_AUTO_TEST_CASE(Attach)
 {
+	srand(time(0));
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
@@ -25,16 +29,19 @@ BOOST_AUTO_TEST_CASE(Attach)
 	BOOST_REQUIRE_EQUAL(man.GetMyId(), 0);
 	BOOST_REQUIRE_EQUAL(man.size(), 10);
 	BOOST_REQUIRE_EQUAL(man.GetAttachedCount(), 1);
+	BOOST_REQUIRE_EQUAL(man.GetKey(), key);
 
 	BOOST_REQUIRE_EQUAL(man2.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man2.GetMyId(), 1);
 	BOOST_REQUIRE_EQUAL(man2.size(), 10);
 	BOOST_REQUIRE_EQUAL(man2.GetAttachedCount(), 1);
+	BOOST_REQUIRE_EQUAL(man2.GetKey(), key);
 
 }
 
 BOOST_AUTO_TEST_CASE(DataFlow)
 {
+	srand(time(0));
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
@@ -98,6 +105,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 
 BOOST_AUTO_TEST_CASE(Exceptions)
 {
+	srand(time(0));
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);

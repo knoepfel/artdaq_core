@@ -19,7 +19,7 @@ namespace artdaq
 				std::istringstream ins(argv[1]);
 				ins >> eec;
 			}
-			SimpleMemoryReader reader(0xA99,0x1000,0x10000,eec);
+			SimpleMemoryReader reader(0xA99,eec);
 			reader.run();
 			return 0;
 		}
@@ -36,8 +36,8 @@ namespace artdaq
 	}
 
 	SimpleMemoryReader::
-		SimpleMemoryReader(int shm_key, size_t buffer_count, size_t max_buffer_size, std::size_t eec) :
-		incoming_events_(new SharedMemoryEventReceiver(shm_key, buffer_count, max_buffer_size))
+		SimpleMemoryReader(uint32_t shm_key, std::size_t eec) :
+		incoming_events_(new SharedMemoryEventReceiver(shm_key))
 		, expectedEventCount_(eec)
 	{
 		TLOG_ARB(50, "SimpleMemoryReader") <<"ctor done (after queue_.setReaderIsReady())" << TLOG_ENDL;

@@ -12,16 +12,20 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	, buffer_mutexes_()
 {
 	size_t shmSize = buffer_count * (max_buffer_size + sizeof(ShmBuffer)) + sizeof(ShmStruct);
+	auto start_time = std::chrono::steady_clock::now();
 
 	shm_segment_id_ = shmget(shm_key_, shmSize, 0666);
-
-	if (shm_segment_id_ == -1)
+	if (shm_segment_id_ == -1 && buffer_count > 0)
 	{
 		TLOG_DEBUG("SharedMemoryManager") << "Creating shared memory segment with key 0x" << std::hex << std::to_string(shm_key_) << TLOG_ENDL;
 		shm_segment_id_ = shmget(shm_key_, shmSize, IPC_CREAT | 0666);
 		manager_id_ = 0;
 	}
 
+	while (shm_segment_id_ == -1 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time).count() < 1000) {
+		shm_segment_id_ = shmget(shm_key_, shmSize, 0666);
+
+	}
 	TLOG_DEBUG("SharedMemoryManager") << "shm_key == 0x" << std::hex << std::to_string(shm_key_) << ", shm_segment_id == " << shm_segment_id_ << TLOG_ENDL;
 
 	if (shm_segment_id_ > -1)
@@ -371,7 +375,7 @@ std::string artdaq::SharedMemoryManager::toString()
 		<< "Rank of Writer: " << shm_ptr_->rank << std::endl
 		<< "Ready Magic Bytes: " << std::to_string(shm_ptr_->ready_magic) << std::endl << std::endl;
 
-	for(auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
+	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
 		auto buf = getBufferInfo_(ii);
 		ostr << "ShmBuffer " << ii << std::endl

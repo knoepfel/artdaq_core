@@ -9,6 +9,7 @@ BOOST_AUTO_TEST_SUITE(SharedMemoryFragmentManager_test)
 
 BOOST_AUTO_TEST_CASE(Construct)
 {
+	srand(time(0));
 	artdaq::SharedMemoryFragmentManager man(0x7357 + rand() % 0x10000000, 10, 0x1000);
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man.GetMyId(), 0);
@@ -18,7 +19,8 @@ BOOST_AUTO_TEST_CASE(Construct)
 
 BOOST_AUTO_TEST_CASE(Attach)
 {
-	int key = 0x7357 + rand() % 0x10000000;
+	srand(time(0));
+	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryFragmentManager man(key, 10, 0x1000);
 	artdaq::SharedMemoryFragmentManager man2(key, 10, 0x1000);
 
@@ -36,6 +38,7 @@ BOOST_AUTO_TEST_CASE(Attach)
 
 BOOST_AUTO_TEST_CASE(DataFlow)
 {
+	srand(time(0));
 	std::cout << "Initializing SharedMemoryFragmentManagers for DataFlow test" << std::endl;
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryFragmentManager man(key, 10, 0x1000);
@@ -86,6 +89,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 BOOST_AUTO_TEST_CASE(WholeFragment)
 {
 	std::cout << "Initializing SharedMemoryFragmentManagers for WholeFragment Test" << std::endl;
+	srand(time(0));
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryFragmentManager man(key, 10, 0x1000);
 	artdaq::SharedMemoryFragmentManager man2(key, 10, 0x1000);

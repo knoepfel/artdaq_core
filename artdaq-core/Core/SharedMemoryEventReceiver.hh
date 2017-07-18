@@ -18,10 +18,10 @@ namespace artdaq
 			/**
 			 * \brief Connect to a Shared Memory segment using the given parameters
 			 * \param shm_key Key of the Shared Memory segment
-			 * \param buffer_count 
-			 * \param max_buffer_size 
+			 * \param buffer_count Optional buffer count for shared memory
+			 * \param max_event_size_bytes Optional size for each shared memory buffer
 			 */
-			SharedMemoryEventReceiver(uint32_t shm_key, size_t buffer_count, size_t max_buffer_size);
+			SharedMemoryEventReceiver(uint32_t shm_key, size_t buffer_count = 0, size_t max_event_size_bytes = 0);
 			/**
 			 * \brief SharedMemoryEventReceiver Destructor
 			 */
