@@ -1,4 +1,5 @@
 #include "artdaq-core/Core/SharedMemoryManager.hh"
+#include "artdaq-core/Utilities/TimeUtils.hh"
 
 #define BOOST_TEST_MODULE(SharedMemoryManager_t)
 #include "cetlib/quiet_unit_test.hpp"
@@ -8,7 +9,7 @@ BOOST_AUTO_TEST_SUITE(SharedMemoryManager_test)
 
 BOOST_AUTO_TEST_CASE(Construct)
 {
-	srand(time(0));
+	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000,0x10000);
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
@@ -20,7 +21,7 @@ BOOST_AUTO_TEST_CASE(Construct)
 
 BOOST_AUTO_TEST_CASE(Attach)
 {
-	srand(time(0));
+	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE(Attach)
 
 BOOST_AUTO_TEST_CASE(DataFlow)
 {
-	srand(time(0));
+	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
@@ -105,7 +106,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 
 BOOST_AUTO_TEST_CASE(Exceptions)
 {
-	srand(time(0));
+	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
@@ -116,9 +117,14 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 
 	// Trying to get an invalid buffer is an exception
 	BOOST_REQUIRE_EXCEPTION(man.ResetReadPos(11), cet::exception, [&](cet::exception e) { return e.category() == "ArgumentOutOfRange"; });
+	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
 
+	man.Attach();
 	// Trying to access a buffer that is in the wrong state is an exception
-	BOOST_REQUIRE_EXCEPTION(man.MarkBufferFull(0),cet::exception, [&](cet::exception e) { return e.category() == "StateAccessViolation"; });
+	BOOST_REQUIRE_EXCEPTION(man.MarkBufferEmpty(0),cet::exception, [&](cet::exception e) { return e.category() == "StateAccessViolation"; });
+	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
+
+	man.Attach();
 
 	// Writing too much data is an exception
 	int buf = man.GetBufferForWriting(false);
@@ -131,15 +137,46 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 	uint8_t data[0x2000];
 	std::generate_n(data, 0x2000, [&]() {return ++n; });
 	BOOST_REQUIRE_EXCEPTION(man.Write(buf, data, 0x2000), cet::exception, [&](cet::exception e) { return e.category() == "SharedMemoryWrite"; });
+	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
+
+	man.Attach();
+	buf = man.GetBufferForWriting(false);
+	BOOST_REQUIRE_EQUAL(man.CheckBuffer(buf, artdaq::SharedMemoryManager::BufferSemaphoreFlags::Writing), true);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 1);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager()[0], buf);
+	BOOST_REQUIRE_EQUAL(man.BufferDataSize(buf), 0);
 	man.Write(buf, data, 0x1000);
 	man.MarkBufferFull(buf);
 
 	// Reading too much data is an exception
 	int readbuf = man.GetBufferForReading();
 	BOOST_REQUIRE_EXCEPTION(man.Read(readbuf, data, 0x1001), cet::exception, [&](cet::exception e) { return e.category() == "SharedMemoryRead"; });
+	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
 
+	man.Attach();
+	man2.Attach();
+
+	buf = man.GetBufferForWriting(false);
+	BOOST_REQUIRE_EQUAL(man.CheckBuffer(buf, artdaq::SharedMemoryManager::BufferSemaphoreFlags::Writing), true);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 1);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager()[0], buf);
+	BOOST_REQUIRE_EQUAL(man.BufferDataSize(buf), 0);
+	man.Write(buf, data, 0x1000);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 1);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager()[0], buf);
+	BOOST_REQUIRE_EQUAL(man.BufferDataSize(buf), 0x1000);
+	man.MarkBufferFull(buf);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 0);
+	BOOST_REQUIRE_EQUAL(man.BufferDataSize(buf), 0x1000);
+
+	readbuf = man.GetBufferForReading();
+	BOOST_REQUIRE_EQUAL(readbuf, buf);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 1);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager()[0], readbuf);
+	BOOST_REQUIRE_EQUAL(man.BufferDataSize(readbuf), 0x1000);
 	// Accessing a buffer that is not owned by the manager is an exception
 	BOOST_REQUIRE_EXCEPTION(man2.MarkBufferEmpty(readbuf), cet::exception, [&](cet::exception e) { return e.category() == "OwnerAccessViolation"; });
+	BOOST_REQUIRE_EQUAL(man2.IsValid(), false);
 
 }
 

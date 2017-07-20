@@ -66,6 +66,12 @@ namespace artdaq
 		 */
 		virtual ~SharedMemoryManager() noexcept;
 
+
+		/**
+		 * \brief Reconnect to the shared memory segment
+		 */
+		void Attach();
+
 		/**
 		 * \brief Finds a buffer that is ready to be read, and reserves it for the calling manager.
 		 * \return The id number of the buffer. -1 indicates no buffers available for read.
@@ -81,24 +87,24 @@ namespace artdaq
 		 * \brief Determine if any buffers are ready for reading
 		 * \return Whether any buffers are ready for reading
 		 */
-		bool ReadyForRead() const;
+		bool ReadyForRead();
 		/**
 		 * \brief Count the number of buffers that are ready for reading
 		 * \return The number of buffers ready for reading
 		 */
-		size_t ReadReadyCount() const;
+		size_t ReadReadyCount();
 		/**
 		 * \brief Determine if any buffers are ready for writing
 		 * \param overwrite Whether to consider buffers that are in the Full and Reading state as ready for write (non-reliable mode)
 		 * \return Whether any buffers are ready for writing
 		 */
-		bool ReadyForWrite(bool overwrite) const;
+		bool ReadyForWrite(bool overwrite);
 		/**
 		 * \brief Count the number of buffers that are ready for writing
 		 * \param overwrite Whether to consider buffers that are in the Full and Reading state as ready for write (non-reliable mode)
 		 * \return The number of buffers ready for writing
 		 */
-		size_t WriteReadyCount(bool overwrite) const;
+		size_t WriteReadyCount(bool overwrite);
 		/**
 		 * \brief Get the list of all buffers currently owned by this manager instance.
 		 * \return A std::deque<int> of buffer IDs currently owned by this manager instance.
@@ -164,7 +170,7 @@ namespace artdaq
 		/**
 		 * \brief Assign a new ID to the current SharedMemoryManager, if one has not yet been assigned
 		 */
-		void GetNewId() { if(manager_id_ == 0xFFFF) manager_id_ = shm_ptr_->next_id.fetch_add(1); }
+		void GetNewId() { if(manager_id_ < 0) manager_id_ = shm_ptr_->next_id.fetch_add(1); }
 		/**
 		 * \brief Get the number of attached SharedMemoryManagers
 		 * \return The number of attached SharedMemoryManagers
@@ -178,7 +184,7 @@ namespace artdaq
 		 * \brief Get the ID number of the current SharedMemoryManager
 		 * \return The ID number of the current SharedMemoryManager
 		 */
-		uint16_t GetMyId() const { return manager_id_; }
+		int GetMyId() const { return manager_id_; }
 
 		/**
 		 * \brief Get the rank of the owner of the Shared Memory (artdaq assigns rank to each artdaq process for data flow)
@@ -254,6 +260,13 @@ namespace artdaq
 		 */
 		void* GetBufferStart(int buffer);
 
+		/**
+		 * \brief Detach from the Shared Memory segment, optionally throwing a cet::exception with the specified properties
+		 * \param throwException Whether to throw an exception after detaching
+		 * \param category Category for the cet::exception
+		 * \param message Message for the cet::exception
+		 */
+		void Detach(bool throwException = false, std::string category = "", std::string message = "");
 	private:
 		struct ShmBuffer
 		{
@@ -268,7 +281,7 @@ namespace artdaq
 		{
 			std::atomic<unsigned int> reader_pos;
 			std::atomic<unsigned int> writer_pos;
-			std::atomic<uint16_t> next_id;
+			std::atomic<int> next_id;
 			int buffer_count;
 			size_t buffer_size;
 			int rank;
@@ -276,8 +289,8 @@ namespace artdaq
 		};
 
 		uint8_t* dataStart_() const;
-		uint8_t* bufferStart_(int buffer) const;
-		ShmBuffer* getBufferInfo_(int buffer) const;
+		uint8_t* bufferStart_(int buffer);
+		ShmBuffer* getBufferInfo_(int buffer);
 		bool checkBuffer_(ShmBuffer* buffer, BufferSemaphoreFlags flags, bool exceptions = true);
 		void touchBuffer_(ShmBuffer* buffer);
 
@@ -285,7 +298,9 @@ namespace artdaq
 		int shm_segment_id_;
 		ShmStruct* shm_ptr_;
 		uint32_t shm_key_;
-		uint16_t manager_id_;
+		size_t shm_buffer_size_;
+		int shm_buffer_count_;
+		int manager_id_;
 		uint64_t buffer_timeout_us_;
 		mutable std::unordered_map<int, std::mutex> buffer_mutexes_;
 		mutable std::mutex search_mutex_;
