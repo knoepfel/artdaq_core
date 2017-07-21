@@ -170,16 +170,16 @@ namespace artdaq
 		/**
 		 * \brief Assign a new ID to the current SharedMemoryManager, if one has not yet been assigned
 		 */
-		void GetNewId() { if(manager_id_ < 0) manager_id_ = shm_ptr_->next_id.fetch_add(1); }
+		void GetNewId() { if(manager_id_ < 0 && IsValid()) manager_id_ = shm_ptr_->next_id.fetch_add(1); }
 		/**
 		 * \brief Get the number of attached SharedMemoryManagers
 		 * \return The number of attached SharedMemoryManagers
 		 */
-		uint16_t GetAttachedCount() const { return shm_ptr_->next_id.load() - 1; }
+		uint16_t GetAttachedCount() const { return IsValid() ? shm_ptr_->next_id.load() - 1 : -1; }
 		/**
 		 * \brief Reset the attached manager count to 0
 		 */
-		void ResetAttachedCount() { if(manager_id_ == 0) shm_ptr_->next_id = 1; }
+		void ResetAttachedCount() { if(manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1; }
 		/**
 		 * \brief Get the ID number of the current SharedMemoryManager
 		 * \return The ID number of the current SharedMemoryManager
@@ -190,13 +190,13 @@ namespace artdaq
 		 * \brief Get the rank of the owner of the Shared Memory (artdaq assigns rank to each artdaq process for data flow)
 		 * \return The rank of the owner of the Shared Memory
 		 */
-		int GetRank() const { return shm_ptr_->rank; }
+		int GetRank() const { return IsValid() ? shm_ptr_->rank : -1; }
 
 		/**
 		 * \brief Set the rank stored in the Shared Memory, if the current instance is the owner of the shared memory
 		 * \param rank Rank to set
 		 */
-		void SetRank(int rank) const { if (manager_id_ == 0) shm_ptr_->rank = rank; }
+		void SetRank(int rank) const { if (manager_id_ == 0 && IsValid()) shm_ptr_->rank = rank; }
 
 		/**
 		 * \brief Is the shared memory pointer valid?
