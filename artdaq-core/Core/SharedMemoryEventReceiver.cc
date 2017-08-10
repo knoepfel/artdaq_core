@@ -8,21 +8,22 @@
 
 using std::string;
 
-artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(uint32_t shm_key, size_t buffer_count, size_t max_event_size_bytes)
-	: SharedMemoryManager(shm_key,buffer_count, max_event_size_bytes)
+artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(uint32_t shm_key)
+	: SharedMemoryManager(shm_key)
 	, current_read_buffer_(-1)
 	, current_header_(nullptr)
 {
+	TLOG_TRACE("SharedMemoryEventReceiver") << "SharedMemoryEventReceiver CONSTRUCTOR" << TLOG_ENDL;
 }
 
-artdaq::detail::RawEventHeader* artdaq::SharedMemoryEventReceiver::ReadHeader(bool& err)
+artdaq::detail::RawEventHeader* artdaq::SharedMemoryEventReceiver::ReadHeader(bool& err, BufferMode mode)
 {
 	if (current_read_buffer_ != -1) {
 		err = !CheckBuffer(current_read_buffer_, BufferSemaphoreFlags::Reading);
 		if (err) return nullptr;
 	}
 	if (current_header_) return current_header_;
-	auto buf = GetBufferForReading();
+	auto buf = GetBufferForReading(mode);
 	if (buf == -1) throw cet::exception("OutOfEvents") << "ReadHeader called but no events are ready! (Did you check ReadyForRead()?)";
 	current_read_buffer_ = buf;
 	ResetReadPos(current_read_buffer_);
@@ -53,6 +54,7 @@ std::set<artdaq::Fragment::type_t> artdaq::SharedMemoryEventReceiver::GetFragmen
 	return output;
 }
 
+
 std::unique_ptr<artdaq::Fragments> artdaq::SharedMemoryEventReceiver::GetFragmentsByType(bool& err, Fragment::type_t type)
 {
 	if (current_read_buffer_ == -1) throw cet::exception("AccessViolation") << "Cannot call GetFragmentsByType when not currently reading a buffer! Call ReadHeader() first!";
@@ -80,6 +82,34 @@ std::unique_ptr<artdaq::Fragments> artdaq::SharedMemoryEventReceiver::GetFragmen
 	}
 
 	return std::move(output);
+}
+
+std::string artdaq::SharedMemoryEventReceiver::toString()
+{
+	std::ostringstream ostr;
+	ostr << SharedMemoryManager::toString() << std::endl;
+
+	ostr << "Buffer Fragment Counts: " << std::endl;
+	for (size_t ii = 0; ii < size(); ++ii)
+	{
+		ostr << "Buffer " << std::to_string(ii) << ": " << std::endl;
+
+		ResetReadPos(ii);
+		IncrementReadPos(ii, sizeof(detail::RawEventHeader));
+
+		while (MoreDataInBuffer(ii))
+		{
+			auto fragHdr = reinterpret_cast<artdaq::detail::RawFragmentHeader*>(GetReadPos(ii));
+			ostr << "    Fragment " << std::to_string(fragHdr->fragment_id) << ": Sequence ID: " << std::to_string(fragHdr->sequence_id) << ", Type:" << std::to_string(fragHdr->type);
+			if (fragHdr->MakeVerboseSystemTypeMap().count(fragHdr->type)) {
+				ostr << " (" << fragHdr->MakeVerboseSystemTypeMap()[fragHdr->type] << ")";
+			}
+			ostr << ", Size: " << std::to_string(fragHdr->word_count) << " words." << std::endl;
+			IncrementReadPos(ii, fragHdr->word_count * sizeof(RawDataType));
+		}
+
+	}
+	return ostr.str();
 }
 
 void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()

@@ -7,6 +7,7 @@
 #include "artdaq-core/Utilities/TimeUtils.hh"
 #include <mutex>
 #include <unordered_map>
+#include <set>
 
 namespace artdaq
 {
@@ -29,6 +30,12 @@ namespace artdaq
 			Reading ///< The buffer is currently being read from
 		};
 
+		enum class BufferMode
+		{
+			Single, ///< The buffer is from a writer to one reader
+			Broadcast, ///< The buffer should be read by each reader
+			Any ///< Enumeration value used as default argument for functions, prioritizes Broadcast mode over Single mode
+		};
 
 		/**
 		 * \brief Convert a BufferSemaphoreFlags variable to its string represenatation
@@ -37,7 +44,7 @@ namespace artdaq
 		 */
 		static std::string FlagToString(BufferSemaphoreFlags flag)
 		{
-			switch(flag)
+			switch (flag)
 			{
 			case BufferSemaphoreFlags::Empty:
 				return "Empty";
@@ -47,6 +54,20 @@ namespace artdaq
 				return "Full";
 			case BufferSemaphoreFlags::Reading:
 				return "Reading";
+			}
+			return "Unknown";
+		}
+
+		static std::string ModeToString(BufferMode mode)
+		{
+			switch (mode)
+			{
+			case BufferMode::Single:
+				return "Single";
+			case BufferMode::Broadcast:
+				return "Broadcast";
+			case BufferMode::Any:
+				return "Any";
 			}
 			return "Unknown";
 		}
@@ -76,7 +97,7 @@ namespace artdaq
 		 * \brief Finds a buffer that is ready to be read, and reserves it for the calling manager.
 		 * \return The id number of the buffer. -1 indicates no buffers available for read.
 		 */
-		int GetBufferForReading();
+		int GetBufferForReading(BufferMode mode = BufferMode::Any);
 		/**
 		 * \brief Finds a buffer that is ready to be written to, and reserves it for the calling manager.
 		 * \param overwrite Whether to consider buffers that are in the Full and Reading state as ready for write (non-reliable mode)
@@ -87,12 +108,12 @@ namespace artdaq
 		 * \brief Determine if any buffers are ready for reading
 		 * \return Whether any buffers are ready for reading
 		 */
-		bool ReadyForRead();
+		bool ReadyForRead(BufferMode mode = BufferMode::Any);
 		/**
 		 * \brief Count the number of buffers that are ready for reading
 		 * \return The number of buffers ready for reading
 		 */
-		size_t ReadReadyCount();
+		size_t ReadReadyCount(BufferMode mode = BufferMode::Any);
 		/**
 		 * \brief Determine if any buffers are ready for writing
 		 * \param overwrite Whether to consider buffers that are in the Full and Reading state as ready for write (non-reliable mode)
@@ -153,8 +174,9 @@ namespace artdaq
 		 * \brief Release a buffer from a writer, marking it Full and ready for a reader
 		 * \param buffer Buffer ID of buffer
 		 * \param destination If desired, a destination manager ID may be specified for a buffer
+		 * \param mode Set the mode of the buffer (default BufferMode::Single)
 		 */
-		void MarkBufferFull(int buffer, int destination = -1);
+		void MarkBufferFull(int buffer, int destination = -1, BufferMode mode = BufferMode::Single);
 		/**
 		 * \brief Release a buffer from a reader, marking it Empty and ready to accept more data
 		 * \param buffer Buffer ID of buffer
@@ -170,7 +192,7 @@ namespace artdaq
 		/**
 		 * \brief Assign a new ID to the current SharedMemoryManager, if one has not yet been assigned
 		 */
-		void GetNewId() { if(manager_id_ < 0 && IsValid()) manager_id_ = shm_ptr_->next_id.fetch_add(1); }
+		void GetNewId() { if (manager_id_ < 0 && IsValid()) manager_id_ = shm_ptr_->next_id.fetch_add(1); }
 		/**
 		 * \brief Get the number of attached SharedMemoryManagers
 		 * \return The number of attached SharedMemoryManagers
@@ -179,7 +201,7 @@ namespace artdaq
 		/**
 		 * \brief Reset the attached manager count to 0
 		 */
-		void ResetAttachedCount() { if(manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1; }
+		void ResetAttachedCount() { if (manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1; }
 		/**
 		 * \brief Get the ID number of the current SharedMemoryManager
 		 * \return The ID number of the current SharedMemoryManager
@@ -267,12 +289,15 @@ namespace artdaq
 		 * \param message Message for the cet::exception
 		 */
 		void Detach(bool throwException = false, std::string category = "", std::string message = "");
+
+		uint64_t GetBufferTimeout() { return buffer_timeout_us_; }
 	private:
 		struct ShmBuffer
 		{
 			size_t writePos;
 			size_t readPos;
 			std::atomic<BufferSemaphoreFlags> sem;
+			std::atomic<BufferMode> mode;
 			std::atomic<int16_t> sem_id;
 			std::atomic<uint64_t> buffer_touch_time;
 		};
@@ -304,6 +329,8 @@ namespace artdaq
 		uint64_t buffer_timeout_us_;
 		mutable std::unordered_map<int, std::mutex> buffer_mutexes_;
 		mutable std::mutex search_mutex_;
+
+		uint64_t last_seen_broadcast_timestamp_;
 	};
 
 }

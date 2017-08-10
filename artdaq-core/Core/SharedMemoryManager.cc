@@ -12,6 +12,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	, manager_id_(-1)
 	, buffer_timeout_us_(buffer_timeout_us)
 	, buffer_mutexes_()
+	, last_seen_broadcast_timestamp_(0)
 {
 	Attach();
 }
@@ -58,32 +59,43 @@ void artdaq::SharedMemoryManager::Attach()
 			<< std::hex << shm_ptr_ << std::dec << TLOG_ENDL;
 		if (shm_ptr_ && shm_ptr_ != (void *)-1)
 		{
-			if (shm_ptr_->ready_magic != 0xCAFE1111 || manager_id_ < 0) {
-				if (manager_id_ == 0)
-				{
-					shm_ptr_->next_id = 1;
-					shm_ptr_->reader_pos = 0;
-					shm_ptr_->writer_pos = 0;
-					shm_ptr_->buffer_size = shm_buffer_size_;
-					shm_ptr_->buffer_count = shm_buffer_count_;
+			if (manager_id_ == 0)
+			{
+				if (shm_ptr_->ready_magic == 0xCAFE1111) {
+					TLOG_ERROR("SharedMemoryManager") << "Owner encountered already-initialized Shared Memory!" << TLOG_ENDL;
+					exit(-2);
+				}
+				TLOG_DEBUG("SharedMemoryManager") << "Owner initializing Shared Memory" << TLOG_ENDL;
+				shm_ptr_->next_id = 1;
+				shm_ptr_->reader_pos = 0;
+				shm_ptr_->writer_pos = 0;
+				shm_ptr_->buffer_size = shm_buffer_size_;
+				shm_ptr_->buffer_count = shm_buffer_count_;
 
-					for (int ii = 0; ii < shm_buffer_count_; ++ii)
-					{
-						getBufferInfo_(ii)->writePos = 0;
-						getBufferInfo_(ii)->readPos = 0;
-						getBufferInfo_(ii)->sem = BufferSemaphoreFlags::Empty;
-						getBufferInfo_(ii)->sem_id = -1;
-					}
-					shm_ptr_->ready_magic = 0xCAFE1111;
-				}
-				else
+				for (int ii = 0; ii < shm_buffer_count_; ++ii)
 				{
-					while (shm_ptr_->ready_magic != 0xCAFE1111) { usleep(1000); }
-					GetNewId();
-					shm_buffer_size_ = shm_ptr_->buffer_size;
-					shm_buffer_count_ = shm_ptr_->buffer_count;
+					getBufferInfo_(ii)->writePos = 0;
+					getBufferInfo_(ii)->readPos = 0;
+					getBufferInfo_(ii)->sem = BufferSemaphoreFlags::Empty;
+					getBufferInfo_(ii)->sem_id = -1;
 				}
+				shm_ptr_->ready_magic = 0xCAFE1111;
 			}
+			else
+			{
+				TLOG_DEBUG("SharedMemoryManager") << "Waiting for owner to initalize Shared Memory" << TLOG_ENDL;
+				while (shm_ptr_->ready_magic != 0xCAFE1111) { usleep(1000); }
+				TLOG_DEBUG("SharedMemoryManager") << "Getting ID from Shared Memory" << TLOG_ENDL;
+				GetNewId();
+				TLOG_DEBUG("SharedMemoryManager") << "Getting Shared Memory Size parameters" << TLOG_ENDL;
+				shm_buffer_size_ = shm_ptr_->buffer_size;
+				shm_buffer_count_ = shm_ptr_->buffer_count;
+			}
+			TLOG_DEBUG("SharedMemoryManager") << "Initialization Complete: "
+				<< "key: 0x" << std::hex << shm_key_
+				<< ", manager ID: " << manager_id_
+				<< ", Buffer size: " << std::to_string(shm_buffer_size_)
+				<< ", Buffer count: " << std::to_string(shm_buffer_count_) << TLOG_ENDL;
 		}
 		else
 		{
@@ -100,25 +112,51 @@ void artdaq::SharedMemoryManager::Attach()
 	}
 }
 
-int artdaq::SharedMemoryManager::GetBufferForReading()
+int artdaq::SharedMemoryManager::GetBufferForReading(BufferMode mode)
 {
 	std::unique_lock<std::mutex> lk(search_mutex_);
 	auto rp = shm_ptr_->reader_pos.load();
-	for (auto ii = 0; ii < shm_buffer_count_; ++ii)
+
+	if (mode == BufferMode::Broadcast || mode == BufferMode::Any)
 	{
-		auto buffer = (ii + rp) % shm_buffer_count_;
-
-		ResetBuffer(buffer);
-
-		auto buf = getBufferInfo_(buffer);
-		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_))
+		// First, check for Broadcast events
+		for (auto ii = 0; ii < shm_buffer_count_; ++ii)
 		{
-			buf->sem_id = manager_id_;
-			buf->sem = BufferSemaphoreFlags::Reading;
-			if (buf->sem_id != manager_id_) continue;
-			buf->readPos = 0;
-			shm_ptr_->reader_pos = (buffer + 1) % shm_buffer_count_;
-			return buffer;
+			auto buffer = (ii + rp) % shm_buffer_count_;
+
+			ResetBuffer(buffer);
+
+			auto buf = getBufferInfo_(buffer);
+			if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && buf->mode == BufferMode::Broadcast)
+			{
+				if (last_seen_broadcast_timestamp_ >= buf->buffer_touch_time) continue;
+				buf->sem_id = manager_id_;
+				buf->readPos = 0;
+				last_seen_broadcast_timestamp_ = buf->buffer_touch_time;
+				return buffer;
+			}
+		}
+	}
+
+	if (mode == BufferMode::Single || mode == BufferMode::Any)
+	{
+		// Then, check for normal events
+		for (auto ii = 0; ii < shm_buffer_count_; ++ii)
+		{
+			auto buffer = (ii + rp) % shm_buffer_count_;
+
+			ResetBuffer(buffer);
+
+			auto buf = getBufferInfo_(buffer);
+			if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_))
+			{
+				buf->sem_id = manager_id_;
+				buf->sem = BufferSemaphoreFlags::Reading;
+				if (buf->sem_id != manager_id_) continue;
+				buf->readPos = 0;
+				shm_ptr_->reader_pos = (buffer + 1) % shm_buffer_count_;
+				return buffer;
+			}
 		}
 	}
 
@@ -153,18 +191,22 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 	return -1;
 }
 
-bool artdaq::SharedMemoryManager::ReadyForRead()
+bool artdaq::SharedMemoryManager::ReadyForRead(BufferMode mode)
 {
 	std::unique_lock<std::mutex> lk(search_mutex_);
 	auto rp = shm_ptr_->reader_pos.load();
 	for (auto ii = 0; ii < shm_buffer_count_; ++ii)
 	{
 		auto buffer = (ii + rp) % shm_buffer_count_;
+		ResetBuffer(buffer);
 		auto buf = getBufferInfo_(buffer);
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_))
 		{
-			TLOG_ARB(13, "SharedMemoryManager") << "ReadyForRead returning true because buffer " << ii << " is ready." << TLOG_ENDL;
-			return true;
+			if (buf->mode == BufferMode::Broadcast && last_seen_broadcast_timestamp_ >= buf->buffer_touch_time) continue;
+			if (mode == BufferMode::Any || buf->mode == mode) {
+				TLOG_ARB(13, "SharedMemoryManager") << "ReadyForRead returning true because buffer " << ii << " is ready." << TLOG_ENDL;
+				return true;
+			}
 		}
 	}
 
@@ -173,15 +215,17 @@ bool artdaq::SharedMemoryManager::ReadyForRead()
 
 }
 
-size_t artdaq::SharedMemoryManager::ReadReadyCount()
+size_t artdaq::SharedMemoryManager::ReadReadyCount(BufferMode mode)
 {
 	std::unique_lock<std::mutex> lk(search_mutex_);
 	size_t count = 0;
 	for (auto ii = 0; ii < shm_buffer_count_; ++ii)
 	{
+		ResetBuffer(ii);
 		auto buf = getBufferInfo_(ii);
-		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_))
+		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (mode == BufferMode::Any || buf->mode == mode))
 		{
+			if (buf->mode == BufferMode::Broadcast && last_seen_broadcast_timestamp_ >= buf->buffer_touch_time) continue;
 			++count;
 		}
 	}
@@ -190,22 +234,7 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount()
 
 bool artdaq::SharedMemoryManager::ReadyForWrite(bool overwrite)
 {
-	std::unique_lock<std::mutex> lk(search_mutex_);
-	auto wp = shm_ptr_->writer_pos.load();
-	for (auto ii = 0; ii < shm_buffer_count_; ++ii)
-	{
-		auto buffer = (ii + wp) % shm_buffer_count_;
-		auto buf = getBufferInfo_(buffer);
-		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
-			|| (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
-		{
-			TLOG_ARB(13, "SharedMemoryManager") << "ReadyForWrite returning true because buffer " << ii << " is ready." << TLOG_ENDL;
-			return true;
-		}
-	}
-
-	//TLOG_ARB(13, "SharedMemoryManager") << "ReadyForWrite returning false" << TLOG_ENDL;
-	return false;
+	return WriteReadyCount(overwrite) > 0;
 
 }
 
@@ -215,6 +244,7 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite)
 	size_t count = 0;
 	for (auto ii = 0; ii < shm_buffer_count_; ++ii)
 	{
+		ResetBuffer(ii);
 		auto buf = getBufferInfo_(ii);
 		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
 			|| (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
@@ -296,7 +326,7 @@ bool artdaq::SharedMemoryManager::CheckBuffer(int buffer, BufferSemaphoreFlags f
 	return checkBuffer_(getBufferInfo_(buffer), flags, false);
 }
 
-void artdaq::SharedMemoryManager::MarkBufferFull(int buffer, int destination)
+void artdaq::SharedMemoryManager::MarkBufferFull(int buffer, int destination, BufferMode mode)
 {
 	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
 	auto shmBuf = getBufferInfo_(buffer);
@@ -305,6 +335,7 @@ void artdaq::SharedMemoryManager::MarkBufferFull(int buffer, int destination)
 		if (shmBuf->sem != BufferSemaphoreFlags::Full)
 			shmBuf->sem = BufferSemaphoreFlags::Full;
 
+		shmBuf->mode = mode;
 		shmBuf->sem_id = destination;
 	}
 }
@@ -317,9 +348,12 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer)
 	touchBuffer_(shmBuf);
 
 	shmBuf->readPos = 0;
-	shmBuf->writePos = 0;
+
+	if (shmBuf->mode != BufferMode::Broadcast) {
+		shmBuf->writePos = 0;
+		shmBuf->sem = BufferSemaphoreFlags::Empty;
+	}
 	shmBuf->sem_id = -1;
-	shmBuf->sem = BufferSemaphoreFlags::Empty;
 }
 
 void artdaq::SharedMemoryManager::ResetBuffer(int buffer)
@@ -327,15 +361,24 @@ void artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
 	auto shmBuf = getBufferInfo_(buffer);
 	if (shmBuf->sem_id != manager_id_ && shmBuf->buffer_touch_time > TimeUtils::gettimeofday_us() - buffer_timeout_us_) return;
+	if (shmBuf->sem_id != manager_id_ && shmBuf->mode == BufferMode::Broadcast && shmBuf->buffer_touch_time > TimeUtils::gettimeofday_us() - (10 * buffer_timeout_us_)) return;
 
 	if (shmBuf->sem == BufferSemaphoreFlags::Reading)
 	{
+		TLOG_WARNING("SharedMemoryManager") << "Stale Read buffer detected! Resetting..." << TLOG_ENDL;
 		shmBuf->readPos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Full;
 		shmBuf->sem_id = -1;
 	}
 	else if (shmBuf->sem == BufferSemaphoreFlags::Writing)
 	{
+		TLOG_WARNING("SharedMemoryManager") << "Stale Write buffer detected! Resetting..." << TLOG_ENDL;
+		shmBuf->writePos = 0;
+		shmBuf->sem = BufferSemaphoreFlags::Empty;
+		shmBuf->sem_id = -1;
+	}
+	else if (shmBuf->sem == BufferSemaphoreFlags::Full && shmBuf->mode == BufferMode::Broadcast) {
+		TLOG_TRACE("SharedMemoryManager") << "Resetting Broadcast Buffer" << TLOG_ENDL;
 		shmBuf->writePos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Empty;
 		shmBuf->sem_id = -1;
@@ -377,10 +420,13 @@ std::string artdaq::SharedMemoryManager::toString()
 {
 	std::ostringstream ostr;
 	ostr << "ShmStruct: " << std::endl
-		<< "Buffer Count: " << shm_buffer_count_ << std::endl
-		<< "Buffer Size: " << std::to_string(shm_buffer_size_) << " bytes" << std::endl
+		<< "Reader Position: " << shm_ptr_->reader_pos << std::endl
+		<< "Writer Position: " << shm_ptr_->writer_pos << std::endl
+		<< "Next ID Number: " << shm_ptr_->next_id << std::endl
+		<< "Buffer Count: " << shm_ptr_->buffer_count << std::endl
+		<< "Buffer Size: " << std::to_string(shm_ptr_->buffer_size) << " bytes" << std::endl
 		<< "Rank of Writer: " << shm_ptr_->rank << std::endl
-		<< "Ready Magic Bytes: " << std::to_string(shm_ptr_->ready_magic) << std::endl << std::endl;
+		<< "Ready Magic Bytes: 0x" << std::hex << shm_ptr_->ready_magic << std::endl << std::endl;
 
 	for (auto ii = 0; ii < shm_buffer_count_; ++ii)
 	{
@@ -389,8 +435,9 @@ std::string artdaq::SharedMemoryManager::toString()
 			<< "writePos: " << std::to_string(buf->writePos) << std::endl
 			<< "readPos: " << std::to_string(buf->readPos) << std::endl
 			<< "sem: " << FlagToString(buf->sem) << std::endl
+			<< "mode: " << ModeToString(buf->mode) << std::endl
 			<< "Owner: " << std::to_string(buf->sem_id.load()) << std::endl
-			<< "Last Touch Time: " << std::to_string(buf->buffer_touch_time) << std::endl << std::endl;
+			<< "Last Touch Time: " << std::to_string(buf->buffer_touch_time / 1000000.0) << std::endl << std::endl;
 	}
 	return ostr.str();
 }
@@ -435,16 +482,17 @@ artdaq::SharedMemoryManager::ShmBuffer* artdaq::SharedMemoryManager::getBufferIn
 
 bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphoreFlags flags, bool exceptions)
 {
-	if (exceptions)
+	if (exceptions && buffer->mode != BufferMode::Broadcast)
 	{
 		if (buffer->sem != flags) Detach(true, "StateAccessViolation", "Shared Memory buffer is not in the correct state! (expected " + FlagToString(flags) + ", actual " + FlagToString(buffer->sem) + ")");
 		if (buffer->sem_id != manager_id_)  Detach(true, "OwnerAccessViolation", "Shared Memory buffer is not owned by this manager instance!");
 	}
-	return buffer->sem_id == manager_id_ && buffer->sem == flags;
+	return  buffer->mode == BufferMode::Broadcast || (buffer->sem_id == manager_id_ && buffer->sem == flags);
 }
 
 void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 {
+	if (buffer->mode == BufferMode::Broadcast && buffer->sem == BufferSemaphoreFlags::Full) return;
 	buffer->buffer_touch_time = TimeUtils::gettimeofday_us();
 }
 

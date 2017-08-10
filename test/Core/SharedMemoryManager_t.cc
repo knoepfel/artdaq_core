@@ -180,4 +180,112 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 
 }
 
+BOOST_AUTO_TEST_CASE(Broadcast)
+{
+	srand(artdaq::TimeUtils::gettimeofday_us());
+	uint32_t key = 0x7357 + rand() % 0x10000000;
+	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
+	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
+	artdaq::SharedMemoryManager man3(key, 10, 0x1000, 0x10000);
+
+	BOOST_REQUIRE_EQUAL(man.ReadyForWrite(false), true);
+	BOOST_REQUIRE_EQUAL(man.WriteReadyCount(false), 10);
+	BOOST_REQUIRE_EQUAL(man.ReadyForRead(), false);
+	BOOST_REQUIRE_EQUAL(man.ReadReadyCount(), 0);
+
+	int buf = man.GetBufferForWriting(false);
+	BOOST_REQUIRE_EQUAL(man.CheckBuffer(buf, artdaq::SharedMemoryManager::BufferSemaphoreFlags::Writing), true);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 1);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager()[0], buf);
+	BOOST_REQUIRE_EQUAL(man2.GetBuffersOwnedByManager().size(), 0);
+	BOOST_REQUIRE_EQUAL(man.BufferDataSize(buf), 0);
+
+	uint8_t n = 0;
+	uint8_t data[0x1000];
+	std::generate_n(data, 0x1000, [&]() {return ++n; });
+	man.Write(buf, data, 0x1000);
+	BOOST_REQUIRE_EQUAL(man.BufferDataSize(buf), 0x1000);
+	BOOST_REQUIRE_EQUAL(man2.BufferDataSize(buf), 0x1000);
+	man.MarkBufferFull(buf, -1, artdaq::SharedMemoryManager::BufferMode::Broadcast);
+	BOOST_REQUIRE_EQUAL(man2.CheckBuffer(buf, artdaq::SharedMemoryManager::BufferSemaphoreFlags::Full), true);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 0);
+
+	BOOST_REQUIRE_EQUAL(man.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), true);
+	BOOST_REQUIRE_EQUAL(man2.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Any), true);
+	BOOST_REQUIRE_EQUAL(man2.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Single), false);
+	BOOST_REQUIRE_EQUAL(man2.ReadReadyCount(), 1);
+
+	auto readbuf = man2.GetBufferForReading();
+	BOOST_REQUIRE_EQUAL(readbuf, buf);
+	BOOST_REQUIRE_EQUAL(man2.GetBuffersOwnedByManager().size(), 1);
+	BOOST_REQUIRE_EQUAL(man.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), false);
+	BOOST_REQUIRE_EQUAL(man3.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), false);
+	BOOST_REQUIRE_EQUAL(man2.CheckBuffer(buf, artdaq::SharedMemoryManager::BufferSemaphoreFlags::Reading), true);
+	BOOST_REQUIRE_EQUAL(man2.MoreDataInBuffer(readbuf), true);
+	uint8_t byte;
+	auto sts = man2.Read(readbuf, &byte, 1);
+	BOOST_REQUIRE_EQUAL(sts, true);
+	BOOST_REQUIRE_EQUAL(byte, 1); // ++n means that the first entry will be 1
+	BOOST_REQUIRE_EQUAL(man2.MoreDataInBuffer(readbuf), true);
+	sts = man2.Read(readbuf, &byte, 1);
+	BOOST_REQUIRE_EQUAL(sts, true);
+	BOOST_REQUIRE_EQUAL(byte, 2); // Second entry is 2
+	man2.IncrementReadPos(readbuf, 0x10);
+	BOOST_REQUIRE_EQUAL(man2.MoreDataInBuffer(readbuf), true);
+	sts = man2.Read(readbuf, &byte, 1);
+	BOOST_REQUIRE_EQUAL(sts, true);
+	BOOST_REQUIRE_EQUAL(byte, 0x13); // Read increments, so it would have read 3, but we added 0x10, so we expect 0x13.
+	man2.ResetReadPos(readbuf);
+	BOOST_REQUIRE_EQUAL(man2.MoreDataInBuffer(readbuf), true);
+	sts = man2.Read(readbuf, &byte, 1);
+	BOOST_REQUIRE_EQUAL(sts, true);
+	BOOST_REQUIRE_EQUAL(byte, 1);
+	man2.IncrementReadPos(readbuf, 0xFFF);
+	BOOST_REQUIRE_EQUAL(man2.MoreDataInBuffer(readbuf), false);
+	man2.MarkBufferEmpty(readbuf);
+	BOOST_REQUIRE_EQUAL(man3.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), true);
+	BOOST_REQUIRE_EQUAL(man3.ReadReadyCount(), 1);
+	BOOST_REQUIRE_EQUAL(man2.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), false);
+	BOOST_REQUIRE_EQUAL(man2.ReadReadyCount(), 0);
+	BOOST_REQUIRE_EQUAL(man.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), true);
+
+
+	readbuf = man3.GetBufferForReading();
+	BOOST_REQUIRE_EQUAL(readbuf, buf);
+	BOOST_REQUIRE_EQUAL(man3.GetBuffersOwnedByManager().size(), 1);
+	BOOST_REQUIRE_EQUAL(man.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), false);
+	BOOST_REQUIRE_EQUAL(man3.CheckBuffer(buf, artdaq::SharedMemoryManager::BufferSemaphoreFlags::Reading), true);
+	BOOST_REQUIRE_EQUAL(man3.MoreDataInBuffer(readbuf), true);
+	sts = man3.Read(readbuf, &byte, 1);
+	BOOST_REQUIRE_EQUAL(sts, true);
+	BOOST_REQUIRE_EQUAL(byte, 1); // ++n means that the first entry will be 1
+	BOOST_REQUIRE_EQUAL(man3.MoreDataInBuffer(readbuf), true);
+	sts = man3.Read(readbuf, &byte, 1);
+	BOOST_REQUIRE_EQUAL(sts, true);
+	BOOST_REQUIRE_EQUAL(byte, 2); // Second entry is 2
+	man3.IncrementReadPos(readbuf, 0x10);
+	BOOST_REQUIRE_EQUAL(man3.MoreDataInBuffer(readbuf), true);
+	sts = man3.Read(readbuf, &byte, 1);
+	BOOST_REQUIRE_EQUAL(sts, true);
+	BOOST_REQUIRE_EQUAL(byte, 0x13); // Read increments, so it would have read 3, but we added 0x10, so we expect 0x13.
+	man3.ResetReadPos(readbuf);
+	BOOST_REQUIRE_EQUAL(man3.MoreDataInBuffer(readbuf), true);
+	sts = man3.Read(readbuf, &byte, 1);
+	BOOST_REQUIRE_EQUAL(sts, true);
+	BOOST_REQUIRE_EQUAL(byte, 1);
+	man3.IncrementReadPos(readbuf, 0xFFF);
+	BOOST_REQUIRE_EQUAL(man3.MoreDataInBuffer(readbuf), false);
+	man3.MarkBufferEmpty(readbuf);
+	BOOST_REQUIRE_EQUAL(man3.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), false);
+	BOOST_REQUIRE_EQUAL(man2.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), false);
+	BOOST_REQUIRE_EQUAL(man.ReadyForRead(artdaq::SharedMemoryManager::BufferMode::Broadcast), true);
+
+	BOOST_REQUIRE_EQUAL(man2.GetBuffersOwnedByManager().size(), 0);
+	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 0);
+	BOOST_REQUIRE_EQUAL(man.WriteReadyCount(false), 9);
+	BOOST_REQUIRE_EQUAL(man.WriteReadyCount(true), 10);
+	sleep(1);
+	BOOST_REQUIRE_EQUAL(man.WriteReadyCount(false), 10);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

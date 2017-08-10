@@ -18,10 +18,8 @@ namespace artdaq
 			/**
 			 * \brief Connect to a Shared Memory segment using the given parameters
 			 * \param shm_key Key of the Shared Memory segment
-			 * \param buffer_count Optional buffer count for shared memory
-			 * \param max_event_size_bytes Optional size for each shared memory buffer
 			 */
-			SharedMemoryEventReceiver(uint32_t shm_key, size_t buffer_count = 0, size_t max_event_size_bytes = 0);
+			SharedMemoryEventReceiver(uint32_t shm_key);
 			/**
 			 * \brief SharedMemoryEventReceiver Destructor
 			 */
@@ -32,7 +30,7 @@ namespace artdaq
 			 * \param err Flag used to indicate if an error has occurred
 			 * \return Pointer to RawEventHeader from buffer
 			 */
-			detail::RawEventHeader* ReadHeader(bool& err);
+			detail::RawEventHeader* ReadHeader(bool& err, BufferMode mode = BufferMode::Any);
 			/**
 			 * \brief Get a set of Fragment Types present in the event
 			 * \param err Flag used to indicate if an error has occurred
@@ -47,6 +45,12 @@ namespace artdaq
 			 * \return std::unique_ptr to a Fragments object containing returned Fragment objects
 			 */
 			std::unique_ptr<Fragments> GetFragmentsByType(bool& err, Fragment::type_t type);
+
+			/**
+			* \brief Write out information about the Shared Memory to a string
+			* \return String containing information about the current Shared Memory buffers
+			*/
+			std::string toString();
 
 			/**
 			 * \brief Release the buffer currently being read to the Empty state
