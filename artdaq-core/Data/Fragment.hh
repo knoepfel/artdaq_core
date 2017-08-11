@@ -277,6 +277,8 @@ public:
 	 */
 	type_t type() const;
 
+	std::string typeString() const;
+
 	/**
 	* \brief Sequence ID of the Fragment, from the Fragment header
 	* \return Sequence ID of the Fragment
@@ -804,6 +806,13 @@ artdaq::Fragment::type_t
 artdaq::Fragment::type() const
 {
 	return static_cast<type_t>(fragmentHeader()->type);
+}
+
+inline
+std::string
+artdaq::Fragment::typeString() const
+{
+	return std::to_string(type()) + (isSystemFragmentType(type()) ? " (" + detail::RawFragmentHeader::SystemTypeToString(type()) + ")" : "");
 }
 
 inline

@@ -360,8 +360,9 @@ void artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 {
 	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
 	auto shmBuf = getBufferInfo_(buffer);
-	if (shmBuf->sem_id != manager_id_ && shmBuf->buffer_touch_time > TimeUtils::gettimeofday_us() - buffer_timeout_us_) return;
-	if (shmBuf->sem_id != manager_id_ && shmBuf->mode == BufferMode::Broadcast && shmBuf->buffer_touch_time > TimeUtils::gettimeofday_us() - (10 * buffer_timeout_us_)) return;
+	if (shmBuf->sem_id == manager_id_) return;
+	if (shmBuf->buffer_touch_time > TimeUtils::gettimeofday_us() - buffer_timeout_us_) return;
+	if (shmBuf->mode == BufferMode::Broadcast && shmBuf->buffer_touch_time > TimeUtils::gettimeofday_us() - (10 * buffer_timeout_us_)) return;
 
 	if (shmBuf->sem == BufferSemaphoreFlags::Reading)
 	{
@@ -370,14 +371,14 @@ void artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 		shmBuf->sem = BufferSemaphoreFlags::Full;
 		shmBuf->sem_id = -1;
 	}
-	else if (shmBuf->sem == BufferSemaphoreFlags::Writing)
-	{
-		TLOG_WARNING("SharedMemoryManager") << "Stale Write buffer detected! Resetting..." << TLOG_ENDL;
-		shmBuf->writePos = 0;
-		shmBuf->sem = BufferSemaphoreFlags::Empty;
-		shmBuf->sem_id = -1;
-	}
-	else if (shmBuf->sem == BufferSemaphoreFlags::Full && shmBuf->mode == BufferMode::Broadcast) {
+	//else if (shmBuf->sem == BufferSemaphoreFlags::Writing)
+	//{
+	//	TLOG_WARNING("SharedMemoryManager") << "Stale Write buffer detected! Resetting..." << TLOG_ENDL;
+	//	shmBuf->writePos = 0;
+	//	shmBuf->sem = BufferSemaphoreFlags::Empty;
+	//	shmBuf->sem_id = -1;
+	//}
+	else if (shmBuf->sem == BufferSemaphoreFlags::Full && shmBuf->mode == BufferMode::Broadcast && shmBuf->sem_id == -1) {
 		TLOG_TRACE("SharedMemoryManager") << "Resetting Broadcast Buffer" << TLOG_ENDL;
 		shmBuf->writePos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Empty;
