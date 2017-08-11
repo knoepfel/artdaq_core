@@ -80,7 +80,7 @@ namespace artdaq
 		 * \param buffer_timeout_us The maximum amount of time a buffer can be left untouched by its owner
 		 * before being returned to its previous state.
 		 */
-		SharedMemoryManager(uint32_t shm_key, size_t buffer_count = 0, size_t max_buffer_size = 0, uint64_t buffer_timeout_us = 10 * 1000000);
+		SharedMemoryManager(uint32_t shm_key, size_t buffer_count = 0, size_t max_buffer_size = 0, uint64_t buffer_timeout_us = 100 * 1000000);
 
 		/**
 		 * \brief SharedMemoryManager Destructor

@@ -22,7 +22,11 @@ artdaq::detail::RawEventHeader* artdaq::SharedMemoryEventReceiver::ReadHeader(bo
 		err = !CheckBuffer(current_read_buffer_, BufferSemaphoreFlags::Reading);
 		if (err) return nullptr;
 	}
-	if (current_header_) return current_header_;
+	if (current_header_)
+	{
+		TLOG_TRACE("SharedMemoryEventReceiver") << "Already have buffer, returning stored header" << TLOG_ENDL;
+		return current_header_;
+	}
 	auto buf = GetBufferForReading(mode);
 	if (buf == -1) throw cet::exception("OutOfEvents") << "ReadHeader called but no events are ready! (Did you check ReadyForRead()?)";
 	current_read_buffer_ = buf;
@@ -114,6 +118,7 @@ std::string artdaq::SharedMemoryEventReceiver::toString()
 
 void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()
 {
+	TLOG_TRACE("SharedMemoryEventReceiver") << "ReleaseBuffer BEGIN" << TLOG_ENDL;
 	try {
 		MarkBufferEmpty(current_read_buffer_);
 	}
@@ -123,4 +128,5 @@ void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()
 	}
 	current_read_buffer_ = -1;
 	current_header_ = nullptr;
+	TLOG_TRACE("SharedMemoryEventReceiver") << "ReleaseBuffer END" << TLOG_ENDL;
 }
