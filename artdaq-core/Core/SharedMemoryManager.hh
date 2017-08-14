@@ -30,6 +30,9 @@ namespace artdaq
 			Reading ///< The buffer is currently being read from
 		};
 
+		/**
+		 * \brief The BufferMode enumeration flags the possible read modes of a given shared memory buffer
+		 */
 		enum class BufferMode
 		{
 			Single, ///< The buffer is from a writer to one reader
@@ -58,6 +61,11 @@ namespace artdaq
 			return "Unknown";
 		}
 
+		/**
+		 * \brief Convert a BufferMode variable to its string representation
+		 * \param mode BufferMode variable to convert
+		 * \return String representation of mode
+		 */
 		static std::string ModeToString(BufferMode mode)
 		{
 			switch (mode)
@@ -95,6 +103,7 @@ namespace artdaq
 
 		/**
 		 * \brief Finds a buffer that is ready to be read, and reserves it for the calling manager.
+		 * \param mode Restrict which read modes we are searching for
 		 * \return The id number of the buffer. -1 indicates no buffers available for read.
 		 */
 		int GetBufferForReading(BufferMode mode = BufferMode::Any);
@@ -106,11 +115,13 @@ namespace artdaq
 		int GetBufferForWriting(bool overwrite);
 		/**
 		 * \brief Determine if any buffers are ready for reading
+		 * \param mode Restrict which read modes we are searching for
 		 * \return Whether any buffers are ready for reading
 		 */
 		bool ReadyForRead(BufferMode mode = BufferMode::Any);
 		/**
 		 * \brief Count the number of buffers that are ready for reading
+		 * \param mode Restrict which read modes we are searching for
 		 * \return The number of buffers ready for reading
 		 */
 		size_t ReadReadyCount(BufferMode mode = BufferMode::Any);
@@ -290,7 +301,12 @@ namespace artdaq
 		 */
 		void Detach(bool throwException = false, std::string category = "", std::string message = "");
 
+		/**
+		 * \brief Gets the configured timeout for buffers to be declared "stale"
+		 * \return The buffer timeout, in microseconds
+		 */
 		uint64_t GetBufferTimeout() { return buffer_timeout_us_; }
+
 	private:
 		struct ShmBuffer
 		{

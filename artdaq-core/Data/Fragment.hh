@@ -277,6 +277,10 @@ public:
 	 */
 	type_t type() const;
 
+	/**
+	 * \brief Print the type of the Fragment
+	 * \return String representation of the Fragment type. For system types, the name will be included in parentheses
+	 */
 	std::string typeString() const;
 
 	/**

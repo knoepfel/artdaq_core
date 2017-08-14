@@ -92,6 +92,11 @@ struct artdaq::detail::RawFragmentHeader
 		};
 	}
 
+	/**
+	 * \brief Print a system type's string name
+	 * \param type Type to print
+	 * \return String with "Name" of type
+	 */
 	static std::string SystemTypeToString(type_t type) {
 		switch (type) {
 		case INVALID_TYPE:

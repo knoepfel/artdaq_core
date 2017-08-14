@@ -28,6 +28,7 @@ namespace artdaq
 			/**
 			 * \brief Get the Event header
 			 * \param err Flag used to indicate if an error has occurred
+			 * \param mode Restrict which read mode buffers are being searched for
 			 * \return Pointer to RawEventHeader from buffer
 			 */
 			detail::RawEventHeader* ReadHeader(bool& err, BufferMode mode = BufferMode::Any);
