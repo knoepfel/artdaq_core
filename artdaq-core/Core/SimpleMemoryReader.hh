@@ -31,7 +31,7 @@ namespace artdaq
 		 * \param shm_key Key of the shared memory to connect to
 		 * \param expectedEventCount The number of events the SimpleMemoryReader should expect
 		 */
-		explicit SimpleMemoryReader( uint32_t shm_key, std::size_t expectedEventCount = 0);
+		explicit SimpleMemoryReader( uint32_t shm_key, uint32_t broadcast_key, std::size_t expectedEventCount = 0);
 
 		/**
 		 * \brief Run until a null pointer is popped off of the RawEventQueue. Throws an excpetion

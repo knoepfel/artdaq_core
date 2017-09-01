@@ -75,4 +75,3 @@ int artdaq::SharedMemoryFragmentManager::ReadFragmentData(RawDataType* destinati
 	active_buffer_ = -1;
 	return 0;
 }
-

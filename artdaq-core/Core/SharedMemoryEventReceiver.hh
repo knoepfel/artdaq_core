@@ -10,20 +10,22 @@
 namespace artdaq
 {
 		/**
-		 * \brief SharedMemoryEventReceiver is a SharedMemoryManager which can receive events (as written by SharedMemoryEventManager) from Shared Memory
+		 * \brief SharedMemoryEventReceiver can receive events (as written by SharedMemoryEventManager) from Shared Memory
 		 */
-		class SharedMemoryEventReceiver : public SharedMemoryManager
+		class SharedMemoryEventReceiver
 		{
 		public:
 			/**
 			 * \brief Connect to a Shared Memory segment using the given parameters
 			 * \param shm_key Key of the Shared Memory segment
 			 */
-			SharedMemoryEventReceiver(uint32_t shm_key);
+			SharedMemoryEventReceiver(uint32_t shm_key, uint32_t broadcast_shm_key);
 			/**
 			 * \brief SharedMemoryEventReceiver Destructor
 			 */
 			virtual ~SharedMemoryEventReceiver() = default;
+			
+			bool ReadyForRead(size_t timeout_us = 1000000);
 
 			/**
 			 * \brief Get the Event header
@@ -31,7 +33,8 @@ namespace artdaq
 			 * \param mode Restrict which read mode buffers are being searched for
 			 * \return Pointer to RawEventHeader from buffer
 			 */
-			detail::RawEventHeader* ReadHeader(bool& err, BufferMode mode = BufferMode::Any);
+			detail::RawEventHeader* ReadHeader(bool& err);
+
 			/**
 			 * \brief Get a set of Fragment Types present in the event
 			 * \param err Flag used to indicate if an error has occurred
@@ -58,9 +61,20 @@ namespace artdaq
 			 */
 			void ReleaseBuffer();
 
+			int GetRank() { return data_.GetRank();}
+
+			int ReadReadyCount() { return data_.ReadReadyCount() + broadcasts_.ReadReadyCount(); }
+
+			size_t size() { return data_.size(); }
+
 		private:
+			std::string printBuffers_(SharedMemoryManager* data_source);
+
 			int current_read_buffer_;
 			detail::RawEventHeader* current_header_;
+			SharedMemoryManager* current_data_source_;
+			SharedMemoryManager data_;
+			SharedMemoryManager broadcasts_;
 		};
 } // artdaq
 
