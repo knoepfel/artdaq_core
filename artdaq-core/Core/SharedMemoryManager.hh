@@ -29,7 +29,7 @@ namespace artdaq
 			Full, ///< The buffer is full, and waiting for a reader
 			Reading ///< The buffer is currently being read from
 		};
-		
+
 		/**
 		 * \brief Convert a BufferSemaphoreFlags variable to its string represenatation
 		 * \param flag BufferSemaphoreFlags variable to convert
@@ -50,7 +50,7 @@ namespace artdaq
 			}
 			return "Unknown";
 		}
-		
+
 		/**
 		 * \brief SharedMemoryManager Constructor
 		 * \param shm_key The key to use when attaching/creating the shared memory segment
@@ -78,14 +78,14 @@ namespace artdaq
 		 * \return The id number of the buffer. -1 indicates no buffers available for read.
 		 */
 		int GetBufferForReading();
-		
+
 		/**
 		 * \brief Finds a buffer that is ready to be written to, and reserves it for the calling manager.
 		 * \param overwrite Whether to consider buffers that are in the Full and Reading state as ready for write (non-reliable mode)
 		 * \return The id number of the buffer. -1 indicates no buffers available for write.
 		 */
 		int GetBufferForWriting(bool overwrite);
-				
+
 		/**
 		 * \brief Whether any buffer is ready for read
 		 * \return True if there is a buffer available
@@ -97,7 +97,7 @@ namespace artdaq
 		 * \return True if there is a buffer available
 		 */
 		bool ReadyForWrite(bool overwrite) { return WriteReadyCount(overwrite) > 0; }
-		
+
 		/**
 		 * \brief Count the number of buffers that are ready for reading
 		 * \return The number of buffers ready for reading
@@ -129,21 +129,21 @@ namespace artdaq
 		 * \param buffer Buffer ID of buffer
 		 */
 		void ResetReadPos(int buffer);
-		
+
 		/**
 		 * \brief Increment the read position for a given buffer
 		 * \param buffer Buffer ID of buffer
 		 * \param read Number of bytes by which to increment read position
 		 */
 		void IncrementReadPos(int buffer, size_t read);
-		
+
 		/**
 		* \brief Increment the write position for a given buffer
 		* \param buffer Buffer ID of buffer
 		* \param written Number of bytes by which to increment write position
 		*/
 		void IncrementWritePos(int buffer, size_t written);
-		
+
 		/**
 		 * \brief Determine if more data is available to be read, based on the read position and data size
 		 * \param buffer Buffer ID of buffer
@@ -166,14 +166,14 @@ namespace artdaq
 		 * \param mode Set the mode of the buffer (default BufferMode::Single)
 		 */
 		void MarkBufferFull(int buffer, int destination = -1);
-		
+
 		/**
 		 * \brief Release a buffer from a reader, marking it Empty and ready to accept more data
 		 * \param buffer Buffer ID of buffer
 		 * \param force Force buffer to empty state (only if manager_id_ == 0)
 		 */
 		void MarkBufferEmpty(int buffer, bool force = false);
-		
+
 		/**
 		 * \brief Resets the buffer from Reading to Full or Writing to Empty. This operation will only have an
 		 * effect if performed by the owning manager or if the ping counter is above the maximum value.
@@ -185,18 +185,18 @@ namespace artdaq
 		 * \brief Assign a new ID to the current SharedMemoryManager, if one has not yet been assigned
 		 */
 		void GetNewId() { if (manager_id_ < 0 && IsValid()) manager_id_ = shm_ptr_->next_id.fetch_add(1); }
-		
+
 		/**
 		 * \brief Get the number of attached SharedMemoryManagers
 		 * \return The number of attached SharedMemoryManagers
 		 */
 		uint16_t GetAttachedCount() const { return IsValid() ? shm_ptr_->next_id.load() - 1 : -1; }
-		
+
 		/**
 		 * \brief Reset the attached manager count to 0
 		 */
 		void ResetAttachedCount() { if (manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1; }
-		
+
 		/**
 		 * \brief Get the ID number of the current SharedMemoryManager
 		 * \return The ID number of the current SharedMemoryManager
@@ -220,7 +220,7 @@ namespace artdaq
 		 * \return Whether the shared memory pointer is valid
 		 */
 		bool IsValid() const { return shm_ptr_ ? true : false; }
-		
+
 		/**
 		 * \brief Get the number of buffers in the shared memory segment
 		 * \return The number of buffers in the shared memory segment
@@ -235,7 +235,7 @@ namespace artdaq
 		 * \return Amount of data written, in bytes
 		 */
 		size_t Write(int buffer, void* data, size_t size);
-		
+
 		/**
 		 * \brief Read size bytes of data from buffer into the given pointer
 		 * \param buffer Buffer ID of buffer
@@ -263,7 +263,7 @@ namespace artdaq
 		 * \return void* pointer to the buffer's current read position
 		 */
 		void* GetReadPos(int buffer);
-		
+
 		/**
 		 * \brief Get a pointer to the current write position of the buffer
 		 * \param buffer Buffer ID of buffer
@@ -294,6 +294,8 @@ namespace artdaq
 
 		size_t GetBufferCount() { return IsValid() ? shm_ptr_->next_sequence_id : 0; }
 
+		uint64_t GetLastSeenBufferID() { return last_seen_id_; }
+
 	private:
 		struct ShmBuffer
 		{
@@ -304,7 +306,7 @@ namespace artdaq
 			std::atomic<size_t> sequence_id;
 			std::atomic<uint64_t> last_touch_time;
 		};
-		
+
 		struct ShmStruct
 		{
 			std::atomic<unsigned int> reader_pos;
