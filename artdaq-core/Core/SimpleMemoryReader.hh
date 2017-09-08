@@ -1,5 +1,5 @@
 #ifndef artdaq_core_Core_SimpleMemoryReader_hh
-#define artdaq_core_Core_SimpleMemoryReader_hh
+#define artdaq_core_Core_SimpleMemoryReader_hh 1
 
 #include "artdaq-core/Core/SharedMemoryEventReceiver.hh"
 #include <thread>
@@ -28,7 +28,8 @@ namespace artdaq
 	public:
 		/**
 		 * \brief Constructs a SimpleMemoryReader
-		 * \param shm_key Key of the shared memory to connect to
+		 * \param shm_key Key of the shared memory segment
+		 * \param broadcast_key Key of the broadcast shared memory segment
 		 * \param expectedEventCount The number of events the SimpleMemoryReader should expect
 		 */
 		explicit SimpleMemoryReader( uint32_t shm_key, uint32_t broadcast_key, std::size_t expectedEventCount = 0);

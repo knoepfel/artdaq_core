@@ -4,9 +4,22 @@
 #include "tracemf.h"
 #include <mutex>
 
+/**
+ * \brief The TraceLock class allows a user to debug the acquisition and releasing of locks, by wrapping the unique_lock<std::mutex> API with TRACE calls
+ */
 class TraceLock {
     public:
+		/**
+		 * \brief Construct a TraceLock
+		 * \param mutex Mutex to hold lock on
+		 * \param level Level to TRACE (in the TraceLock TRACE_NAME)
+		 * \param description Description of lock (to be printed in TRACE calls)
+		 */
         TraceLock(std::mutex& mutex,int level, std::string description);
+
+		/**
+		 * \brief Release the TraceLock
+		 */
         virtual ~TraceLock();
 
     private:

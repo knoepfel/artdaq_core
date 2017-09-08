@@ -1,5 +1,5 @@
 #ifndef artdaq_core_Core_SharedMemoryEventReceiver_hh
-#define artdaq_core_Core_SharedMemoryEventReceiver_hh
+#define artdaq_core_Core_SharedMemoryEventReceiver_hh 1
 
 #include <set>
 
@@ -18,6 +18,7 @@ namespace artdaq
 			/**
 			 * \brief Connect to a Shared Memory segment using the given parameters
 			 * \param shm_key Key of the Shared Memory segment
+			 * \param broadcast_shm_key Key of the broadcast Shared Memory segment
 			 */
 			SharedMemoryEventReceiver(uint32_t shm_key, uint32_t broadcast_shm_key);
 			/**
@@ -25,12 +26,16 @@ namespace artdaq
 			 */
 			virtual ~SharedMemoryEventReceiver() = default;
 			
+			/**
+			 * \brief Determine whether an event is available for reading
+			 * \param timeout_us (Default 1000000) Time to wait for buffer to become available.
+			 * \return Whether an event is available for reading
+			 */
 			bool ReadyForRead(size_t timeout_us = 1000000);
 
 			/**
 			 * \brief Get the Event header
 			 * \param err Flag used to indicate if an error has occurred
-			 * \param mode Restrict which read mode buffers are being searched for
 			 * \return Pointer to RawEventHeader from buffer
 			 */
 			detail::RawEventHeader* ReadHeader(bool& err);
@@ -61,10 +66,22 @@ namespace artdaq
 			 */
 			void ReleaseBuffer();
 
+			/**
+			 * \brief Returns the Rank of the writing process
+			 * \return The rank of the writer process
+			 */
 			int GetRank() { return data_.GetRank();}
 
+			/**
+			 * \brief Get the count of available buffers, both broadcasts and data
+			 * \return The sum of the available data buffer count and the available broadcast buffer count
+			 */
 			int ReadReadyCount() { return data_.ReadReadyCount() + broadcasts_.ReadReadyCount(); }
 
+			/**
+			 * \brief Get the size of the data buffer
+			 * \return The size of the data buffer
+			 */
 			size_t size() { return data_.size(); }
 
 		private:

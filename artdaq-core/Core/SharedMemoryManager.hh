@@ -94,6 +94,7 @@ namespace artdaq
 
 		/**
 		 * \brief Whether any buffer is available for write
+		 * \param overwrite Whether to allow overwriting full buffers
 		 * \return True if there is a buffer available
 		 */
 		bool ReadyForWrite(bool overwrite) { return WriteReadyCount(overwrite) > 0; }
@@ -163,7 +164,6 @@ namespace artdaq
 		 * \brief Release a buffer from a writer, marking it Full and ready for a reader
 		 * \param buffer Buffer ID of buffer
 		 * \param destination If desired, a destination manager ID may be specified for a buffer
-		 * \param mode Set the mode of the buffer (default BufferMode::Single)
 		 */
 		void MarkBufferFull(int buffer, int destination = -1);
 
@@ -292,8 +292,16 @@ namespace artdaq
 		 */
 		uint64_t GetBufferTimeout() { return IsValid() ? shm_ptr_->buffer_timeout_us : 0; }
 
+		/**
+		 * \brief Gets the number of buffers which have been processed through the Shared Memory
+		 * \return The number of buffers processed by the Shared Memory
+		 */
 		size_t GetBufferCount() { return IsValid() ? shm_ptr_->next_sequence_id : 0; }
 
+		/**
+		 * \brief Gets the highest buffer number either written or read by this SharedMemoryManager
+		 * \return The highest buffer id written or read by this SharedMemoryManager
+		 */
 		uint64_t GetLastSeenBufferID() { return last_seen_id_; }
 
 	private:

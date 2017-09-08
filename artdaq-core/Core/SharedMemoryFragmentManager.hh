@@ -1,5 +1,5 @@
 #ifndef ARTDAQ_CORE_CORE_SHARED_MEMORY_FRAGMENT_MANAGER_HH
-#define ARTDAQ_CORE_CORE_SHARED_MEMORY_FRAGMENT_MANAGER_HH
+#define ARTDAQ_CORE_CORE_SHARED_MEMORY_FRAGMENT_MANAGER_HH 1
 
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "artdaq-core/Data/RawEvent.hh"
