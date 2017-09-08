@@ -18,7 +18,7 @@ artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(uint32_t shm_key, u
 	TLOG_TRACE("SharedMemoryEventReceiver") << "SharedMemoryEventReceiver CONSTRUCTOR" << TLOG_ENDL;
 }
 
-bool artdaq::SharedMemoryEventReceiver::ReadyForRead(size_t timeout_us)
+bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t timeout_us)
 {
 	TLOG_TRACE("SharedMemoryEventReceiver") << "ReadyForRead BEGIN" << TLOG_ENDL;
 	if (current_read_buffer_ != -1 && current_data_source_ && current_header_)
@@ -36,7 +36,7 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(size_t timeout_us)
 			buf = broadcasts_.GetBufferForReading();
 			current_data_source_ = &broadcasts_;
 		}
-		else if (data_.ReadyForRead())
+		else if (!broadcast && data_.ReadyForRead())
 		{
 			buf = data_.GetBufferForReading();
 			current_data_source_ = &data_;
@@ -161,7 +161,7 @@ std::string artdaq::SharedMemoryEventReceiver::toString()
 		ostr << "Broadcast Buffer Fragment Counts: " << std::endl;
 		ostr << printBuffers_(&broadcasts_);
 	}
-	
+
 	return ostr.str();
 }
 
@@ -170,7 +170,7 @@ void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()
 	TLOG_TRACE("SharedMemoryEventReceiver") << "ReleaseBuffer BEGIN" << TLOG_ENDL;
 	try
 	{
-			current_data_source_->MarkBufferEmpty(current_read_buffer_);
+		current_data_source_->MarkBufferEmpty(current_read_buffer_);
 	}
 	catch (cet::exception e)
 	{
