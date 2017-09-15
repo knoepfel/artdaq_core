@@ -10,6 +10,7 @@ using std::string;
 
 artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(uint32_t shm_key, uint32_t broadcast_shm_key)
 	: current_read_buffer_(-1)
+	, initialized_(false)
 	, current_header_(nullptr)
 	, current_data_source_(nullptr)
 	, data_(shm_key)
@@ -47,6 +48,23 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 			current_read_buffer_ = buf;
 			current_data_source_->ResetReadPos(current_read_buffer_);
 			current_header_ = reinterpret_cast<detail::RawEventHeader*>(current_data_source_->GetReadPos(buf));
+
+			// Ignore any Init fragments after the first
+			if (current_data_source_ == &broadcasts_)
+			{
+				bool err;
+				auto types = GetFragmentTypes(err);
+				if (!err && types.count(artdaq::Fragment::InitFragmentType) && initialized_)
+				{
+					ReleaseBuffer();
+					continue;
+				}
+				else if (!err && types.count(artdaq::Fragment::InitFragmentType))
+				{
+					initialized_ = true;
+				}
+			}
+
 			return true;
 		}
 		current_data_source_ = nullptr;
@@ -61,7 +79,14 @@ artdaq::detail::RawEventHeader* artdaq::SharedMemoryEventReceiver::ReadHeader(bo
 	if (current_read_buffer_ != -1 && current_data_source_)
 	{
 		err = !current_data_source_->CheckBuffer(current_read_buffer_, SharedMemoryManager::BufferSemaphoreFlags::Reading);
-		if (err) return nullptr;
+		if (err)
+		{
+			TLOG_WARNING("SharedMemoryEventReceiver") << "Buffer was in incorrect state, resetting" << TLOG_ENDL;
+			current_data_source_ = nullptr;
+			current_read_buffer_ = -1;
+			current_header_ = nullptr;
+			return nullptr;
+		}
 	}
 	TLOG_TRACE("SharedMemoryEventReceiver") << "Already have buffer, returning stored header" << TLOG_ENDL;
 	return current_header_;

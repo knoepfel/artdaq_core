@@ -131,6 +131,7 @@ namespace artdaq
 		 */
 		void ResetReadPos(int buffer);
 
+		void ResetWritePos(int buffer);
 		/**
 		 * \brief Increment the read position for a given buffer
 		 * \param buffer Buffer ID of buffer
@@ -175,11 +176,12 @@ namespace artdaq
 		void MarkBufferEmpty(int buffer, bool force = false);
 
 		/**
-		 * \brief Resets the buffer from Reading to Full or Writing to Empty. This operation will only have an
-		 * effect if performed by the owning manager or if the ping counter is above the maximum value.
+		 * \brief Resets the buffer from Reading to Full. This operation will only have an
+		 * effect if performed by the owning manager or if the buffer has timed out.
 		 * \param buffer Buffer ID of buffer
+		 * \return Whether the buffer has exceeded the maximum age
 		 */
-		void ResetBuffer(int buffer);
+		bool ResetBuffer(int buffer);
 
 		/**
 		 * \brief Assign a new ID to the current SharedMemoryManager, if one has not yet been assigned
@@ -190,12 +192,12 @@ namespace artdaq
 		 * \brief Get the number of attached SharedMemoryManagers
 		 * \return The number of attached SharedMemoryManagers
 		 */
-		uint16_t GetAttachedCount() const { return IsValid() ? shm_ptr_->next_id.load() - 1 : -1; }
+		uint16_t GetAttachedCount() const  { return IsValid() ? shm_ptr_->next_id.load() - 1 : -1; }
 
 		/**
 		 * \brief Reset the attached manager count to 0
 		 */
-		void ResetAttachedCount() { if (manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1; }
+		void ResetAttachedCount() const  { if (manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1; }
 
 		/**
 		 * \brief Get the ID number of the current SharedMemoryManager
@@ -207,13 +209,13 @@ namespace artdaq
 		 * \brief Get the rank of the owner of the Shared Memory (artdaq assigns rank to each artdaq process for data flow)
 		 * \return The rank of the owner of the Shared Memory
 		 */
-		int GetRank() const { return IsValid() ? shm_ptr_->rank : -1; }
+		int GetRank()const  { return IsValid() ? shm_ptr_->rank : -1; }
 
 		/**
 		 * \brief Set the rank stored in the Shared Memory, if the current instance is the owner of the shared memory
 		 * \param rank Rank to set
 		 */
-		void SetRank(int rank) const { if (manager_id_ == 0 && IsValid()) shm_ptr_->rank = rank; }
+		void SetRank(int rank) { if (manager_id_ == 0 && IsValid()) shm_ptr_->rank = rank; }
 
 		/**
 		 * \brief Is the shared memory pointer valid?
@@ -290,20 +292,21 @@ namespace artdaq
 		 * \brief Gets the configured timeout for buffers to be declared "stale"
 		 * \return The buffer timeout, in microseconds
 		 */
-		uint64_t GetBufferTimeout() { return IsValid() ? shm_ptr_->buffer_timeout_us : 0; }
+		uint64_t GetBufferTimeout() const { return IsValid() ? shm_ptr_->buffer_timeout_us : 0; }
 
 		/**
 		 * \brief Gets the number of buffers which have been processed through the Shared Memory
 		 * \return The number of buffers processed by the Shared Memory
 		 */
-		size_t GetBufferCount() { return IsValid() ? shm_ptr_->next_sequence_id : 0; }
+		size_t GetBufferCount() const { return IsValid() ? shm_ptr_->next_sequence_id : 0; }
 
 		/**
 		 * \brief Gets the highest buffer number either written or read by this SharedMemoryManager
 		 * \return The highest buffer id written or read by this SharedMemoryManager
 		 */
-		uint64_t GetLastSeenBufferID() { return last_seen_id_; }
+		uint64_t GetLastSeenBufferID() const { return last_seen_id_; }
 
+		void SetMinWriteSize(size_t size) { min_write_size_ = size; }
 	private:
 		struct ShmBuffer
 		{
@@ -346,6 +349,7 @@ namespace artdaq
 		mutable std::mutex search_mutex_;
 
 		uint64_t last_seen_id_;
+		size_t min_write_size_;
 	};
 
 }

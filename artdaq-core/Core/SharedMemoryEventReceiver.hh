@@ -89,6 +89,7 @@ namespace artdaq
 		std::string printBuffers_(SharedMemoryManager* data_source);
 
 		int current_read_buffer_;
+		bool initialized_;
 		detail::RawEventHeader* current_header_;
 		SharedMemoryManager* current_data_source_;
 		SharedMemoryManager data_;

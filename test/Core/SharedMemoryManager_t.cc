@@ -1,7 +1,8 @@
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "artdaq-core/Utilities/TimeUtils.hh"
+#include "artdaq-core/Utilities/configureMessageFacility.hh"
 
-#define BOOST_TEST_MODULE(SharedMemoryManager_t)
+#define BOOST_TEST_MODULE SharedMemoryManager_t
 #include "cetlib/quiet_unit_test.hpp"
 #include "cetlib_except/exception.h"
 
@@ -11,6 +12,7 @@ BOOST_AUTO_TEST_SUITE(SharedMemoryManager_test)
 
 BOOST_AUTO_TEST_CASE(Construct)
 {
+	artdaq::configureMessageFacility("SharedMemoryManager_t", true, true);
 	TLOG_DEBUG("SharedMemoryManager_t") << "BEGIN TEST Construct" << TLOG_ENDL;
 	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
@@ -114,11 +116,12 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 
 BOOST_AUTO_TEST_CASE(Exceptions)
 {
+	artdaq::configureMessageFacility("SharedMemoryManager_t", true, true);
 	TLOG_DEBUG("SharedMemoryManager_t") << "BEGIN TEST Exceptions" << TLOG_ENDL;
 	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
-	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
-	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
+	artdaq::SharedMemoryManager man(key, 10, 0x1000);
+	artdaq::SharedMemoryManager man2(key, 10, 0x1000);
 	BOOST_REQUIRE_EQUAL(man.ReadyForWrite(false), true);
 	BOOST_REQUIRE_EQUAL(man.WriteReadyCount(false), 10);
 	BOOST_REQUIRE_EQUAL(man.ReadyForRead(), false);
@@ -149,6 +152,7 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
 
 	man.Attach();
+	man2.Attach();
 	buf = man.GetBufferForWriting(false);
 	BOOST_REQUIRE_EQUAL(man.CheckBuffer(buf, artdaq::SharedMemoryManager::BufferSemaphoreFlags::Writing), true);
 	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 1);
@@ -158,13 +162,19 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 	man.MarkBufferFull(buf);
 
 	// Reading too much data is an exception
-	int readbuf = man.GetBufferForReading();
-	BOOST_REQUIRE_EXCEPTION(man.Read(readbuf, data, 0x1001), cet::exception, [&](cet::exception e) { return e.category() == "SharedMemoryRead"; });
-	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
+	BOOST_REQUIRE_EQUAL(man2.IsValid(), true);
+	BOOST_REQUIRE_EQUAL(man2.ReadyForRead(), true);
+	BOOST_REQUIRE_EQUAL(man2.ReadReadyCount(), 1);
+
+	int readbuf = man2.GetBufferForReading();
+	BOOST_REQUIRE_EQUAL(readbuf, buf);
+	BOOST_REQUIRE_EXCEPTION(man2.Read(readbuf, data, 0x1001), cet::exception, [&](cet::exception e) { return e.category() == "SharedMemoryRead"; });
+	BOOST_REQUIRE_EQUAL(man2.IsValid(), false);
 
 	man.Attach();
 	man2.Attach();
 
+	man.MarkBufferEmpty(readbuf, true);
 	buf = man.GetBufferForWriting(false);
 	BOOST_REQUIRE_EQUAL(man.CheckBuffer(buf, artdaq::SharedMemoryManager::BufferSemaphoreFlags::Writing), true);
 	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 1);
@@ -178,14 +188,16 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 0);
 	BOOST_REQUIRE_EQUAL(man.BufferDataSize(buf), 0x1000);
 
-	readbuf = man.GetBufferForReading();
+	BOOST_REQUIRE_EQUAL(man2.ReadyForRead(), true);
+	BOOST_REQUIRE_EQUAL(man2.ReadReadyCount(), 1);
+	readbuf = man2.GetBufferForReading();
 	BOOST_REQUIRE_EQUAL(readbuf, buf);
-	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 1);
-	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager()[0], readbuf);
-	BOOST_REQUIRE_EQUAL(man.BufferDataSize(readbuf), 0x1000);
+	BOOST_REQUIRE_EQUAL(man2.GetBuffersOwnedByManager().size(), 1);
+	BOOST_REQUIRE_EQUAL(man2.GetBuffersOwnedByManager()[0], readbuf);
+	BOOST_REQUIRE_EQUAL(man2.BufferDataSize(readbuf), 0x1000);
 	// Accessing a buffer that is not owned by the manager is an exception
-	BOOST_REQUIRE_EXCEPTION(man2.MarkBufferEmpty(readbuf), cet::exception, [&](cet::exception e) { return e.category() == "OwnerAccessViolation"; });
-	BOOST_REQUIRE_EQUAL(man2.IsValid(), false);
+	BOOST_REQUIRE_EXCEPTION(man.MarkBufferEmpty(readbuf), cet::exception, [&](cet::exception e) { return e.category() == "OwnerAccessViolation"; });
+	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
 
 	TLOG_DEBUG("SharedMemoryManager_t") << "END TEST Exceptions" << TLOG_ENDL;
 }
@@ -221,7 +233,7 @@ BOOST_AUTO_TEST_CASE(Broadcast)
 	BOOST_REQUIRE_EQUAL(man2.CheckBuffer(buf, artdaq::SharedMemoryManager::BufferSemaphoreFlags::Full), true);
 	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 0);
 
-	BOOST_REQUIRE_EQUAL(man.ReadyForRead(), true);
+	BOOST_REQUIRE_EQUAL(man.ReadyForRead(), false);
 	BOOST_REQUIRE_EQUAL(man2.ReadyForRead(), true);
 	BOOST_REQUIRE_EQUAL(man2.ReadReadyCount(), 1);
 
@@ -257,7 +269,7 @@ BOOST_AUTO_TEST_CASE(Broadcast)
 	BOOST_REQUIRE_EQUAL(man3.ReadReadyCount(), 1);
 	BOOST_REQUIRE_EQUAL(man2.ReadyForRead(), false);
 	BOOST_REQUIRE_EQUAL(man2.ReadReadyCount(), 0);
-	BOOST_REQUIRE_EQUAL(man.ReadyForRead(), true);
+	BOOST_REQUIRE_EQUAL(man.ReadyForRead(), false);
 
 
 	readbuf = man3.GetBufferForReading();
@@ -288,7 +300,7 @@ BOOST_AUTO_TEST_CASE(Broadcast)
 	man3.MarkBufferEmpty(readbuf);
 	BOOST_REQUIRE_EQUAL(man3.ReadyForRead(), false);
 	BOOST_REQUIRE_EQUAL(man2.ReadyForRead(), false);
-	BOOST_REQUIRE_EQUAL(man.ReadyForRead(), true);
+	BOOST_REQUIRE_EQUAL(man.ReadyForRead(), false);
 
 	BOOST_REQUIRE_EQUAL(man2.GetBuffersOwnedByManager().size(), 0);
 	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 0);
