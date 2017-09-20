@@ -356,7 +356,7 @@ void artdaq::SharedMemoryManager::IncrementReadPos(int buffer, size_t read)
 	buf->readPos = buf->readPos + read;
 	TLOG_ARB(13, "SharedMemoryManager") << "IncrementReadPos: buffer= " << buffer << ", New readPos is " << std::to_string(buf->readPos) << TLOG_ENDL;
 	if (read == 0)
-		Detach(true, "LogicError", "Cannot increment Read pos by 0! (buffer=" + std::to_string(buffer) + ", readPos=" + std::to_string(buf->readPos) + ")");
+		Detach(true, "LogicError", "Cannot increment Read pos by 0! (buffer=" + std::to_string(buffer) + ", readPos=" + std::to_string(buf->readPos) + ", writePos=" +std::to_string(buf->writePos) + ")");
 }
 
 void artdaq::SharedMemoryManager::IncrementWritePos(int buffer, size_t written)
@@ -532,20 +532,16 @@ std::string artdaq::SharedMemoryManager::toString()
 void* artdaq::SharedMemoryManager::GetReadPos(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
-	touchBuffer_(buf);
 	return bufferStart_(buffer) + buf->readPos;
 }
 void* artdaq::SharedMemoryManager::GetWritePos(int buffer)
 {
 	auto buf = getBufferInfo_(buffer);
-	touchBuffer_(buf);
 	return bufferStart_(buffer) + buf->writePos;
 }
 
 void* artdaq::SharedMemoryManager::GetBufferStart(int buffer)
 {
-	auto buf = getBufferInfo_(buffer);
-	touchBuffer_(buf);
 	return bufferStart_(buffer);
 }
 
@@ -587,6 +583,8 @@ bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphor
 
 void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 {
+	if (buffer->sem_id != manager_id_) return;
+	TLOG_TRACE("SharedMemoryManager") << "touchBuffer_: Touching buffer with sequence_id " << std::to_string(buffer->sequence_id) << TLOG_ENDL;
 	buffer->last_touch_time = TimeUtils::gettimeofday_us();
 }
 

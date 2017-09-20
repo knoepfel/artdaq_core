@@ -33,6 +33,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	TRACE(4, "configureMessageFacility lvlmskSg set to 0x%llx", lvls);
 #endif
 
+	std::string logfileDir = "";
 	if (logRootString != nullptr)
 	{
 		if (!BFS::exists(logRootString))
@@ -44,7 +45,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		}
 		else
 		{
-			std::string logfileDir(logRootString);
+			logfileDir = logRootString;
 			logfileDir.append("/");
 			logfileDir.append(progname);
 
@@ -121,7 +122,19 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		}
 	}
 
-	if (logfileName.length() > 0)
+	if (artdaqMfextensionsDir != nullptr)
+	{
+		ss << "  file: { "
+			<< "    type: \"GenFile\" threshold: \"DEBUG\" sep: \"-\" "
+			<< " file_name_prefix: \"" << progname << "\" ";
+		if (logfileDir.size())
+		{
+			ss << " base_directory: \"" << logfileDir << "\"";
+		}
+		ss << "      append : false "
+			<< "    } ";
+	}
+	else if (logfileName.length() > 0)
 	{
 		ss << "    file : { "
 			<< "      type : \"file\" threshold : \"DEBUG\" "

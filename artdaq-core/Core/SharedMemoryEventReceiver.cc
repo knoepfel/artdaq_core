@@ -42,11 +42,11 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 			buf = data_.GetBufferForReading();
 			current_data_source_ = &data_;
 		}
-		if (buf != -1)
+		if (buf != -1 && current_data_source_)
 		{
 			TLOG_TRACE("SharedMemoryEventReceiver") << "ReadyForRead Found buffer, returning true" << TLOG_ENDL;
 			current_read_buffer_ = buf;
-			current_data_source_->ResetReadPos(current_read_buffer_);
+			current_data_source_->ResetReadPos(buf);
 			current_header_ = reinterpret_cast<detail::RawEventHeader*>(current_data_source_->GetReadPos(buf));
 
 			// Ignore any Init fragments after the first
