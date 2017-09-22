@@ -192,12 +192,12 @@ namespace artdaq
 		 * \brief Get the number of attached SharedMemoryManagers
 		 * \return The number of attached SharedMemoryManagers
 		 */
-		uint16_t GetAttachedCount() const  { return IsValid() ? shm_ptr_->next_id.load() - 1 : -1; }
+		uint16_t GetAttachedCount() const { return IsValid() ? shm_ptr_->next_id.load() - 1 : -1; }
 
 		/**
 		 * \brief Reset the attached manager count to 0
 		 */
-		void ResetAttachedCount() const  { if (manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1; }
+		void ResetAttachedCount() const { if (manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1; }
 
 		/**
 		 * \brief Get the ID number of the current SharedMemoryManager
@@ -209,7 +209,7 @@ namespace artdaq
 		 * \brief Get the rank of the owner of the Shared Memory (artdaq assigns rank to each artdaq process for data flow)
 		 * \return The rank of the owner of the Shared Memory
 		 */
-		int GetRank()const  { return IsValid() ? shm_ptr_->rank : -1; }
+		int GetRank()const { return IsValid() ? shm_ptr_->rank : -1; }
 
 		/**
 		 * \brief Set the rank stored in the Shared Memory, if the current instance is the owner of the shared memory
@@ -304,7 +304,9 @@ namespace artdaq
 		 * \brief Gets the highest buffer number either written or read by this SharedMemoryManager
 		 * \return The highest buffer id written or read by this SharedMemoryManager
 		 */
-		uint64_t GetLastSeenBufferID() const { return last_seen_id_; }
+		size_t GetLastSeenBufferID() const { return last_seen_id_; }
+
+		size_t GetLowestSeqIDRead() const { return IsValid() ? shm_ptr_->lowest_seq_id_read : 0; }
 
 		void SetMinWriteSize(size_t size) { min_write_size_ = size; }
 	private:
@@ -326,6 +328,7 @@ namespace artdaq
 			size_t buffer_size;
 			size_t buffer_timeout_us;
 			size_t next_sequence_id;
+			size_t lowest_seq_id_read;
 			bool destructive_read_mode;
 
 			std::atomic<int> next_id;
@@ -348,7 +351,7 @@ namespace artdaq
 		mutable std::unordered_map<int, std::mutex> buffer_mutexes_;
 		mutable std::mutex search_mutex_;
 
-		uint64_t last_seen_id_;
+		size_t last_seen_id_;
 		size_t min_write_size_;
 	};
 

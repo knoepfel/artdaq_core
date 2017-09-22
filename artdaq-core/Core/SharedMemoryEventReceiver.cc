@@ -201,6 +201,10 @@ void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()
 	{
 		TLOG_WARNING("SharedMemoryEventReceiver") << "A cet::exception occured while trying to release the buffer: " << e << TLOG_ENDL;
 	}
+	catch (...)
+	{
+		TLOG_ERROR("SharedMemoryEventReceiver") << "An unknown exception occured while trying to release the buffer" << TLOG_ENDL;
+	}
 	current_read_buffer_ = -1;
 	current_header_ = nullptr;
 	current_data_source_ = nullptr;
