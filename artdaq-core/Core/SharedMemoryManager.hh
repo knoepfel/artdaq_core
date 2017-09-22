@@ -131,6 +131,10 @@ namespace artdaq
 		 */
 		void ResetReadPos(int buffer);
 
+		/**
+		 * \brief Set the write position of the given buffer to the beginning of the buffer
+		 * \param buffer Buffer ID of buffer
+		 */
 		void ResetWritePos(int buffer);
 		/**
 		 * \brief Increment the read position for a given buffer
@@ -306,8 +310,15 @@ namespace artdaq
 		 */
 		size_t GetLastSeenBufferID() const { return last_seen_id_; }
 
+		/**
+		 * \brief Gets the lowest sequence ID that has been read by any reader, as reported by the readers.
+		 */
 		size_t GetLowestSeqIDRead() const { return IsValid() ? shm_ptr_->lowest_seq_id_read : 0; }
 
+		/**
+		 * \brief Sets the threshold after which a buffer should be considered "non-empty" (in case of default headers)
+		 * \param size Size (in bytes) after which a buffer will be considered non-empty
+		 */
 		void SetMinWriteSize(size_t size) { min_write_size_ = size; }
 	private:
 		struct ShmBuffer
