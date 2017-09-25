@@ -120,11 +120,10 @@ inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment
 		artdaq::detail::RawFragmentHeader::num_words() +
 		words_to_frag_words_(Metadata::size_words))
 	{
-		std::cerr << "artdaq_Fragment size: " << artdaq_Fragment_.size() << std::endl;
-		std::cerr << "Expected size: " << artdaq::detail::RawFragmentHeader::num_words() +
-			words_to_frag_words_(Metadata::size_words) << std::endl;
+		TLOG_ERROR("ContainerFragmentLoader") << "ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object" << TLOG_ENDL;
+		TLOG_ERROR("ContainerFragmentLoader") <<"artdaq_Fragment size: " << artdaq_Fragment_.size() << ", Expected size: " << artdaq::detail::RawFragmentHeader::num_words() +	words_to_frag_words_(Metadata::size_words) << TLOG_ENDL;
 
-		throw cet::exception("ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object");
+		throw cet::exception("InvalidFragment") << "ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object";
 	}
 }
 
@@ -145,11 +144,18 @@ inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 
 inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 {
+	if (metadata()->block_count >= CONTAINER_FRAGMENT_COUNT_MAX)
+	{
+		TLOG_ERROR("ContainerFragmentLoader") << "addFragment: Fragment is full, cannot add more fragments!" << TLOG_ENDL;
+		throw cet::exception("ContainerFull") << "ContainerFragmentLoader::addFragment: Fragment is full, cannot add more fragments!";
+	}
+
 	TRACE(4, "ContainerFragmentLoader::addFragment: Adding Fragment with payload size %llu to Container", (unsigned long long)frag.dataSizeBytes());
 	if (metadata()->fragment_type == Fragment::EmptyFragmentType) metadata()->fragment_type = frag.type();
 	else if (frag.type() != metadata()->fragment_type)
 	{
-		throw cet::exception("ContainerFragmentLoader::addFragment: Trying to add a fragment of different type than what's already been added!");
+		TLOG_ERROR("ContainerFragmentLoader") << "addFragment: Trying to add a fragment of different type than what's already been added!" << TLOG_ENDL;
+		throw cet::exception("WrongFragmentType") << "ContainerFragmentLoader::addFragment: Trying to add a fragment of different type than what's already been added!";
 	}
 	TRACE(4, "ContainerFragmentLoader::addFragment: Payload Size is %llu, lastFragmentIndex is %llu, and frag.size is %llu", (unsigned long long)artdaq_Fragment_.dataSizeBytes(), (unsigned long long)lastFragmentIndex(), (unsigned long long)frag.sizeBytes());
 	if (artdaq_Fragment_.dataSizeBytes() < lastFragmentIndex() + frag.sizeBytes())
