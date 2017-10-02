@@ -33,9 +33,10 @@ public:
 	/**
 	 * \brief Constructs the ContainerFragmentLoader
 	 * \param f A Fragment object containing a Fragment header.
+	 * \param expectedFragmentType The type of fragment which will be put into this ContainerFragment
 	 * \exception cet::exception if the Fragment input has inconsistent Header information
 	 */
-	explicit ContainerFragmentLoader(Fragment& f);
+	explicit ContainerFragmentLoader(Fragment& f, Fragment::type_t expectedFragmentType);
 
 	// ReSharper disable once CppMemberFunctionMayBeConst
 	/**
@@ -101,14 +102,14 @@ private:
 	void* dataEnd_() { return reinterpret_cast<void*>(dataBegin_() + lastFragmentIndex()); }
 };
 
-inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment& f) :
+inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment& f, artdaq::Fragment::type_t expectedFragmentType = Fragment::EmptyFragmentType) :
 	ContainerFragment(f)
 	, artdaq_Fragment_(f)
 {
 	artdaq_Fragment_.setSystemType(Fragment::ContainerFragmentType);
 	Metadata m;
 	m.block_count = 0;
-	m.fragment_type = Fragment::EmptyFragmentType;
+	m.fragment_type = expectedFragmentType;
 	m.missing_data = false;
 	for (int ii = 0; ii < CONTAINER_FRAGMENT_COUNT_MAX; ++ii)
 	{
