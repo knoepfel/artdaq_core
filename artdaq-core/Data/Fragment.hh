@@ -7,6 +7,7 @@
 #include <iosfwd>
 #include <iterator>
 #include <vector>
+#include <list>
 #include <memory>
 #include <map>
 #include <cmath>
@@ -275,6 +276,12 @@ public:
 	 * \return Type of the Fragment
 	 */
 	type_t type() const;
+
+	/**
+	 * \brief Print the type of the Fragment
+	 * \return String representation of the Fragment type. For system types, the name will be included in parentheses
+	 */
+	std::string typeString() const;
 
 	/**
 	* \brief Sequence ID of the Fragment, from the Fragment header
@@ -665,6 +672,7 @@ public:
 		FragmentPtr result(new Fragment(sequenceID, fragID));
 		result->vals_.reserve(std::distance(i, e) + detail::RawFragmentHeader::num_words());
 		std::copy(i, e, std::back_inserter(result->vals_));
+		result->updateFragmentHeaderWC_();
 		return result;
 	}
 
@@ -802,6 +810,13 @@ artdaq::Fragment::type_t
 artdaq::Fragment::type() const
 {
 	return static_cast<type_t>(fragmentHeader()->type);
+}
+
+inline
+std::string
+artdaq::Fragment::typeString() const
+{
+	return std::to_string(type()) + (isSystemFragmentType(type()) ? " (" + detail::RawFragmentHeader::SystemTypeToString(type()) + ")" : "");
 }
 
 inline

@@ -47,3 +47,10 @@ convertUnixTimeToString(struct timespec const& inputUnixTime)
 
 	return workingString;
 }
+
+uint64_t artdaq::TimeUtils::gettimeofday_us()
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (uint64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+}
