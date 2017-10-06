@@ -68,8 +68,8 @@ struct artdaq::detail::RawFragmentHeader
 	static std::map<type_t, std::string> MakeSystemTypeMap()
 	{
 		return std::map<type_t, std::string>{
-			{DataFragmentType, "Data"},
-			{ EmptyFragmentType, "Empty" },
+			{ type_t(DataFragmentType), "Data"},
+			{ type_t(EmptyFragmentType), "Empty" },
 			{ 232, "Container" }
 		};
 	}
@@ -81,14 +81,14 @@ struct artdaq::detail::RawFragmentHeader
 	static std::map<type_t, std::string> MakeVerboseSystemTypeMap()
 	{
 		return std::map<type_t, std::string>{
-			{EndOfDataFragmentType, "EndOfData"},
-			{ DataFragmentType, "Data" },
-			{ InitFragmentType, "Init" },
-			{ EndOfRunFragmentType, "EndOfRun" },
-			{ EndOfSubrunFragmentType, "EndOfSubrun" },
-			{ ShutdownFragmentType,"Shutdown" },
-			{ EmptyFragmentType, "Empty" },
-			{ ContainerFragmentType, "Container" }
+			{ type_t(EndOfDataFragmentType), "EndOfData" },
+			{ type_t(DataFragmentType), "Data" },
+			{ type_t(InitFragmentType), "Init" },
+			{ type_t(EndOfRunFragmentType), "EndOfRun" },
+			{ type_t(EndOfSubrunFragmentType), "EndOfSubrun" },
+			{ type_t(ShutdownFragmentType),"Shutdown" },
+			{ type_t(EmptyFragmentType), "Empty" },
+			{ type_t(ContainerFragmentType), "Container" }
 		};
 	}
 

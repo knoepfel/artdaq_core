@@ -54,12 +54,12 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 			{
 				bool err;
 				auto types = GetFragmentTypes(err);
-				if (!err && types.count(artdaq::Fragment::InitFragmentType) && initialized_)
+				if (!err && types.count(Fragment::type_t(Fragment::InitFragmentType)) && initialized_)
 				{
 					ReleaseBuffer();
 					continue;
 				}
-				else if (!err && types.count(artdaq::Fragment::InitFragmentType))
+				else if (!err && types.count(Fragment::type_t(Fragment::InitFragmentType)))
 				{
 					initialized_ = true;
 				}
