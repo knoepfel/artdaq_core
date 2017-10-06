@@ -33,9 +33,10 @@ public:
 	/**
 	 * \brief Constructs the ContainerFragmentLoader
 	 * \param f A Fragment object containing a Fragment header.
+	 * \param expectedFragmentType The type of fragment which will be put into this ContainerFragment
 	 * \exception cet::exception if the Fragment input has inconsistent Header information
 	 */
-	explicit ContainerFragmentLoader(Fragment& f);
+	explicit ContainerFragmentLoader(Fragment& f, Fragment::type_t expectedFragmentType);
 
 	// ReSharper disable once CppMemberFunctionMayBeConst
 	/**
@@ -101,14 +102,14 @@ private:
 	void* dataEnd_() { return reinterpret_cast<void*>(dataBegin_() + lastFragmentIndex()); }
 };
 
-inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment& f) :
+inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment& f, artdaq::Fragment::type_t expectedFragmentType = Fragment::EmptyFragmentType) :
 	ContainerFragment(f)
 	, artdaq_Fragment_(f)
 {
 	artdaq_Fragment_.setSystemType(Fragment::ContainerFragmentType);
 	Metadata m;
 	m.block_count = 0;
-	m.fragment_type = Fragment::EmptyFragmentType;
+	m.fragment_type = expectedFragmentType;
 	m.missing_data = false;
 	for (int ii = 0; ii < CONTAINER_FRAGMENT_COUNT_MAX; ++ii)
 	{
@@ -120,11 +121,10 @@ inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment
 		artdaq::detail::RawFragmentHeader::num_words() +
 		words_to_frag_words_(Metadata::size_words))
 	{
-		std::cerr << "artdaq_Fragment size: " << artdaq_Fragment_.size() << std::endl;
-		std::cerr << "Expected size: " << artdaq::detail::RawFragmentHeader::num_words() +
-			words_to_frag_words_(Metadata::size_words) << std::endl;
+		TLOG_ERROR("ContainerFragmentLoader") << "ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object" << TLOG_ENDL;
+		TLOG_ERROR("ContainerFragmentLoader") <<"artdaq_Fragment size: " << artdaq_Fragment_.size() << ", Expected size: " << artdaq::detail::RawFragmentHeader::num_words() +	words_to_frag_words_(Metadata::size_words) << TLOG_ENDL;
 
-		throw cet::exception("ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object");
+		throw cet::exception("InvalidFragment") << "ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object";
 	}
 }
 
@@ -145,11 +145,18 @@ inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 
 inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 {
+	if (metadata()->block_count >= CONTAINER_FRAGMENT_COUNT_MAX)
+	{
+		TLOG_ERROR("ContainerFragmentLoader") << "addFragment: Fragment is full, cannot add more fragments!" << TLOG_ENDL;
+		throw cet::exception("ContainerFull") << "ContainerFragmentLoader::addFragment: Fragment is full, cannot add more fragments!";
+	}
+
 	TRACE(4, "ContainerFragmentLoader::addFragment: Adding Fragment with payload size %llu to Container", (unsigned long long)frag.dataSizeBytes());
 	if (metadata()->fragment_type == Fragment::EmptyFragmentType) metadata()->fragment_type = frag.type();
 	else if (frag.type() != metadata()->fragment_type)
 	{
-		throw cet::exception("ContainerFragmentLoader::addFragment: Trying to add a fragment of different type than what's already been added!");
+		TLOG_ERROR("ContainerFragmentLoader") << "addFragment: Trying to add a fragment of different type than what's already been added!" << TLOG_ENDL;
+		throw cet::exception("WrongFragmentType") << "ContainerFragmentLoader::addFragment: Trying to add a fragment of different type than what's already been added!";
 	}
 	TRACE(4, "ContainerFragmentLoader::addFragment: Payload Size is %llu, lastFragmentIndex is %llu, and frag.size is %llu", (unsigned long long)artdaq_Fragment_.dataSizeBytes(), (unsigned long long)lastFragmentIndex(), (unsigned long long)frag.sizeBytes());
 	if (artdaq_Fragment_.dataSizeBytes() < lastFragmentIndex() + frag.sizeBytes())

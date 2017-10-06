@@ -86,18 +86,18 @@ public:
 	 * \brief Gets the start of the data
 	 * \return Pointer to the first Fragment in the ContainerFragment
 	 */
-	Fragment const* dataBegin() const
+	void const* dataBegin() const
 	{
-		return reinterpret_cast<Fragment const *>(&*artdaq_Fragment_.dataBegin());
+		return reinterpret_cast<void const *>(&*artdaq_Fragment_.dataBegin());
 	}
 
 	/**
 	 * \brief Gets the last Fragment in the ContainerFragment
 	 * \return Pointer to the last Fragment in the ContainerFragment
 	 */
-	Fragment const* dataEnd() const
+	void const* dataEnd() const
 	{
-		return reinterpret_cast<Fragment const *>(reinterpret_cast<uint8_t const *>(dataBegin()) + lastFragmentIndex());
+		return reinterpret_cast<void const *>(reinterpret_cast<uint8_t const *>(dataBegin()) + lastFragmentIndex());
 	}
 
 	/**
@@ -106,21 +106,29 @@ public:
 	 * \return Pointer to the specified Fragment in the ContainerFragment
 	 * \exception cet::exception if the index is out-of-range
 	 */
-	Fragment const* at(size_t index) const
+	FragmentPtr at(size_t index) const
 	{
-		if (index > block_count()) throw cet::exception("Buffer overrun detected! ContainerFragment::at was asked for a non-existant Fragment!");
-		return reinterpret_cast<Fragment const *>(reinterpret_cast<uint8_t const *>(dataBegin()) + fragmentIndex(index));
+		if (index >= block_count() || block_count() == 0)
+		{
+			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::at was asked for a non-existent Fragment!";
+		}
+		FragmentPtr frag(new Fragment(fragSize(index) / sizeof(RawDataType) - detail::RawFragmentHeader::num_words()));
+		memcpy(frag->headerAddress(), reinterpret_cast<uint8_t const *>(dataBegin()) + fragmentIndex(index), fragSize(index));
+		return frag;
 	}
 
 	/**
-	 * \brief Gets the size of the Fragment at the specified location in the ContainerFragment
+	 * \brief Gets the size of the Fragment at the specified location in the ContainerFragment, in bytes
 	 * \param index The Fragment index
-	 * \return The size of the Fragment at the specified location in the ContainerFragment
+	 * \return The size of the Fragment at the specified location in the ContainerFragment, in bytes
 	 * \exception cet::exception if the index is out-of-range
 	 */
 	size_t fragSize(size_t index) const
 	{
-		if (index >= block_count()) throw cet::exception("Buffer overrun detected! ContainerFragment::at was asked for a non-existant Fragment!");
+		if (index >= block_count() || block_count() == 0)
+		{
+			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragSize was asked for a non-existent Fragment!";
+		}
 		auto end = metadata()->index[index];
 		if (index == 0) return end;
 		return end - metadata()->index[index - 1];
@@ -132,9 +140,9 @@ public:
 	 * \return Pointer to the specified Fragment in the ContainerFragment
 	 * \exception cet::exception if the index is out-of-range
 	 */
-	Fragment const* operator[](size_t index) const
+    FragmentPtr operator[](size_t index) const
 	{
-		return this->at(index);
+		return std::move(this->at(index));
 	}
 
 	/**
@@ -145,7 +153,10 @@ public:
 	 */
 	size_t fragmentIndex(size_t index) const
 	{
-		if (index > block_count()) throw cet::exception("Buffer overrun detected! ContainerFragment::at was asked for a non-existant Fragment!");
+		if (index > block_count())
+		{
+			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragmentIndex was asked for a non-existent Fragment!";
+		}
 		if (index == 0) { return 0; }
 		return metadata()->index[index - 1];
 	}

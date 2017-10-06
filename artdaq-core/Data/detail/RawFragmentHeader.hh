@@ -68,8 +68,8 @@ struct artdaq::detail::RawFragmentHeader
 	static std::map<type_t, std::string> MakeSystemTypeMap()
 	{
 		return std::map<type_t, std::string>{
-			{226, "Data"},
-			{ 231, "Empty" },
+			{DataFragmentType, "Data"},
+			{ EmptyFragmentType, "Empty" },
 			{ 232, "Container" }
 		};
 	}
@@ -81,15 +81,44 @@ struct artdaq::detail::RawFragmentHeader
 	static std::map<type_t, std::string> MakeVerboseSystemTypeMap()
 	{
 		return std::map<type_t, std::string>{
-			{225, "EndOfData"},
-			{ 226, "Data" },
-			{ 227, "Init" },
-			{ 228, "EndOfRun" },
-			{ 229, "EndOfSubrun" },
-			{ 230,"Shutdown" },
-			{ 231, "Empty" },
-			{ 232, "Container" }
+			{EndOfDataFragmentType, "EndOfData"},
+			{ DataFragmentType, "Data" },
+			{ InitFragmentType, "Init" },
+			{ EndOfRunFragmentType, "EndOfRun" },
+			{ EndOfSubrunFragmentType, "EndOfSubrun" },
+			{ ShutdownFragmentType,"Shutdown" },
+			{ EmptyFragmentType, "Empty" },
+			{ ContainerFragmentType, "Container" }
 		};
+	}
+
+	/**
+	 * \brief Print a system type's string name
+	 * \param type Type to print
+	 * \return String with "Name" of type
+	 */
+	static std::string SystemTypeToString(type_t type) {
+		switch (type) {
+		case INVALID_TYPE:
+			return "INVALID";
+		case EndOfDataFragmentType:
+			return "EndOfData";
+		case DataFragmentType:
+			return "Data";
+		case InitFragmentType:
+			return "Init";
+		case EndOfRunFragmentType:
+			return "EndOfRun";
+		case EndOfSubrunFragmentType:
+			return "EndOfSubrun";
+		case ShutdownFragmentType:
+			return "Shutdown";
+		case EmptyFragmentType:
+			return "Empty";
+		case ContainerFragmentType:
+			return "Container";
+		}
+		return "Unknown";
 	}
 
 	// Each of the following invalid values is chosen based on the
@@ -135,7 +164,7 @@ struct artdaq::detail::RawFragmentHeader
 	* \exception cet::exception if stype is not in the allowed range for system types
 	*/
 	void setSystemType(uint8_t stype);
-	
+
 #endif /* HIDE_FROM_ROOT */
 };
 

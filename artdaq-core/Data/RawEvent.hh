@@ -4,7 +4,7 @@
 #include "artdaq-core/Data/dictionarycontrol.hh"
 #include "artdaq-core/Data/Fragment.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <iosfwd>
 #include <memory>
@@ -75,6 +75,12 @@ namespace artdaq
 		 * \param event The current sequence_id
 		 */
 		RawEvent(run_id_t run, subrun_id_t subrun, sequence_id_t event);
+
+		/**
+		 * \brief Constructs a RawEvent using the given RawEventHeader
+		 * \param hdr Header to use for initializing RawEvent
+		 */
+		explicit RawEvent(detail::RawEventHeader hdr);
 
 #if HIDE_FROM_ROOT
 		/**
@@ -178,6 +184,9 @@ namespace artdaq
 	RawEvent::RawEvent(run_id_t run, subrun_id_t subrun, sequence_id_t event) :
 	                                                                          header_(run, subrun, event)
 	                                                                          , fragments_() { }
+
+	inline RawEvent::RawEvent(detail::RawEventHeader hdr) : header_(hdr), fragments_()
+	{}
 
 #if HIDE_FROM_ROOT
 	inline
