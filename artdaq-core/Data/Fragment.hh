@@ -19,7 +19,9 @@
 #include "artdaq-core/Data/dictionarycontrol.hh"
 #include "artdaq-core/Core/QuickVec.hh"
 #include <iostream>
+#if HIDE_FROM_ROOT
 #include "trace.h"		// TRACE
+#endif
 
 /**
  * \brief The artdaq namespace.
