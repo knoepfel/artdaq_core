@@ -23,7 +23,9 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
+# Modules moved from canvas to canvas_root_io when canvas_root_io was introduced
 set(CMAKE_MODULE_PATH
+  $ENV{CANVAS_ROOT_IO_DIR}/Modules
   $ENV{CANVAS_DIR}/Modules
 	$ENV{CETBUILDTOOLS_DIR}/Modules
 	${CMAKE_MODULE_PATH})

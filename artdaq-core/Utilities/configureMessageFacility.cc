@@ -169,7 +169,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	ss << "  } ";
 
 	std::string pstr(ss.str());
-	//std::cout << "Message Facility Config is: " << pstr << std::endl;
+	std::cout << "Message Facility Config is: " << pstr << std::endl;
 	return pstr;
 }
 
@@ -183,6 +183,8 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	mf::StartMessageFacility(pset);
 
 	mf::SetApplicationName(progname);
+
+	mf::setEnabledState("");
 #  else
 	mf::StartMessageFacility(mf::MessageFacilityService::MultiThread, pset);
 
