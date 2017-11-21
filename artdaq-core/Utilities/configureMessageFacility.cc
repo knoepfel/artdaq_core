@@ -98,7 +98,10 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	}
 
 	std::ostringstream ss;
-	ss << "debugModules:[\"*\"]  statistics:[\"stats\"] "
+	ss << "debugModules:[\"*\"] "
+#if MESSAGEFACILITY_HEX_VERSION < 0x20103
+	   << " statistics:[\"stats\"] "
+#endif
 		<< "  destinations : { ";
 
 	if (useConsole)
@@ -109,7 +112,11 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		{
 			ss << "    console : { "
 				<< "      type : \"ANSI\" threshold : " << outputLevel
-				<< "      noTimeStamps : true "
+#if MESSAGEFACILITY_HEX_VERSION < 0x20103
+			  	<< "      noTimeStamps : true "
+#else
+			   << "       format: { timestamp: none } "
+#endif
 				<< "      bell_on_error: true "
 				<< "    } ";
 		}
@@ -117,7 +124,11 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		{
 			ss << "    console : { "
 				<< "      type : \"cout\" threshold :" << outputLevel
-				<< "      noTimeStamps : true "
+#if MESSAGEFACILITY_HEX_VERSION < 0x20103
+			  	<< "      noTimeStamps : true "
+#else
+			   << "       format: { timestamp: none } "
+#endif
 				<< "    } ";
 		}
 	}
