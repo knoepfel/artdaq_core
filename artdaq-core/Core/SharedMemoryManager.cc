@@ -48,7 +48,7 @@ void artdaq::SharedMemoryManager::Attach()
 		manager_id_ = 0;
 	}
 
-	while (shm_segment_id_ == -1 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time).count() < 1000)
+	while (shm_segment_id_ == -1 && TimeUtils::GetElapsedTimeMilliseconds(start_time) < 1000)
 	{
 		shm_segment_id_ = shmget(shm_key_, shmSize, 0666);
 
