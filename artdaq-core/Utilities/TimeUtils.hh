@@ -23,6 +23,39 @@ namespace artdaq
 		*/
 		typedef std::chrono::duration<double, std::ratio<1>> seconds;
 		
+		/// <summary>
+		/// Get the number of seconds in the given interval
+		/// </summary>
+		/// <param name="then">std::chrono::steady_clock::time_point representing start of interval</param>
+		/// <param name="now">std::chrono::steady_clock::time_point representing end of interval. Defaults to std::chrono::steady_clock::now()</param>
+		/// <returns>Seconds in time interval, expressed as double</returns>
+		inline constexpr double GetElapsedTime(std::chrono::steady_clock::time_point then, std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now())
+		{
+			return std::chrono::duration_cast<seconds>(now - then).count();
+		}
+
+		/// <summary>
+		/// Gets the number of microseconds in the given time interval
+		/// </summary>
+		/// <param name="then">std::chrono::steady_clock::time_point representing start of interval</param>
+		/// <param name="now">std::chrono::steady_clock::time_point representing end of interval. Defaults to std::chrono::steady_clock::now()</param>
+		/// <returns>Microseconds in time interval</returns>
+		inline constexpr size_t GetElapsedTimeMicroseconds(std::chrono::steady_clock::time_point then, std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now())
+		{
+			return static_cast<size_t>(GetElapsedTime(then, now) * 1000000);
+		}
+
+		/// <summary>
+		/// Gets the number of milliseconds in the given time interval
+		/// </summary>
+		/// <param name="then">std::chrono::steady_clock::time_point representing start of interval</param>
+		/// <param name="now">std::chrono::steady_clock::time_point representing end of interval. Defaults to std::chrono::steady_clock::now()</param>
+		/// <returns>Milliseconds in time interval</returns>
+		inline constexpr size_t GetElapsedTimeMilliseconds(std::chrono::steady_clock::time_point then, std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now())
+		{
+			return static_cast<size_t>(GetElapsedTime(then, now) * 1000);
+		}
+
 		/**
 	   * \brief Converts a Unix time to its string representation, in UTC
 	   * \param inputUnixTime A time_t Unix time variable

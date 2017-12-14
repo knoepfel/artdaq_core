@@ -1,9 +1,9 @@
 #include <sys/shm.h>
 #include <thread>
+#include "tracemf.h"
 #include "cetlib_except/exception.h"
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "artdaq-core/Utilities/TraceLock.hh"
-#include "tracemf.h"
 #include "SharedMemoryManager.hh"
 
 artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer_count, size_t buffer_size, uint64_t buffer_timeout_us, bool destructive_read_mode)
@@ -48,7 +48,7 @@ void artdaq::SharedMemoryManager::Attach()
 		manager_id_ = 0;
 	}
 
-	while (shm_segment_id_ == -1 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time).count() < 1000)
+	while (shm_segment_id_ == -1 && TimeUtils::GetElapsedTimeMilliseconds(start_time) < 1000)
 	{
 		shm_segment_id_ = shmget(shm_key_, shmSize, 0666);
 
@@ -64,7 +64,7 @@ void artdaq::SharedMemoryManager::Attach()
 		shm_ptr_ = (ShmStruct*)shmat(shm_segment_id_, 0, 0);
 		TLOG_DEBUG("SharedMemoryManager")
 			<< "Attached to shared memory segment at address "
-			<< std::hex << shm_ptr_ << std::dec << TLOG_ENDL;
+			<< std::hex << (void*)shm_ptr_ << std::dec << TLOG_ENDL;
 		if (shm_ptr_ && shm_ptr_ != (void *)-1)
 		{
 			if (manager_id_ == 0)
