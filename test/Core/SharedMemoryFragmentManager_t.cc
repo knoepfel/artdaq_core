@@ -1,4 +1,6 @@
 #include "artdaq-core/Core/SharedMemoryFragmentManager.hh"
+#include "artdaq-core/Utilities/configureMessageFacility.hh"
+#include "tracemf.h"
 
 #define BOOST_TEST_MODULE(SharedMemoryFragmentManager_t)
 #include "cetlib/quiet_unit_test.hpp"
@@ -9,6 +11,8 @@ BOOST_AUTO_TEST_SUITE(SharedMemoryFragmentManager_test)
 
 BOOST_AUTO_TEST_CASE(Construct)
 {
+	artdaq::configureMessageFacility("SharedMemoryFragmentManager_t", true, true);
+	TLOG_DEBUG("SharedMemoryManager_t") << "BEGIN TEST Construct" << TLOG_ENDL;
 	srand(time(0));
 	artdaq::SharedMemoryFragmentManager man(0x7357 + rand() % 0x10000000, 10, 0x1000);
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
