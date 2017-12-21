@@ -1,10 +1,9 @@
 
+#define TRACE_NAME "SharedMemoryEventReceiver"
+#include "tracemf.h"                       // include before Core/SharedMemoryEventReceiver.hh which includes Data/Fragment.hh which includes trace.h
 #include "artdaq-core/Core/SharedMemoryEventReceiver.hh"
-
 #include "artdaq-core/Data/Fragment.hh"
 #include <sys/time.h>
-#define TRACE_NAME "SharedMemoryEventReceiver"
-#include "tracemf.h"
 
 using std::string;
 
