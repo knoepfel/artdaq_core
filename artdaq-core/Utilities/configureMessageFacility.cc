@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
-#include "trace.h"				// TRACE_CNTL, TRACE
+#include "tracemf.h"				// TRACE_CNTL, TRACE
 
 namespace BFS = boost::filesystem;
 
@@ -21,17 +21,6 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	char* logRootString = getenv("ARTDAQ_LOG_ROOT");
 	char* logFhiclCode = getenv("ARTDAQ_LOG_FHICL");
 	char* artdaqMfextensionsDir = getenv("ARTDAQ_MFEXTENSIONS_DIR");
-
-#if 0
-	setenv("TRACE_LVLS", "0xf", 0/*0 = no overwrite*/);
-	unsigned long long lvls = strtoull(getenv("TRACE_LVLS"), NULL, 0);
-	// NOTE: If TRACEs occur before this, they would be done with a different lvl S mask.
-	//       To check this, one could: treset;tonMg 0-63; tcntl trig -nTRACE 4 50; <app>
-	//       checking for TRACEs before the TRACE below.
-	//       If an existing trace file is used, the value of modeS is unchanged.
-	TRACE_CNTL("lvlmskSg", lvls);
-	TRACE(4, "configureMessageFacility lvlmskSg set to 0x%llx", lvls);
-#endif
 
 	std::string logfileDir = "";
 	if (logRootString != nullptr)
@@ -53,10 +42,6 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			if (!BFS::exists(logfileDir))
 			{
 				BFS::create_directory(logfileDir);
-				/*logPathProblem = "Log file directory ";
-				logPathProblem.append(logfileDir);
-				logPathProblem.append(" does not exist!");
-				throw cet::exception("ConfigureMessageFacility") << logPathProblem;*/
 			}
 			else
 			{
@@ -184,11 +169,79 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	return pstr;
 }
 
+void artdaq::configureTRACE( fhicl::ParameterSet &trace_pset)
+{
+	/* The following code handles this example fhicl:
+	   TRACE:{
+	     TRACE_NUMENTS:500000
+		 TRACE_ARGSMAX:10
+		 TRACE_MSGMAX:0
+		 TRACE_FILE:"/tmp/trace_buffer_%u"   # this is the default
+		 TRACE_LIMIT_MS:[8,80,800]  
+		 TRACE_MODE:0xf
+		 TRACE_NAMLVLSET:{
+		   #name:[lvlsmskM,lvlsmskS[,lvlsmskT]]   lvlsmskT is optional
+		   name0:[0x1f,0x7]
+		   name1:[0x2f,0xf]
+		   name2:[0x3f,0x7,0x1]
+		 }
+	   }
+	*/
+	std::vector<std::string> names = trace_pset.get_names();
+	std::vector<std::string> trace_envs={//"TRACE_NUMENTS", "TRACE_ARGSMAX", "TRACE_MSGMAX", "TRACE_FILE",
+		"TRACE_LIMIT_MS", "TRACE_MODE", "TRACE_NAMLVLSET"};
+	std::unordered_map<std::string,bool> envs_set_to_unset;
+	for (auto env : trace_envs)	envs_set_to_unset[env] = false;
+	// tricky - some env. vars. will over ride info in "mapped" (file) context while others cannot. 
+	for (auto name : names) {
+		if (   name=="TRACE_NUMENTS" || name=="TRACE_ARGSMAX"
+		    || name=="TRACE_MSGMAX"  || name=="TRACE_FILE"   ) // only applicable if env.var. set before before traceInit
+			// don't override and don't "set_to_unset" (if "mapping", want any subprocess to map also)
+			setenv(name.c_str(),trace_pset.get<std::string>(name).c_str(),0);
+		// These next 3 are looked at when TRACE_CNTL("namlvlset") is called. And, if mapped, get into file! (so may want to unset env???)
+		else if (name == "TRACE_LIMIT_MS") { // there is also TRACE_CNTL
+			if(!getenv(name.c_str())) {
+				envs_set_to_unset[name]=true;
+				std::vector<uint32_t> limit=trace_pset.get<std::vector<uint32_t>>(name);
+				// could check that it is size()==3???
+				std::string limits=std::to_string(limit[0])+","+std::to_string(limit[1])+","+std::to_string(limit[2]);
+				setenv(name.c_str(),limits.c_str(),0);
+			}
+		} else if (name == "TRACE_MODE") { // env.var. only applicable if TRACE_NAMLVLSET is set, BUT could TRACE_CNTL("mode",mode)???
+			if(!getenv(name.c_str())) {
+				envs_set_to_unset[name]=true;
+				setenv(name.c_str(),trace_pset.get<std::string>(name).c_str(),0);					
+			}
+		} else if (name == "TRACE_NAMLVLSET") {
+			if(!getenv(name.c_str())) {
+				envs_set_to_unset[name]=true;
+				std::stringstream lvlsbldr; // levels builder
+				fhicl::ParameterSet lvls_pset = trace_pset.get<fhicl::ParameterSet>(name);
+				std::vector<std::string> tnames = lvls_pset.get_names();
+				for (auto tname : tnames) {
+					lvlsbldr << tname;
+					std::vector<uint64_t> msks = lvls_pset.get<std::vector<uint64_t>>(tname);
+					for (auto msk : msks) {
+						lvlsbldr << " 0x" << std::hex << (unsigned long long)msk;
+					}
+					lvlsbldr << "\n";
+				}
+				setenv(name.c_str(),lvlsbldr.str().c_str(),0); // 0 means: won't overwrite
+			}
+		}
+	}
+	TRACE_CNTL( "namlvlset" ); // acts upon env.var.
+	for (auto env : trace_envs)	if(envs_set_to_unset[env]) unsetenv(env.c_str());
+}
+
 void artdaq::configureMessageFacility(char const* progname, bool useConsole, bool printDebug)
 {
 	auto pstr = generateMessageFacilityConfiguration(progname, useConsole, printDebug);
 	fhicl::ParameterSet pset;
 	fhicl::make_ParameterSet(pstr, pset);
+	fhicl::ParameterSet trace_pset = pset.get<fhicl::ParameterSet>("TRACE",{});
+	configureTRACE( trace_pset );
+	TLOG_INFO("configureMessageFacility") << "Application " << progname << " configureMessageFacility";
 
 #if CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
 	mf::StartMessageFacility(pset);
