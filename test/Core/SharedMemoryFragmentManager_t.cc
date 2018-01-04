@@ -1,6 +1,6 @@
-#include "tracemf.h"  // include first in this environment where include of Data/Fragment.hh (which includes trace.h) can occur
 #include "artdaq-core/Core/SharedMemoryFragmentManager.hh"
 #include "artdaq-core/Utilities/configureMessageFacility.hh"
+#include "tracemf.h"
 
 #define BOOST_TEST_MODULE(SharedMemoryFragmentManager_t)
 #include "cetlib/quiet_unit_test.hpp"
