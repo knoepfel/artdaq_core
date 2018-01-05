@@ -2,7 +2,6 @@
 #define artdaq_core_Core_SimpleQueueReader_hh
 
 #include "artdaq-core/Core/GlobalQueue.hh"
-#include <thread>
 #include <memory>
 
 namespace artdaq

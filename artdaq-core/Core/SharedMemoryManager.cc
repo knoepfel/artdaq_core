@@ -1,5 +1,4 @@
 #include <sys/shm.h>
-#include <thread>
 #include "tracemf.h"
 #include "cetlib_except/exception.h"
 #include "artdaq-core/Core/SharedMemoryManager.hh"
