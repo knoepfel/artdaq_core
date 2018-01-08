@@ -82,6 +82,27 @@ namespace artdaq
 		* \return The current time of day in microseconds
 		*/
 		uint64_t gettimeofday_us();
+
+		/**
+		* \brief Converts a Unix time to double
+		* \param inputUnixTime A time_t Unix time variable
+		* \return double representation of Unix time (seconds since epoch)
+		*/
+		double convertUnixTimeToSeconds(time_t inputUnixTime);
+
+		/**
+		* \brief Converts a Unix time to double
+		* \param inputUnixTime A struct timeval Unix time variable
+		* \return double representation of Unix time (in seconds)
+		*/
+		double convertUnixTimeToSeconds(struct timeval const& inputUnixTime);
+
+		/**
+		* \brief Converts a Unix time to double
+		* \param inputUnixTime A struct timespec Unix time variable
+		* \return double representation of Unix time (in seconds)
+		*/
+		double convertUnixTimeToSeconds(struct timespec const& inputUnixTime);
 	}
 }
 
