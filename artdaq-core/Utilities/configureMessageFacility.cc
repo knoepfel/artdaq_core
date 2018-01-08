@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
+#define TRACE_NAME "configureMessageFacility"
 #include "tracemf.h"				// TRACE_CNTL, TRACE
 
 namespace BFS = boost::filesystem;
@@ -165,7 +166,6 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	ss << "  } ";
 
 	std::string pstr(ss.str());
-	std::cout << "Message Facility Config is: " << pstr << std::endl;
 	return pstr;
 }   // generateMessageFacilityConfiguration
 
@@ -241,7 +241,6 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	fhicl::make_ParameterSet(pstr, pset);
 	fhicl::ParameterSet trace_pset = pset.get<fhicl::ParameterSet>("TRACE",{});
 	configureTRACE( trace_pset );
-	TLOG_INFO("configureMessageFacility") << "Application " << progname << " configureMessageFacility";
 
 #if CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
 	mf::StartMessageFacility(pset);
@@ -255,6 +254,8 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	mf::SetModuleName(progname);
 	mf::SetContext(progname);
 #  endif
+	TLOG(4) << "Message Facility Config input is: " << pstr;
+	TLOG_INFO("configureMessageFacility") << "Message Facility Application " << progname << " configured with: " << pset.to_string();
 }
 
 void artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)
