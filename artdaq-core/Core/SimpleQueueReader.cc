@@ -4,7 +4,7 @@
 #include <cstddef>    // for std::size_t
 #include <iostream>
 #include <string>
-#include <thread>     // for sleep_for
+#include <thread> // std::this_thread::sleep_for
 #include "trace.h"    // TRACE
 
 namespace artdaq

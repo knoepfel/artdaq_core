@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
+#define TRACE_NAME "configureMessageFacility"
 #include "tracemf.h"				// TRACE_CNTL, TRACE
 
 namespace BFS = boost::filesystem;
@@ -21,6 +22,11 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	char* logRootString = getenv("ARTDAQ_LOG_ROOT");
 	char* logFhiclCode = getenv("ARTDAQ_LOG_FHICL");
 	char* artdaqMfextensionsDir = getenv("ARTDAQ_MFEXTENSIONS_DIR");
+	char* useMFExtensionsS = getenv("ARTDAQ_MFEXTENSIONS_ENABLED");
+	bool useMFExtensions = false;
+	if (useMFExtensionsS != nullptr && !(strncmp(useMFExtensionsS, "0", 1) == 0)) {
+		useMFExtensions = true;
+	}
 
 	std::string logfileDir = "";
 	if (logRootString != nullptr)
@@ -84,16 +90,13 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 
 	std::ostringstream ss;
 	ss << "debugModules:[\"*\"] "
-#if MESSAGEFACILITY_HEX_VERSION < 0x20103
-	   << " statistics:[\"stats\"] "
-#endif
 		<< "  destinations : { ";
 
 	if (useConsole)
 	{
 		std::string outputLevel = "\"INFO\" ";
 		if (printDebug) outputLevel = "\"DEBUG\" ";
-		if (artdaqMfextensionsDir != nullptr)
+		if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 		{
 			ss << "    console : { "
 				<< "      type : \"ANSI\" threshold : " << outputLevel
@@ -118,7 +121,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		}
 	}
 
-	if (artdaqMfextensionsDir != nullptr)
+	if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 	{
 		ss << "  file: { "
 			<< "    type: \"GenFile\" threshold: \"DEBUG\" sep: \"-\" "
@@ -139,7 +142,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			<< "    } ";
 	}
 
-	if (artdaqMfextensionsDir != nullptr)
+	if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 	{
 		ss << "    trace : { "
 			<< "       type : \"TRACE\" threshold : \"DEBUG\" format:{noLineBreaks: true} lvls: 0x7 lvlm: 0xF"
@@ -165,9 +168,8 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	ss << "  } ";
 
 	std::string pstr(ss.str());
-	std::cout << "Message Facility Config is: " << pstr << std::endl;
 	return pstr;
-}
+}   // generateMessageFacilityConfiguration
 
 void artdaq::configureTRACE( fhicl::ParameterSet &trace_pset)
 {
@@ -239,9 +241,16 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	auto pstr = generateMessageFacilityConfiguration(progname, useConsole, printDebug);
 	fhicl::ParameterSet pset;
 	fhicl::make_ParameterSet(pstr, pset);
-	fhicl::ParameterSet trace_pset = pset.get<fhicl::ParameterSet>("TRACE",{});
-	configureTRACE( trace_pset );
-	TLOG_INFO("configureMessageFacility") << "Application " << progname << " configureMessageFacility";
+
+	fhicl::ParameterSet trace_pset;
+	if (pset.get_if_present<fhicl::ParameterSet>("TRACE",trace_pset))
+		configureTRACE( trace_pset );
+	else {
+		fhicl::ParameterSet trace_dflt_pset;
+		fhicl::make_ParameterSet("TRACE:{TRACE_MSGMAX:0 TRACE_LIMIT_MS:[10,500,1500]}",trace_dflt_pset);
+		pset.put<fhicl::ParameterSet>("TRACE",trace_dflt_pset.get<fhicl::ParameterSet>("TRACE"));
+		configureTRACE( trace_dflt_pset );
+	}
 
 #if CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
 	mf::StartMessageFacility(pset);
@@ -255,6 +264,8 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	mf::SetModuleName(progname);
 	mf::SetContext(progname);
 #  endif
+	TLOG(4) << "Message Facility Config input is: " << pstr;
+	TLOG_INFO("configureMessageFacility") << "Message Facility Application " << progname << " configured with: " << pset.to_string();
 }
 
 void artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)
