@@ -167,7 +167,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	std::string pstr(ss.str());
 	std::cout << "Message Facility Config is: " << pstr << std::endl;
 	return pstr;
-}
+}   // generateMessageFacilityConfiguration
 
 void artdaq::configureTRACE( fhicl::ParameterSet &trace_pset)
 {
