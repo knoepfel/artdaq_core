@@ -22,6 +22,11 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	char* logRootString = getenv("ARTDAQ_LOG_ROOT");
 	char* logFhiclCode = getenv("ARTDAQ_LOG_FHICL");
 	char* artdaqMfextensionsDir = getenv("ARTDAQ_MFEXTENSIONS_DIR");
+	char* useMFExtensionsS = getenv("ARTDAQ_MFEXTENSIONS_ENABLED");
+	bool useMFExtensions = false;
+	if (useMFExtensionsS != nullptr && !(strncmp(useMFExtensionsS, "0", 1) == 0)) {
+		useMFExtensions = true;
+	}
 
 	std::string logfileDir = "";
 	if (logRootString != nullptr)
@@ -94,7 +99,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	{
 		std::string outputLevel = "\"INFO\" ";
 		if (printDebug) outputLevel = "\"DEBUG\" ";
-		if (artdaqMfextensionsDir != nullptr)
+		if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 		{
 			ss << "    console : { "
 				<< "      type : \"ANSI\" threshold : " << outputLevel
@@ -119,7 +124,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		}
 	}
 
-	if (artdaqMfextensionsDir != nullptr)
+	if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 	{
 		ss << "  file: { "
 			<< "    type: \"GenFile\" threshold: \"DEBUG\" sep: \"-\" "
@@ -140,7 +145,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			<< "    } ";
 	}
 
-	if (artdaqMfextensionsDir != nullptr)
+	if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 	{
 		ss << "    trace : { "
 			<< "       type : \"TRACE\" threshold : \"DEBUG\" format:{noLineBreaks: true} lvls: 0x7 lvlm: 0xF"
