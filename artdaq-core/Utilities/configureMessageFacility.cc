@@ -90,9 +90,6 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 
 	std::ostringstream ss;
 	ss << "debugModules:[\"*\"] "
-#if MESSAGEFACILITY_HEX_VERSION < 0x20103
-	   << " statistics:[\"stats\"] "
-#endif
 		<< "  destinations : { ";
 
 	if (useConsole)
