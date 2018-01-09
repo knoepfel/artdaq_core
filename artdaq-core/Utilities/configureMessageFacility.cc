@@ -243,14 +243,13 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	fhicl::make_ParameterSet(pstr, pset);
 
 	fhicl::ParameterSet trace_pset;
-	if (pset.get_if_present<fhicl::ParameterSet>("TRACE",trace_pset))
-		configureTRACE( trace_pset );
-	else {
+	if (!pset.get_if_present<fhicl::ParameterSet>("TRACE",trace_pset)) {
 		fhicl::ParameterSet trace_dflt_pset;
 		fhicl::make_ParameterSet("TRACE:{TRACE_MSGMAX:0 TRACE_LIMIT_MS:[10,500,1500]}",trace_dflt_pset);
 		pset.put<fhicl::ParameterSet>("TRACE",trace_dflt_pset.get<fhicl::ParameterSet>("TRACE"));
-		configureTRACE( trace_dflt_pset );
+		trace_pset = pset.get<fhicl::ParameterSet>("TRACE");
 	}
+	configureTRACE( trace_pset );
 
 #if CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
 	mf::StartMessageFacility(pset);
