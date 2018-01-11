@@ -44,47 +44,43 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			logfileDir.append("/");
 			logfileDir.append(progname);
 
-			// As long as the top-level directory exists, I don't think we really care if we have to create application directories...
+			// As long as the top-level directory exists, I don't think we
+			// really care if we have to create application directories...
 			if (!BFS::exists(logfileDir))
-			{
 				BFS::create_directory(logfileDir);
-			}
-			else
+
+			time_t rawtime;
+			struct tm* timeinfo;
+			char timeBuff[256];
+			time(&rawtime);
+			timeinfo = localtime(&rawtime);
+			strftime(timeBuff, 256, "%Y%m%d%H%M%S", timeinfo);
+
+			char hostname[256];
+			std::string hostString = "";
+			if (gethostname(&hostname[0], 256) == 0)
 			{
-				time_t rawtime;
-				struct tm* timeinfo;
-				char timeBuff[256];
-				time(&rawtime);
-				timeinfo = localtime(&rawtime);
-				strftime(timeBuff, 256, "%Y%m%d%H%M%S", timeinfo);
-
-				char hostname[256];
-				std::string hostString = "";
-				if (gethostname(&hostname[0], 256) == 0)
+				std::string tmpString(hostname);
+				hostString = tmpString;
+				size_t pos = hostString.find(".");
+				if (pos != std::string::npos && pos > 2)
 				{
-					std::string tmpString(hostname);
-					hostString = tmpString;
-					size_t pos = hostString.find(".");
-					if (pos != std::string::npos && pos > 2)
-					{
-						hostString = hostString.substr(0, pos);
-					}
+					hostString = hostString.substr(0, pos);
 				}
-
-				logfileName.append(logfileDir);
-				logfileName.append("/");
-				logfileName.append(progname);
-				logfileName.append("-");
-				logfileName.append(timeBuff);
-				logfileName.append("-");
-				if (hostString.size() > 0)
-				{
-					logfileName.append(hostString);
-					logfileName.append("-");
-				}
-				logfileName.append(boost::lexical_cast<std::string>(getpid()));
-				logfileName.append(".log");
 			}
+
+			logfileName.append(logfileDir);
+			logfileName.append("/");
+			logfileName.append(progname);
+			logfileName.append("-");
+			if (hostString.size() > 0 && logfileName.find(hostString) == std::string::npos) {
+				logfileName.append(hostString);
+				logfileName.append("-");
+			}
+			logfileName.append(timeBuff);
+			logfileName.append("-");
+			logfileName.append(boost::lexical_cast<std::string>(getpid()));
+			logfileName.append(".log");
 		}
 	}
 
@@ -243,14 +239,13 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	fhicl::make_ParameterSet(pstr, pset);
 
 	fhicl::ParameterSet trace_pset;
-	if (pset.get_if_present<fhicl::ParameterSet>("TRACE",trace_pset))
-		configureTRACE( trace_pset );
-	else {
+	if (!pset.get_if_present<fhicl::ParameterSet>("TRACE",trace_pset)) {
 		fhicl::ParameterSet trace_dflt_pset;
 		fhicl::make_ParameterSet("TRACE:{TRACE_MSGMAX:0 TRACE_LIMIT_MS:[10,500,1500]}",trace_dflt_pset);
 		pset.put<fhicl::ParameterSet>("TRACE",trace_dflt_pset.get<fhicl::ParameterSet>("TRACE"));
-		configureTRACE( trace_dflt_pset );
+		trace_pset = pset.get<fhicl::ParameterSet>("TRACE");
 	}
+	configureTRACE( trace_pset );
 
 #if CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
 	mf::StartMessageFacility(pset);
@@ -268,7 +263,7 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	TLOG_INFO("configureMessageFacility") << "Message Facility Application " << progname << " configured with: " << pset.to_string();
 }
 
-void artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)
+std::string artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)
 {
 	std::string appName(appType);
 
@@ -289,4 +284,5 @@ void artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)
 	appName.append(boost::lexical_cast<std::string>(port));
 
 	mf::SetApplicationName(appName);
+	return appName;
 }
