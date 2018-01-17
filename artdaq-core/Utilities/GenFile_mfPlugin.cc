@@ -95,7 +95,7 @@ namespace mfplugins
 		bool append = pset.get<bool>("append", true);
 		std::string baseDir = pset.get<std::string>("directory", "/tmp");
 		std::string sep = pset.get<std::string>("separator", "-");
-		std::string timePattern = pset.get<std::string>("timestamp_pattern", "%Y%m%d%H%M%S"); // For strftime
+		std::string timePattern = pset.get<std::string>("timestamp_pattern", "%Y%m%d%H%M%S"); // For strftime, note that %% should be %%%%!
 		std::string filePattern = pset.get<std::string>("pattern", "%N-%?H%t-%p.log");
 #else
 	ELGenFileOutput::ELGenFileOutput(Parameters const& pset) : ELdestination(pset.elDestConfig())
@@ -166,8 +166,8 @@ namespace mfplugins
 			pos = filePattern.find("%", pos) + 1;
 			switch (filePattern[pos])
 			{
-			case '%': // "%%"
-				pos++;
+			case '%': // "%% => %"
+				filePattern.replace(pos - 1, 2, "%");
 				break;
 			case '?':
 			{
