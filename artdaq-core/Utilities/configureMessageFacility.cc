@@ -117,18 +117,17 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		}
 	}
 
-	if (artdaqMfextensionsDir != nullptr && useMFExtensions)
+	if (logfileDir.size())
 	{
-		ss << "  file: { "
-			<< "    type: \"GenFile\" threshold: \"DEBUG\" sep: \"-\" "
-			<< " file_name_prefix: \"" << progname << "\" ";
-		if (logfileDir.size())
-		{
-			ss << " base_directory: \"" << logfileDir << "\"";
-		}
-		ss << "      append : false "
-			<< "    } ";
+		ss << " file: {";
+		ss << " type: \"GenFile\" threshold: \"DEBUG\" seperator: \"-\"";
+		ss << " pattern: \"" << progname << "-%?H%t-%p.log" << "\"";
+		ss << " timestamp_pattern: \"%Y%m%d%H%M%S\"";
+		ss << " directory: \"" << logfileDir << "\"";
+		ss << " append : false";
+		ss << " }";
 	}
+#if 0 // ELF 01/17/2018 Removed because it violates the "every EVB art process must have identical configuration" rule
 	else if (logfileName.length() > 0)
 	{
 		ss << "    file : { "
@@ -137,6 +136,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			<< "      append : false "
 			<< "    } ";
 	}
+#endif
 
 	if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 	{
