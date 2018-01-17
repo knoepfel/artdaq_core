@@ -37,7 +37,7 @@ namespace mfplugins
 			fhicl::Atom<std::string> baseDir{ fhicl::Name{"directory"},fhicl::Comment{"The directory into which files will be saved"},"/tmp" };
 			fhicl::Atom<std::string> sep{ fhicl::Name{"separator"},fhicl::Comment{"Separator to use after optional replacement parameters"}, "-" };
 			fhicl::Atom<std::string> timePattern{ fhicl::Name{"timestamp_pattern"},fhicl::Comment{"Pattern to use for %t strftime replacement"},"%Y%m%d%H%M%S" };
-			fhicl::Atom<std::string> pattern{ fhicl::Name{ "pattern" },fhicl::Comment{ "Pattern to use for file naming.\n"
+			fhicl::Atom<std::string> filePattern{ fhicl::Name{ "pattern" },fhicl::Comment{ "Pattern to use for file naming.\n"
 			" Supported parameters are:\n"
 				" %%: Print a % sign\n"
 				" %N: Print the executable name, as retrieved from /proc/<pid>/exe\n"
@@ -95,16 +95,16 @@ namespace mfplugins
 		bool append = pset.get<bool>("append", true);
 		std::string baseDir = pset.get<std::string>("directory", "/tmp");
 		std::string sep = pset.get<std::string>("separator", "-");
-		std::string timePattern = pset.get<std::string>("timestamp_pattern", "%Y%m%d%H%M%S"); // For strftime, note that %% should be %%%%!
+		std::string timePattern = pset.get<std::string>("timestamp_pattern", "%Y%m%d%H%M%S"); // For strftime
 		std::string filePattern = pset.get<std::string>("pattern", "%N-%?H%t-%p.log");
 #else
-	ELGenFileOutput::ELGenFileOutput(Parameters const& pset) : ELdestination(pset.elDestConfig())
+	ELGenFileOutput::ELGenFileOutput(Parameters const& pset) : ELdestination(pset().elDestConfig())
 	{
-		bool append = pset.append;
-		std::string baseDir = pset.baseDir;
-		std::string sep = pset.sep;
-		std::string timePattern = pset.timePattern;
-		std::string filePattern = pset.filePattern;
+		bool append = pset().append();
+		std::string baseDir = pset().baseDir();
+		std::string sep = pset().sep();
+		std::string timePattern = pset().timePattern();
+		std::string filePattern = pset().filePattern();
 #endif
 
 		auto pid = getpid();
@@ -166,8 +166,8 @@ namespace mfplugins
 			pos = filePattern.find("%", pos) + 1;
 			switch (filePattern[pos])
 			{
-			case '%': // "%% => %"
-				filePattern.replace(pos - 1, 2, "%");
+			case '%': // "%%"
+				pos++;
 				break;
 			case '?':
 			{
