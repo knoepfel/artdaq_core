@@ -68,6 +68,7 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 			return true;
 		}
 		current_data_source_ = nullptr;
+		usleep( 1000 );
 	}
 	TLOG(4) << "ReadyForRead returning false" << TLOG_ENDL;
 	return false;

@@ -84,6 +84,7 @@ set(CETLIB_LIBS cetlib cetlib_except)
 # macros for art_dictionary and simple_plugin
 include(ArtDictionary)
 include(CetMake)
+include(BasicPlugin)
 
 # testing
 add_subdirectory(test)

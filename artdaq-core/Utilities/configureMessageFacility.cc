@@ -97,9 +97,9 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			ss << "    console : { "
 				<< "      type : \"ANSI\" threshold : " << outputLevel
 #if MESSAGEFACILITY_HEX_VERSION < 0x20103
-			  	<< "      noTimeStamps : true "
+				<< "      noTimeStamps : true "
 #else
-			   << "       format: { timestamp: none } "
+				<< "      format: { timestamp: none } "
 #endif
 				<< "      bell_on_error: true "
 				<< "    } ";
@@ -109,26 +109,25 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			ss << "    console : { "
 				<< "      type : \"cout\" threshold :" << outputLevel
 #if MESSAGEFACILITY_HEX_VERSION < 0x20103
-			  	<< "      noTimeStamps : true "
+				<< "      noTimeStamps : true "
 #else
-			   << "       format: { timestamp: none } "
+				<< "       format: { timestamp: none } "
 #endif
 				<< "    } ";
 		}
 	}
 
-	if (artdaqMfextensionsDir != nullptr && useMFExtensions)
+	if (logfileDir.size())
 	{
-		ss << "  file: { "
-			<< "    type: \"GenFile\" threshold: \"DEBUG\" sep: \"-\" "
-			<< " file_name_prefix: \"" << progname << "\" ";
-		if (logfileDir.size())
-		{
-			ss << " base_directory: \"" << logfileDir << "\"";
-		}
-		ss << "      append : false "
-			<< "    } ";
+		ss << " file: {";
+		ss << " type: \"GenFile\" threshold: \"DEBUG\" seperator: \"-\"";
+		ss << " pattern: \"" << progname << "-%?H%t-%p.log" << "\"";
+		ss << " timestamp_pattern: \"%Y%m%d%H%M%S\"";
+		ss << " directory: \"" << logfileDir << "\"";
+		ss << " append : false";
+		ss << " }";
 	}
+#if 0 // ELF 01/17/2018 Removed because it violates the "every EVB art process must have identical configuration" rule
 	else if (logfileName.length() > 0)
 	{
 		ss << "    file : { "
@@ -137,6 +136,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			<< "      append : false "
 			<< "    } ";
 	}
+#endif
 
 	if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 	{
@@ -167,15 +167,15 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	return pstr;
 }   // generateMessageFacilityConfiguration
 
-void artdaq::configureTRACE( fhicl::ParameterSet &trace_pset)
+void artdaq::configureTRACE(fhicl::ParameterSet &trace_pset)
 {
 	/* The following code handles this example fhicl:
 	   TRACE:{
-	     TRACE_NUMENTS:500000
+		 TRACE_NUMENTS:500000
 		 TRACE_ARGSMAX:10
 		 TRACE_MSGMAX:0
 		 TRACE_FILE:"/tmp/trace_buffer_%u"   # this is the default
-		 TRACE_LIMIT_MS:[8,80,800]  
+		 TRACE_LIMIT_MS:[8,80,800]
 		 TRACE_MODE:0xf
 		 TRACE_NAMLVLSET:{
 		   #name:[lvlsmskM,lvlsmskS[,lvlsmskT]]   lvlsmskT is optional
@@ -186,33 +186,35 @@ void artdaq::configureTRACE( fhicl::ParameterSet &trace_pset)
 	   }
 	*/
 	std::vector<std::string> names = trace_pset.get_names();
-	std::vector<std::string> trace_envs={//"TRACE_NUMENTS", "TRACE_ARGSMAX", "TRACE_MSGMAX", "TRACE_FILE",
-		"TRACE_LIMIT_MS", "TRACE_MODE", "TRACE_NAMLVLSET"};
-	std::unordered_map<std::string,bool> envs_set_to_unset;
+	std::vector<std::string> trace_envs = {//"TRACE_NUMENTS", "TRACE_ARGSMAX", "TRACE_MSGMAX", "TRACE_FILE",
+		"TRACE_LIMIT_MS", "TRACE_MODE", "TRACE_NAMLVLSET" };
+	std::unordered_map<std::string, bool> envs_set_to_unset;
 	for (auto env : trace_envs)	envs_set_to_unset[env] = false;
 	// tricky - some env. vars. will over ride info in "mapped" (file) context while others cannot. 
 	for (auto name : names) {
-		if (   name=="TRACE_NUMENTS" || name=="TRACE_ARGSMAX"
-		    || name=="TRACE_MSGMAX"  || name=="TRACE_FILE"   ) // only applicable if env.var. set before before traceInit
+		if (name == "TRACE_NUMENTS" || name == "TRACE_ARGSMAX"
+			|| name == "TRACE_MSGMAX" || name == "TRACE_FILE") // only applicable if env.var. set before before traceInit
 			// don't override and don't "set_to_unset" (if "mapping", want any subprocess to map also)
-			setenv(name.c_str(),trace_pset.get<std::string>(name).c_str(),0);
+			setenv(name.c_str(), trace_pset.get<std::string>(name).c_str(), 0);
 		// These next 3 are looked at when TRACE_CNTL("namlvlset") is called. And, if mapped, get into file! (so may want to unset env???)
 		else if (name == "TRACE_LIMIT_MS") { // there is also TRACE_CNTL
-			if(!getenv(name.c_str())) {
-				envs_set_to_unset[name]=true;
-				std::vector<uint32_t> limit=trace_pset.get<std::vector<uint32_t>>(name);
+			if (!getenv(name.c_str())) {
+				envs_set_to_unset[name] = true;
+				std::vector<uint32_t> limit = trace_pset.get<std::vector<uint32_t>>(name);
 				// could check that it is size()==3???
-				std::string limits=std::to_string(limit[0])+","+std::to_string(limit[1])+","+std::to_string(limit[2]);
-				setenv(name.c_str(),limits.c_str(),0);
+				std::string limits = std::to_string(limit[0]) + "," + std::to_string(limit[1]) + "," + std::to_string(limit[2]);
+				setenv(name.c_str(), limits.c_str(), 0);
 			}
-		} else if (name == "TRACE_MODE") { // env.var. only applicable if TRACE_NAMLVLSET is set, BUT could TRACE_CNTL("mode",mode)???
-			if(!getenv(name.c_str())) {
-				envs_set_to_unset[name]=true;
-				setenv(name.c_str(),trace_pset.get<std::string>(name).c_str(),0);					
+		}
+		else if (name == "TRACE_MODE") { // env.var. only applicable if TRACE_NAMLVLSET is set, BUT could TRACE_CNTL("mode",mode)???
+			if (!getenv(name.c_str())) {
+				envs_set_to_unset[name] = true;
+				setenv(name.c_str(), trace_pset.get<std::string>(name).c_str(), 0);
 			}
-		} else if (name == "TRACE_NAMLVLSET") {
-			if(!getenv(name.c_str())) {
-				envs_set_to_unset[name]=true;
+		}
+		else if (name == "TRACE_NAMLVLSET") {
+			if (!getenv(name.c_str())) {
+				envs_set_to_unset[name] = true;
 				std::stringstream lvlsbldr; // levels builder
 				fhicl::ParameterSet lvls_pset = trace_pset.get<fhicl::ParameterSet>(name);
 				std::vector<std::string> tnames = lvls_pset.get_names();
@@ -224,12 +226,12 @@ void artdaq::configureTRACE( fhicl::ParameterSet &trace_pset)
 					}
 					lvlsbldr << "\n";
 				}
-				setenv(name.c_str(),lvlsbldr.str().c_str(),0); // 0 means: won't overwrite
+				setenv(name.c_str(), lvlsbldr.str().c_str(), 0); // 0 means: won't overwrite
 			}
 		}
 	}
-	TRACE_CNTL( "namlvlset" ); // acts upon env.var.
-	for (auto env : trace_envs)	if(envs_set_to_unset[env]) unsetenv(env.c_str());
+	TRACE_CNTL("namlvlset"); // acts upon env.var.
+	for (auto env : trace_envs)	if (envs_set_to_unset[env]) unsetenv(env.c_str());
 }
 
 void artdaq::configureMessageFacility(char const* progname, bool useConsole, bool printDebug)
@@ -239,13 +241,15 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	fhicl::make_ParameterSet(pstr, pset);
 
 	fhicl::ParameterSet trace_pset;
-	if (!pset.get_if_present<fhicl::ParameterSet>("TRACE",trace_pset)) {
+	if (!pset.get_if_present<fhicl::ParameterSet>("TRACE", trace_pset)) {
 		fhicl::ParameterSet trace_dflt_pset;
-		fhicl::make_ParameterSet("TRACE:{TRACE_MSGMAX:0 TRACE_LIMIT_MS:[10,500,1500]}",trace_dflt_pset);
-		pset.put<fhicl::ParameterSet>("TRACE",trace_dflt_pset.get<fhicl::ParameterSet>("TRACE"));
+		fhicl::make_ParameterSet("TRACE:{TRACE_MSGMAX:0 TRACE_LIMIT_MS:[10,500,1500]}", trace_dflt_pset);
+		pset.put<fhicl::ParameterSet>("TRACE", trace_dflt_pset.get<fhicl::ParameterSet>("TRACE"));
 		trace_pset = pset.get<fhicl::ParameterSet>("TRACE");
 	}
-	configureTRACE( trace_pset );
+	configureTRACE(trace_pset);
+    pstr = pset.to_string();
+    pset.erase("TRACE");
 
 #if CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
 	mf::StartMessageFacility(pset);
