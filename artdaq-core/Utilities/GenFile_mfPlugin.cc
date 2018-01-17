@@ -13,6 +13,7 @@
 #include "messagefacility/Utilities/exception.h"
 
 #include <fstream>
+#include "trace.h"
 
 namespace mfplugins
 {
@@ -161,13 +162,14 @@ namespace mfplugins
 		}
 
 		size_t pos = 0;
+		TRACE(3, "GenFile: filePattern is: " + filePattern);
 		while (filePattern.find("%", pos) != std::string::npos)
 		{
 			pos = filePattern.find("%", pos) + 1;
 			switch (filePattern[pos])
 			{
 			case '%': // "%%"
-				pos++;
+				filePattern = filePattern.replace(pos - 1, 2, "%");
 				break;
 			case '?':
 			{
@@ -175,7 +177,7 @@ namespace mfplugins
 				switch (next) {
 				case 'N':
 					if (filePattern.find(exeString) != std::string::npos) {
-						filePattern.erase(pos - 1, 3);
+						filePattern = filePattern.erase(pos - 1, 3);
 					}
 					else {
 						std::string repString = exeString;
@@ -183,19 +185,19 @@ namespace mfplugins
 						if (!(pos + 1 == filePattern.size() - 1 || pos + 2 == filePattern.find_last_of('.'))) {
 							repString += sep;
 						}
-						filePattern.replace(pos - 1, 3, repString);
+						filePattern = filePattern.replace(pos - 1, 3, repString);
 					}
 					break;
 				case 'H':
 					if (filePattern.find(hostString) != std::string::npos) {
-						filePattern.erase(pos - 1, 3);
+						filePattern = filePattern.erase(pos - 1, 3);
 					}
 					else {
 						std::string repString = hostString;
 						// Only append separator if we're not at the end of the pattern
 						if (!(pos + 1 == filePattern.size() - 1 || pos + 2 == filePattern.find_last_of('.'))) {
 							repString += sep;
-							filePattern.replace(pos - 1, 3, repString);
+							filePattern = filePattern.replace(pos - 1, 3, repString);
 						}
 						break;
 					}
@@ -203,23 +205,24 @@ namespace mfplugins
 			}
 			break;
 			case 'N':
-				filePattern.replace(pos - 1, 2, exeString);
+				filePattern = filePattern.replace(pos - 1, 2, exeString);
 				break;
 			case 'H':
-				filePattern.replace(pos - 1, 2, hostString);
+				filePattern = filePattern.replace(pos - 1, 2, hostString);
 				break;
 			case 'p':
-				filePattern.replace(pos - 1, 2, std::to_string(pid));
+				filePattern = filePattern.replace(pos - 1, 2, std::to_string(pid));
 				break;
 			case 't':
-				filePattern.replace(pos - 1, 2, timeBuff);
+				filePattern = filePattern.replace(pos - 1, 2, timeBuff);
 				break;
 			case 'T':
-				filePattern.replace(pos - 1, 2, timeBuffISO);
+				filePattern = filePattern.replace(pos - 1, 2, timeBuffISO);
 				break;
 			}
 		}
 		std::string fileName = baseDir + "/" + filePattern;
+		TRACE(3, "GenFile: fileName is: " + fileName);
 
 		output_ = std::make_unique<cet::ostream_handle>(fileName.c_str(), append ? std::ios::app : std::ios::trunc);
 	}
