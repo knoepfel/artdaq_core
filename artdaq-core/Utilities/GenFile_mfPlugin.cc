@@ -29,9 +29,38 @@ namespace mfplugins
 	/// </summary>
 	class ELGenFileOutput : public ELdestination
 	{
-	public:
+#if MESSAGEFACILITY_HEX_VERSION >= 0x20103
+		struct
+		{
+			fhicl::TableFragment<ELdestination::Config> elDestConfig;
+			bool append = pset.get<bool>("append", true);
+			fhicl::Atom<std::string> baseDir{ fhicl::Name{"directory"},fhicl::Comment{"The directory into which files will be saved"},"/tmp" };
+			fhicl::Atom<std::string> sep{ fhicl::Name{"separator"},fhicl::Comment{"Separator to use after optional replacement parameters"}, "-" };
+			fhicl::Atom<std::string> timePattern{ fhicl::Name{"timestamp_pattern"},fhicl::Comment{"Pattern to use for %t strftime replacement"},"%Y%m%d%H%M%S" };
+			fhicl::Atom<std::string> timePattern{ fhicl::Name{ "pattern" },fhicl::Comment{ "Pattern to use for file naming.\n"
+			" Supported parameters are:\n"
+				" %%: Print a % sign\n"
+				" %N: Print the executable name, as retrieved from /proc/<pid>/exe\n"
+				" %?N: Print the executable name only if it does not already appear in the parsed format. Format is parsed left-to-right.\n"
+				" These options add a separator AFTER if they are filled and if they are not the last token in the file pattern, before the last '.' character.\n"
+				" %H: Print the hostname, without any domain specifiers (i.e. work.fnal.gov will become work)\n"
+				" %?H: Print the hostname only if it does not already appear in the parsed format.\n"
+				" %p: Print the PID of the application configuring MessageFacility\n"
+				" %t: Print the timestamp using the format specified by timestamp_pattern\n"
+				" %T: Print the timestamp in ISO format"
+			},"%N-%?H%t-%p.log" };
 
+
+		};
+		using Parameters = fhicl::WrappedTable<Config>;
+#endif
+
+	public:
+#if MESSAGEFACILITY_HEX_VERSION < 0x20103 // v2_01_03 is s58, pre v2_01_03 is s50
 		ELGenFileOutput(const fhicl::ParameterSet& pset);
+#else
+		ELGenFileOutput(Parameters const& pset)
+#endif
 
 		virtual ~ELGenFileOutput() {}
 
@@ -48,7 +77,6 @@ namespace mfplugins
 		) override;
 
 	private:
-		bool append_;
 		std::unique_ptr<cet::ostream_handle> output_;
 	};
 
@@ -60,15 +88,24 @@ namespace mfplugins
 	//======================================================================
 	// ELGenFileOutput c'tor
 	//======================================================================
-
+#if MESSAGEFACILITY_HEX_VERSION < 0x20103 
 	ELGenFileOutput::ELGenFileOutput(const fhicl::ParameterSet& pset)
 		: ELdestination(pset)
-		, append_(pset.get<bool>("append", true))
 	{
+		bool append = pset.get<bool>("append", true);
 		std::string baseDir = pset.get<std::string>("directory", "/tmp");
 		std::string sep = pset.get<std::string>("separator", "-");
 		std::string timePattern = pset.get<std::string>("timestamp_pattern", "%Y%m%d%H%M%S"); // For strftime
 		std::string filePattern = pset.get<std::string>("pattern", "%N-%?H%t-%p.log");
+#else
+	ELGenFileOutput::ELGenFileOutput(Parameters const& pset) : ELdestination(pset.elDestConfig())
+	{
+		bool append = pset.append;
+		std::string baseDir = pset.baseDir;
+		std::string sep = pset.sep;
+		std::string timePattern = pset.timePattern;
+		std::string filePattern = pset.filePattern;
+#endif
 
 		auto pid = getpid();
 		std::string exeString;
@@ -184,7 +221,7 @@ namespace mfplugins
 		}
 		std::string fileName = baseDir + "/" + filePattern;
 
-		output_ = std::make_unique<cet::ostream_handle>(fileName.c_str(), append_ ? std::ios::app : std::ios::trunc);
+		output_ = std::make_unique<cet::ostream_handle>(fileName.c_str(), append ? std::ios::app : std::ios::trunc);
 	}
 
 	//======================================================================
