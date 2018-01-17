@@ -30,14 +30,14 @@ namespace mfplugins
 	class ELGenFileOutput : public ELdestination
 	{
 #if MESSAGEFACILITY_HEX_VERSION >= 0x20103
-		struct
+		struct Config
 		{
 			fhicl::TableFragment<ELdestination::Config> elDestConfig;
-			bool append = pset.get<bool>("append", true);
+			fhicl::Atom<bool> append{ fhicl::Name{"append"},fhicl::Comment {"Whether to append to the file or recreate it"},true };
 			fhicl::Atom<std::string> baseDir{ fhicl::Name{"directory"},fhicl::Comment{"The directory into which files will be saved"},"/tmp" };
 			fhicl::Atom<std::string> sep{ fhicl::Name{"separator"},fhicl::Comment{"Separator to use after optional replacement parameters"}, "-" };
 			fhicl::Atom<std::string> timePattern{ fhicl::Name{"timestamp_pattern"},fhicl::Comment{"Pattern to use for %t strftime replacement"},"%Y%m%d%H%M%S" };
-			fhicl::Atom<std::string> timePattern{ fhicl::Name{ "pattern" },fhicl::Comment{ "Pattern to use for file naming.\n"
+			fhicl::Atom<std::string> pattern{ fhicl::Name{ "pattern" },fhicl::Comment{ "Pattern to use for file naming.\n"
 			" Supported parameters are:\n"
 				" %%: Print a % sign\n"
 				" %N: Print the executable name, as retrieved from /proc/<pid>/exe\n"
@@ -59,7 +59,7 @@ namespace mfplugins
 #if MESSAGEFACILITY_HEX_VERSION < 0x20103 // v2_01_03 is s58, pre v2_01_03 is s50
 		ELGenFileOutput(const fhicl::ParameterSet& pset);
 #else
-		ELGenFileOutput(Parameters const& pset)
+		ELGenFileOutput(Parameters const& pset);
 #endif
 
 		virtual ~ELGenFileOutput() {}
