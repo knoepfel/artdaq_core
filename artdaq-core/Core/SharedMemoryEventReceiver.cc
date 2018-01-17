@@ -1,9 +1,10 @@
 
-#define TRACE_NAME "SharedMemoryEventReceiver"
-#include "tracemf.h"                       // include before Core/SharedMemoryEventReceiver.hh which includes Data/Fragment.hh which includes trace.h
 #include "artdaq-core/Core/SharedMemoryEventReceiver.hh"
+
 #include "artdaq-core/Data/Fragment.hh"
 #include <sys/time.h>
+#define TRACE_NAME "SharedMemoryEventReceiver"
+#include "tracemf.h"
 
 using std::string;
 
@@ -20,7 +21,7 @@ artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(uint32_t shm_key, u
 
 bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t timeout_us)
 {
-	TLOG_TRACE("SharedMemoryEventReceiver") << "ReadyForRead BEGIN" << TLOG_ENDL;
+	TLOG(4) << "ReadyForRead BEGIN" << TLOG_ENDL;
 	if (current_read_buffer_ != -1 && current_data_source_ && current_header_)
 	{
 		TLOG_TRACE("SharedMemoryEventReceiver") << "ReadyForRead Returning true because already reading buffer" << TLOG_ENDL;
@@ -67,8 +68,9 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 			return true;
 		}
 		current_data_source_ = nullptr;
+		usleep( 1000 );
 	}
-	TLOG_TRACE("SharedMemoryEventReceiver") << "ReadyForRead returning false" << TLOG_ENDL;
+	TLOG(4) << "ReadyForRead returning false" << TLOG_ENDL;
 	return false;
 }
 

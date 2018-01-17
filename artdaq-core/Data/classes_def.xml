@@ -27,4 +27,5 @@
   <class name="std::vector<artdaq::PackageBuildInfo>"/>
   <class name="art::Wrapper<std::vector<artdaq::PackageBuildInfo>>"/>
   <class name="art::Wrapper<artdaq::PackageBuildInfo>"/>
+    <class name="art::ParentageMap"/>
 </lcgdict>

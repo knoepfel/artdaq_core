@@ -54,3 +54,21 @@ uint64_t artdaq::TimeUtils::gettimeofday_us()
 	gettimeofday(&tv, NULL);
 	return (uint64_t)tv.tv_sec * 1000000 + tv.tv_usec;
 }
+
+double artdaq::TimeUtils::
+convertUnixTimeToSeconds(time_t inputUnixTime)
+{
+	return static_cast<double>(inputUnixTime);
+}
+
+double artdaq::TimeUtils::
+convertUnixTimeToSeconds(struct timeval const& inputUnixTime)
+{
+	return static_cast<double>(inputUnixTime.tv_sec) + inputUnixTime.tv_usec / 1000000.0;
+}
+
+double artdaq::TimeUtils::
+convertUnixTimeToSeconds(struct timespec const& inputUnixTime)
+{
+	return static_cast<double>(inputUnixTime.tv_sec) + inputUnixTime.tv_nsec / 1000000000.0; // Mr. Billion
+}

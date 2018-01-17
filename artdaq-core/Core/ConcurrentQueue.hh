@@ -8,7 +8,7 @@
 #include <list>
 
 #include <iostream> // debugging
-#include "trace.h"  // TRACE
+#include "tracemf.h"  // TRACE
 
 #include <chrono>
 #include <condition_variable>

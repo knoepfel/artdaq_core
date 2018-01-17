@@ -5,7 +5,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <thread>
+#include <boost/thread.hpp>
 
 namespace artdaq
 {
@@ -98,7 +98,7 @@ namespace artdaq
 		/**
 		 * \brief Thread which performs calculation of MonitoredQuantity statistics
 		 */
-		std::unique_ptr<std::thread> calculation_thread_;
+		std::unique_ptr<boost::thread> calculation_thread_;
 
 		/**
 		 * \brief Mutex for protecting accesses to the lookup map

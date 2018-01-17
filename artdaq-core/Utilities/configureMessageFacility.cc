@@ -10,7 +10,8 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
-#include "trace.h"				// TRACE_CNTL, TRACE
+#define TRACE_NAME "configureMessageFacility"
+#include "tracemf.h"				// TRACE_CNTL, TRACE
 
 namespace BFS = boost::filesystem;
 
@@ -21,17 +22,11 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	char* logRootString = getenv("ARTDAQ_LOG_ROOT");
 	char* logFhiclCode = getenv("ARTDAQ_LOG_FHICL");
 	char* artdaqMfextensionsDir = getenv("ARTDAQ_MFEXTENSIONS_DIR");
-
-#if 0
-	setenv("TRACE_LVLS", "0xf", 0/*0 = no overwrite*/);
-	unsigned long long lvls = strtoull(getenv("TRACE_LVLS"), NULL, 0);
-	// NOTE: If TRACEs occur before this, they would be done with a different lvl S mask.
-	//       To check this, one could: treset;tonMg 0-63; tcntl trig -nTRACE 4 50; <app>
-	//       checking for TRACEs before the TRACE below.
-	//       If an existing trace file is used, the value of modeS is unchanged.
-	TRACE_CNTL("lvlmskSg", lvls);
-	TRACE(4, "configureMessageFacility lvlmskSg set to 0x%llx", lvls);
-#endif
+	char* useMFExtensionsS = getenv("ARTDAQ_MFEXTENSIONS_ENABLED");
+	bool useMFExtensions = false;
+	if (useMFExtensionsS != nullptr && !(strncmp(useMFExtensionsS, "0", 1) == 0)) {
+		useMFExtensions = true;
+	}
 
 	std::string logfileDir = "";
 	if (logRootString != nullptr)
@@ -49,73 +44,62 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			logfileDir.append("/");
 			logfileDir.append(progname);
 
-			// As long as the top-level directory exists, I don't think we really care if we have to create application directories...
+			// As long as the top-level directory exists, I don't think we
+			// really care if we have to create application directories...
 			if (!BFS::exists(logfileDir))
-			{
 				BFS::create_directory(logfileDir);
-				/*logPathProblem = "Log file directory ";
-				logPathProblem.append(logfileDir);
-				logPathProblem.append(" does not exist!");
-				throw cet::exception("ConfigureMessageFacility") << logPathProblem;*/
-			}
-			else
+
+			time_t rawtime;
+			struct tm* timeinfo;
+			char timeBuff[256];
+			time(&rawtime);
+			timeinfo = localtime(&rawtime);
+			strftime(timeBuff, 256, "%Y%m%d%H%M%S", timeinfo);
+
+			char hostname[256];
+			std::string hostString = "";
+			if (gethostname(&hostname[0], 256) == 0)
 			{
-				time_t rawtime;
-				struct tm* timeinfo;
-				char timeBuff[256];
-				time(&rawtime);
-				timeinfo = localtime(&rawtime);
-				strftime(timeBuff, 256, "%Y%m%d%H%M%S", timeinfo);
-
-				char hostname[256];
-				std::string hostString = "";
-				if (gethostname(&hostname[0], 256) == 0)
+				std::string tmpString(hostname);
+				hostString = tmpString;
+				size_t pos = hostString.find(".");
+				if (pos != std::string::npos && pos > 2)
 				{
-					std::string tmpString(hostname);
-					hostString = tmpString;
-					size_t pos = hostString.find(".");
-					if (pos != std::string::npos && pos > 2)
-					{
-						hostString = hostString.substr(0, pos);
-					}
+					hostString = hostString.substr(0, pos);
 				}
-
-				logfileName.append(logfileDir);
-				logfileName.append("/");
-				logfileName.append(progname);
-				logfileName.append("-");
-				logfileName.append(timeBuff);
-				logfileName.append("-");
-				if (hostString.size() > 0)
-				{
-					logfileName.append(hostString);
-					logfileName.append("-");
-				}
-				logfileName.append(boost::lexical_cast<std::string>(getpid()));
-				logfileName.append(".log");
 			}
+
+			logfileName.append(logfileDir);
+			logfileName.append("/");
+			logfileName.append(progname);
+			logfileName.append("-");
+			if (hostString.size() > 0 && logfileName.find(hostString) == std::string::npos) {
+				logfileName.append(hostString);
+				logfileName.append("-");
+			}
+			logfileName.append(timeBuff);
+			logfileName.append("-");
+			logfileName.append(boost::lexical_cast<std::string>(getpid()));
+			logfileName.append(".log");
 		}
 	}
 
 	std::ostringstream ss;
 	ss << "debugModules:[\"*\"] "
-#if MESSAGEFACILITY_HEX_VERSION < 0x20103
-	   << " statistics:[\"stats\"] "
-#endif
 		<< "  destinations : { ";
 
 	if (useConsole)
 	{
 		std::string outputLevel = "\"INFO\" ";
 		if (printDebug) outputLevel = "\"DEBUG\" ";
-		if (artdaqMfextensionsDir != nullptr)
+		if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 		{
 			ss << "    console : { "
 				<< "      type : \"ANSI\" threshold : " << outputLevel
 #if MESSAGEFACILITY_HEX_VERSION < 0x20103
-			  	<< "      noTimeStamps : true "
+				<< "      noTimeStamps : true "
 #else
-			   << "       format: { timestamp: none } "
+				<< "      format: { timestamp: none } "
 #endif
 				<< "      bell_on_error: true "
 				<< "    } ";
@@ -125,26 +109,25 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			ss << "    console : { "
 				<< "      type : \"cout\" threshold :" << outputLevel
 #if MESSAGEFACILITY_HEX_VERSION < 0x20103
-			  	<< "      noTimeStamps : true "
+				<< "      noTimeStamps : true "
 #else
-			   << "       format: { timestamp: none } "
+				<< "       format: { timestamp: none } "
 #endif
 				<< "    } ";
 		}
 	}
 
-	if (artdaqMfextensionsDir != nullptr)
+	if (logfileDir.size())
 	{
-		ss << "  file: { "
-			<< "    type: \"GenFile\" threshold: \"DEBUG\" sep: \"-\" "
-			<< " file_name_prefix: \"" << progname << "\" ";
-		if (logfileDir.size())
-		{
-			ss << " base_directory: \"" << logfileDir << "\"";
-		}
-		ss << "      append : false "
-			<< "    } ";
+		ss << " file: {";
+		ss << " type: \"GenFile\" threshold: \"DEBUG\" seperator: \"-\"";
+		ss << " pattern: \"" << progname << "-%?H%t-%p.log" << "\"";
+		ss << " timestamp_pattern: \"%Y%m%d%H%M%S\"";
+		ss << " directory: \"" << logfileDir << "\"";
+		ss << " append : false";
+		ss << " }";
 	}
+#if 0 // ELF 01/17/2018 Removed because it violates the "every EVB art process must have identical configuration" rule
 	else if (logfileName.length() > 0)
 	{
 		ss << "    file : { "
@@ -153,8 +136,9 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			<< "      append : false "
 			<< "    } ";
 	}
+#endif
 
-	if (artdaqMfextensionsDir != nullptr)
+	if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 	{
 		ss << "    trace : { "
 			<< "       type : \"TRACE\" threshold : \"DEBUG\" format:{noLineBreaks: true} lvls: 0x7 lvlm: 0xF"
@@ -180,8 +164,75 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	ss << "  } ";
 
 	std::string pstr(ss.str());
-	std::cout << "Message Facility Config is: " << pstr << std::endl;
 	return pstr;
+}  
+// generateMessageFacilityConfiguration
+
+void artdaq::configureTRACE(fhicl::ParameterSet &trace_pset)
+{
+	/* The following code handles this example fhicl:
+	   TRACE:{
+		 TRACE_NUMENTS:500000
+		 TRACE_ARGSMAX:10
+		 TRACE_MSGMAX:0
+		 TRACE_FILE:"/tmp/trace_buffer_%u"   # this is the default
+		 TRACE_LIMIT_MS:[8,80,800]
+		 TRACE_MODE:0xf
+		 TRACE_NAMLVLSET:{
+		   #name:[lvlsmskM,lvlsmskS[,lvlsmskT]]   lvlsmskT is optional
+		   name0:[0x1f,0x7]
+		   name1:[0x2f,0xf]
+		   name2:[0x3f,0x7,0x1]
+		 }
+	   }
+	*/
+	std::vector<std::string> names = trace_pset.get_names();
+	std::vector<std::string> trace_envs = {//"TRACE_NUMENTS", "TRACE_ARGSMAX", "TRACE_MSGMAX", "TRACE_FILE",
+		"TRACE_LIMIT_MS", "TRACE_MODE", "TRACE_NAMLVLSET" };
+	std::unordered_map<std::string, bool> envs_set_to_unset;
+	for (auto env : trace_envs)	envs_set_to_unset[env] = false;
+	// tricky - some env. vars. will over ride info in "mapped" (file) context while others cannot. 
+	for (auto name : names) {
+		if (name == "TRACE_NUMENTS" || name == "TRACE_ARGSMAX"
+			|| name == "TRACE_MSGMAX" || name == "TRACE_FILE") // only applicable if env.var. set before before traceInit
+			// don't override and don't "set_to_unset" (if "mapping", want any subprocess to map also)
+			setenv(name.c_str(), trace_pset.get<std::string>(name).c_str(), 0);
+		// These next 3 are looked at when TRACE_CNTL("namlvlset") is called. And, if mapped, get into file! (so may want to unset env???)
+		else if (name == "TRACE_LIMIT_MS") { // there is also TRACE_CNTL
+			if (!getenv(name.c_str())) {
+				envs_set_to_unset[name] = true;
+				std::vector<uint32_t> limit = trace_pset.get<std::vector<uint32_t>>(name);
+				// could check that it is size()==3???
+				std::string limits = std::to_string(limit[0]) + "," + std::to_string(limit[1]) + "," + std::to_string(limit[2]);
+				setenv(name.c_str(), limits.c_str(), 0);
+			}
+		}
+		else if (name == "TRACE_MODE") { // env.var. only applicable if TRACE_NAMLVLSET is set, BUT could TRACE_CNTL("mode",mode)???
+			if (!getenv(name.c_str())) {
+				envs_set_to_unset[name] = true;
+				setenv(name.c_str(), trace_pset.get<std::string>(name).c_str(), 0);
+			}
+		}
+		else if (name == "TRACE_NAMLVLSET") {
+			if (!getenv(name.c_str())) {
+				envs_set_to_unset[name] = true;
+				std::stringstream lvlsbldr; // levels builder
+				fhicl::ParameterSet lvls_pset = trace_pset.get<fhicl::ParameterSet>(name);
+				std::vector<std::string> tnames = lvls_pset.get_names();
+				for (auto tname : tnames) {
+					lvlsbldr << tname;
+					std::vector<uint64_t> msks = lvls_pset.get<std::vector<uint64_t>>(tname);
+					for (auto msk : msks) {
+						lvlsbldr << " 0x" << std::hex << (unsigned long long)msk;
+					}
+					lvlsbldr << "\n";
+				}
+				setenv(name.c_str(), lvlsbldr.str().c_str(), 0); // 0 means: won't overwrite
+			}
+		}
+	}
+	TRACE_CNTL("namlvlset"); // acts upon env.var.
+	for (auto env : trace_envs)	if (envs_set_to_unset[env]) unsetenv(env.c_str());
 }
 
 void artdaq::configureMessageFacility(char const* progname, bool useConsole, bool printDebug)
@@ -189,6 +240,17 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	auto pstr = generateMessageFacilityConfiguration(progname, useConsole, printDebug);
 	fhicl::ParameterSet pset;
 	fhicl::make_ParameterSet(pstr, pset);
+
+	fhicl::ParameterSet trace_pset;
+	if (!pset.get_if_present<fhicl::ParameterSet>("TRACE", trace_pset)) {
+		fhicl::ParameterSet trace_dflt_pset;
+		fhicl::make_ParameterSet("TRACE:{TRACE_MSGMAX:0 TRACE_LIMIT_MS:[10,500,1500]}", trace_dflt_pset);
+		pset.put<fhicl::ParameterSet>("TRACE", trace_dflt_pset.get<fhicl::ParameterSet>("TRACE"));
+		trace_pset = pset.get<fhicl::ParameterSet>("TRACE");
+	}
+	configureTRACE(trace_pset);
+	pstr = pset.to_string();
+	pset.erase("TRACE");
 
 #if CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
 	mf::StartMessageFacility(pset);
@@ -202,9 +264,11 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	mf::SetModuleName(progname);
 	mf::SetContext(progname);
 #  endif
+	TLOG(4) << "Message Facility Config input is: " << pstr;
+	TLOG_INFO("configureMessageFacility") << "Message Facility Application " << progname << " configured with: " << pset.to_string();
 }
 
-void artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)
+std::string artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)
 {
 	std::string appName(appType);
 
@@ -225,4 +289,5 @@ void artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)
 	appName.append(boost::lexical_cast<std::string>(port));
 
 	mf::SetApplicationName(appName);
+	return appName;
 }

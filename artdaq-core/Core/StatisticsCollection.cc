@@ -11,7 +11,7 @@ namespace artdaq
 	StatisticsCollection::StatisticsCollection() : calculationInterval_(1.0)
 	{
 		thread_stop_requested_ = false;
-		calculation_thread_ = std::make_unique<std::thread>(std::bind(&StatisticsCollection::run, this));
+		calculation_thread_ = std::make_unique<boost::thread>(boost::bind(&StatisticsCollection::run, this));
 	}
 
 	StatisticsCollection::~StatisticsCollection() noexcept

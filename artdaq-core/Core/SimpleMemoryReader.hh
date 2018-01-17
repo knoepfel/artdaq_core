@@ -2,7 +2,6 @@
 #define artdaq_core_Core_SimpleMemoryReader_hh 1
 
 #include "artdaq-core/Core/SharedMemoryEventReceiver.hh"
-#include <thread>
 #include <memory>
 
 namespace artdaq

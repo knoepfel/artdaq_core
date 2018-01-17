@@ -2,6 +2,7 @@
 #define artdaq_Application_configureMessageFacility_hh
 
 #include <string>
+#include "fhiclcpp/ParameterSet.h"
 
 namespace artdaq
 {
@@ -16,6 +17,12 @@ namespace artdaq
 	std::string generateMessageFacilityConfiguration(char const* progname, bool useConsole = true, bool printDebug = false);
 
 	/**
+	 * \brief Configure TRACE
+	 * \param trace_pset A fhicl::ParameterSet with the contents of the TRACE table
+	 */
+	void configureTRACE( fhicl::ParameterSet &trace_pset );
+
+	/**
 	 * \brief Configure and start the message facility. Provide the program name so that messages will be appropriately tagged.
 	 * \param progname The name of the program
 	 * \param useConsole Should console output be activated? Default = true
@@ -28,7 +35,7 @@ namespace artdaq
 	 * \param appType Application name
 	 * \param port XMLRPC port of this application instance
 	 */
-	void setMsgFacAppName(const std::string& appType, unsigned short port);
+	std::string setMsgFacAppName(const std::string& appType, unsigned short port);
 }
 
 #endif /* artdaq_Application_configureMessageFacility_hh */
