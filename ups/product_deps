@@ -32,7 +32,7 @@ canvas          v2_00_01        s49
 canvas          v1_06_04        s48
 canvas          v1_06_03        s47
 canvas          v1_06_02        s46
-TRACE           v3_13_01
+TRACE           v3_13_02
 cetbuildtools	v6_01_00	-	only_for_build
 end_product_list
 
