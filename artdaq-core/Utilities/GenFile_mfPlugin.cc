@@ -67,7 +67,7 @@ namespace mfplugins
 
 		virtual void routePayload(const std::ostringstream&, const ErrorObj&
 # if MESSAGEFACILITY_HEX_VERSION < 0x20002 // v2_00_02 is s50, pre v2_00_02 is s48
-								  , const ELcontextSupplier&
+			, const ELcontextSupplier&
 #endif
 		) override;
 
@@ -109,10 +109,10 @@ namespace mfplugins
 #endif
 
 		auto pid = getpid();
-		std::string exeString;
-		std::string hostString;
-		std::string timeBuffISO; // Using boost::posix_time::to_iso_string (%T)
-		std::string timeBuff; // Using timestamp_pattern (%t)
+		std::string exeString = "";
+		std::string hostString = "";
+		std::string timeBuffISO = ""; // Using boost::posix_time::to_iso_string (%T)
+		std::string timeBuff = ""; // Using timestamp_pattern (%t)
 
 
 		// Determine image name
@@ -133,7 +133,6 @@ namespace mfplugins
 		if (filePattern.find("%H") != std::string::npos || filePattern.find("%?H") != std::string::npos)
 		{
 			char hostname[256];
-			std::string hostString = "";
 			if (gethostname(&hostname[0], 256) == 0)
 			{
 				std::string tmpString(hostname);
@@ -162,14 +161,16 @@ namespace mfplugins
 		}
 
 		size_t pos = 0;
-		TRACE(3, "GenFile: filePattern is: " + filePattern);
+		TLOG_DEBUG("GenFile") << "filePattern is: " << filePattern << TLOG_ENDL;
 		while (filePattern.find("%", pos) != std::string::npos)
 		{
 			pos = filePattern.find("%", pos) + 1;
+			TLOG_ARB(5, "GenFile") << "Found % at " << std::to_string(pos - 1) << ", next char: " << filePattern[pos] << "." << TLOG_ENDL;
 			switch (filePattern[pos])
 			{
 			case '%': // "%%"
 				filePattern = filePattern.replace(pos - 1, 2, "%");
+				pos--;
 				break;
 			case '?':
 			{
@@ -197,32 +198,39 @@ namespace mfplugins
 						// Only append separator if we're not at the end of the pattern
 						if (!(pos + 1 == filePattern.size() - 1 || pos + 2 == filePattern.find_last_of('.'))) {
 							repString += sep;
-							filePattern = filePattern.replace(pos - 1, 3, repString);
 						}
+						filePattern = filePattern.replace(pos - 1, 3, repString);
 						break;
 					}
 				}
+				pos -= 3;
 			}
 			break;
 			case 'N':
 				filePattern = filePattern.replace(pos - 1, 2, exeString);
+				pos -= 2;
 				break;
 			case 'H':
 				filePattern = filePattern.replace(pos - 1, 2, hostString);
+				pos -= 2;
 				break;
 			case 'p':
 				filePattern = filePattern.replace(pos - 1, 2, std::to_string(pid));
+				pos -= 2;
 				break;
 			case 't':
 				filePattern = filePattern.replace(pos - 1, 2, timeBuff);
+				pos -= 2;
 				break;
 			case 'T':
 				filePattern = filePattern.replace(pos - 1, 2, timeBuffISO);
+				pos -= 2;
 				break;
 			}
+			TLOG_ARB(6, "GenFile") << "filePattern is now: " << filePattern << TLOG_ENDL;
 		}
 		std::string fileName = baseDir + "/" + filePattern;
-		TRACE(3, "GenFile: fileName is: " + fileName);
+		TLOG_DEBUG("GenFile") << "fileName is: " << fileName << TLOG_ENDL;
 
 		output_ = std::make_unique<cet::ostream_handle>(fileName.c_str(), append ? std::ios::app : std::ios::trunc);
 	}
@@ -232,7 +240,7 @@ namespace mfplugins
 	//======================================================================
 	void ELGenFileOutput::routePayload(const std::ostringstream& oss, const ErrorObj&
 # if MESSAGEFACILITY_HEX_VERSION < 0x20002 // v2_00_02 is s50, pre v2_00_02 is s48
-									   , ELcontextSupplier const& sup
+		, ELcontextSupplier const& sup
 #endif
 	)
 	{
@@ -263,7 +271,7 @@ namespace mfplugins
 extern "C"
 {
 	auto makePlugin(const std::string&,
-					const fhicl::ParameterSet& pset)
+		const fhicl::ParameterSet& pset)
 	{
 		return std::make_unique<mfplugins::ELGenFileOutput>(pset);
 	}
