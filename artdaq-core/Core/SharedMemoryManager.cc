@@ -88,6 +88,7 @@ void artdaq::SharedMemoryManager::Attach()
 					getBufferInfo_(ii)->readPos = 0;
 					getBufferInfo_(ii)->sem = BufferSemaphoreFlags::Empty;
 					getBufferInfo_(ii)->sem_id = -1;
+					getBufferInfo_(ii)->last_touch_time = TimeUtils::gettimeofday_us();
 				}
 
 				shm_ptr_->ready_magic = 0xCAFE1111;
@@ -460,7 +461,14 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 			return true;
 		}*/
 
-	if (TimeUtils::gettimeofday_us() - shmBuf->last_touch_time <= shm_ptr_->buffer_timeout_us) return false;
+	size_t delta = TimeUtils::gettimeofday_us() - shmBuf->last_touch_time;
+	if (delta > 0xFFFFFFFF) {
+		TLOG_TRACE("SharedMemoryManager") << "Buffer has touch time in the future, setting it to current time and ignoring..." << TLOG_ENDL;
+		shmBuf->last_touch_time = TimeUtils::gettimeofday_us();
+		return false;
+	}
+	if (delta <= shm_ptr_->buffer_timeout_us || shmBuf->sem == BufferSemaphoreFlags::Empty) return false;
+	TLOG_TRACE("SharedMemoryManager") << "Buffer " << buffer << " is stale, time=" << TimeUtils::gettimeofday_us() << ", last touch=" << shmBuf->last_touch_time << ", d=" << delta << ", timeout=" << shm_ptr_->buffer_timeout_us << TLOG_ENDL;
 
 	if (shmBuf->sem_id == manager_id_ && shmBuf->sem == BufferSemaphoreFlags::Writing)
 	{
@@ -478,7 +486,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 
 	if (shmBuf->sem_id != manager_id_ && shmBuf->sem == BufferSemaphoreFlags::Reading)
 	{
-		TLOG_WARNING("SharedMemoryManager") << "Stale Read buffer ( " << std::to_string(TimeUtils::gettimeofday_us() - shmBuf->last_touch_time) << " / " << std::to_string(shm_ptr_->buffer_timeout_us) << " us ) detected! Resetting..." << TLOG_ENDL;
+		TLOG_WARNING("SharedMemoryManager") << "Stale Read buffer ( " << delta << " / " << shm_ptr_->buffer_timeout_us << " us ) detected! Resetting..." << TLOG_ENDL;
 		shmBuf->readPos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Full;
 		shmBuf->sem_id = -1;
@@ -521,6 +529,7 @@ bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 	auto pos = GetReadPos(buffer);
 	memcpy(data, pos, size);
 	shmBuf->readPos += size;
+	touchBuffer_(shmBuf);
 	return checkBuffer_(shmBuf, BufferSemaphoreFlags::Reading, false);
 }
 
