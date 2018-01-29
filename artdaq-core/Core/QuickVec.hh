@@ -83,8 +83,9 @@ namespace artdaq {
  * \tparam TT_ The data type stored in the QuickVec
  */
 QUICKVEC_TEMPLATE
-struct QuickVec
+class QuickVec
 {
+public:
 	typedef TT_* iterator; ///< Iterator is pointer-to-member type
 	typedef const TT_* const_iterator; ///< const_iterator is const-pointer-to-member type
 	typedef TT_& reference; ///< reference is reference-to-member tpye
