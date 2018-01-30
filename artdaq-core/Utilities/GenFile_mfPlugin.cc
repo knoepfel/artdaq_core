@@ -270,7 +270,7 @@ namespace mfplugins
 
 extern "C"
 {
-	auto makePlugin(const std::string&,
+	std::unique_ptr<mfplugins::ELGenFileOutput> makePlugin(const std::string&,
 		const fhicl::ParameterSet& pset)
 	{
 		return std::make_unique<mfplugins::ELGenFileOutput>(pset);
