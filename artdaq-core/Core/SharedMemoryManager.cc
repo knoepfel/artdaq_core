@@ -479,7 +479,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 		shmBuf->writePos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Empty;
 		shmBuf->sem_id = -1;
-		if (shm_ptr_->reader_pos == buffer) shm_ptr_->reader_pos = (buffer + 1) % shm_ptr_->buffer_count;
+		if (shm_ptr_->reader_pos == static_cast<unsigned>(buffer)) shm_ptr_->reader_pos = (buffer + 1) % shm_ptr_->buffer_count;
 		return true;
 	}
 
