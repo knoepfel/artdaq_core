@@ -145,7 +145,7 @@ std::unique_ptr<artdaq::Fragments> artdaq::SharedMemoryEventReceiver::GetFragmen
 		}
 	}
 
-	return std::move(output);
+	return output;
 }
 
 std::string artdaq::SharedMemoryEventReceiver::printBuffers_(SharedMemoryManager* data_source)

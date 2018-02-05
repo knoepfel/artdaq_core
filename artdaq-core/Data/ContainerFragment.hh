@@ -142,7 +142,7 @@ public:
 	 */
     FragmentPtr operator[](size_t index) const
 	{
-		return std::move(this->at(index));
+		return this->at(index);
 	}
 
 	/**

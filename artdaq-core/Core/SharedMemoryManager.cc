@@ -20,7 +20,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	Attach();
 }
 
-artdaq::SharedMemoryManager::~SharedMemoryManager()
+artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept
 {
 	TLOG_ARB(5, "SharedMemoryManager") << "~SharedMemoryManager called" << TLOG_ENDL;
 	Detach();
@@ -479,7 +479,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 		shmBuf->writePos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Empty;
 		shmBuf->sem_id = -1;
-		if (shm_ptr_->reader_pos = buffer)shm_ptr_->reader_pos = (buffer + 1) % shm_ptr_->buffer_count;
+		if (shm_ptr_->reader_pos == static_cast<unsigned>(buffer)) shm_ptr_->reader_pos = (buffer + 1) % shm_ptr_->buffer_count;
 		return true;
 	}
 

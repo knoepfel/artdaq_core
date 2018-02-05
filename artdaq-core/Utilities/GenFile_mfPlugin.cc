@@ -1,5 +1,8 @@
 #include "cetlib/PluginTypeDeducer.h"
 #include "cetlib/ostream_handle.h"
+#if MESSAGEFACILITY_HEX_VERSION >= 0x20106 // v2_01_06 => cetlib v3_02_00 => new clang support
+#include "cetlib/ProvideMakePluginMacros.h"
+#endif
 #include "fhiclcpp/ParameterSet.h"
 
 #include "boost/date_time/posix_time/posix_time.hpp"
@@ -270,11 +273,17 @@ namespace mfplugins
 
 extern "C"
 {
-	auto makePlugin(const std::string&,
-		const fhicl::ParameterSet& pset)
+
+#if MESSAGEFACILITY_HEX_VERSION >= 0x20106 // v2_01_06 => cetlib v3_02_00 => new clang support
+	MAKE_PLUGIN_START(auto, std::string const&, fhicl::ParameterSet const& pset)
 	{
 		return std::make_unique<mfplugins::ELGenFileOutput>(pset);
+	} MAKE_PLUGIN_END
+#else
+	auto makePlugin(std::string const&, fhicl::ParameterSet const& pset) {
+		return std::make_unique<mfplugins::ELGenFileOutput>(pset);
 	}
+#endif
 }
 
 DEFINE_BASIC_PLUGINTYPE_FUNC(mf::service::ELdestination)
