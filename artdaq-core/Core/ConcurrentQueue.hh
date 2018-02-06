@@ -16,7 +16,7 @@
 #include <type_traits>
 
 #undef TRACE_NAME
-#define TRACE_NAME ConcurrentQueue
+#define TRACE_NAME "ConcurrentQueue"
 
 // #include <boost/date_time/posix_time/posix_time_types.hpp>
 // #include <boost/utility/enable_if.hpp>
