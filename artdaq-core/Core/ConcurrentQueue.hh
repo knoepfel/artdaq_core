@@ -15,6 +15,9 @@
 #include <mutex>
 #include <type_traits>
 
+#undef TRACE_NAME
+#define TRACE_NAME ConcurrentQueue
+
 // #include <boost/date_time/posix_time/posix_time_types.hpp>
 // #include <boost/utility/enable_if.hpp>
 // #include <boost/thread/condition.hpp>
@@ -107,7 +110,7 @@ namespace artdaq
 		 */
 		template <typename T>
 		MemoryType
-		memoryUsage(const std::pair<T, size_t>& t)
+			memoryUsage(const std::pair<T, size_t>& t)
 		{
 			MemoryType usage(0UL);
 			try
@@ -126,7 +129,7 @@ namespace artdaq
 		 */
 		template <typename T>
 		typename std::enable_if<hasMemoryUsed<T>::value, MemoryType>::type
-		memoryUsage(const T& t)
+			memoryUsage(const T& t)
 		{
 			MemoryType usage(0UL);
 			try
@@ -145,7 +148,7 @@ namespace artdaq
 		 */
 		template <typename T>
 		typename std::enable_if<!hasMemoryUsed<T>::value, MemoryType>::type
-		memoryUsage(const T& t)
+			memoryUsage(const T& t)
 		{
 			return sizeof(t);
 		}
@@ -321,7 +324,7 @@ namespace artdaq
 				++elementsRemoved;
 			}
 			if (size < capacity && used + itemSize <= memory)
-			// we succeeded to make enough room for the new element
+				// we succeeded to make enough room for the new element
 			{
 				doInsert(item, elements, size, itemSize, used, nonempty);
 			}
@@ -443,12 +446,12 @@ namespace artdaq
 		   ConcurrentQueue. The copy constructor and copy assignment
 		   operator are both private and deleted.
 		*/
-		
+
 		/**
 		 * \brief Add a copy if item to the queue, according to the rules determined by the EnqPolicy.
 		 * \param item Item to enqueue
 		 * \return EnqPolicy::ReturnType result of enqueue operation
-		 * 
+		 *
 		 *  Add a copy if item to the queue, according to the rules
 		 *  determined by the EnqPolicy; see documentation above the the
 		 *  provided EnqPolicy choices.  This may throw any exception
@@ -459,7 +462,7 @@ namespace artdaq
 		/**
 		 * \brief  Add a copy of item to the queue.
 		 * \param item Item to enqueue
-		 * 
+		 *
 		 * Add a copy of item to the queue. If the queue is full wait
 		 * until it becomes non-full. This may throw any exception thrown
 		 * by the assignment operator of type T, or badAlloc.
@@ -471,7 +474,7 @@ namespace artdaq
 		 * \param item Item to enqueue
 		 * \param wait Maximum time (in seconds) to wait for queue to be non-full
 		 * \return Whether the item was added before the timeout expired
-		 * 
+		 *
 		 * Add a copy of item to the queue. If the queue is full wait
 		 * until it becomes non-full or until timeDuration has passed.
 		 * Return true if the items has been put onto the queue or
@@ -485,7 +488,7 @@ namespace artdaq
 		 * remove the head of the queue.
 		 * \param item Reference to output item
 		 * \return If the dequeue operation was successful
-		 * 
+		 *
 		 * Assign the value at the head of the queue to item and then
 		 * remove the head of the queue. If successful, return true; on
 		 * failure, return false. This function fill fail without waiting
@@ -498,7 +501,7 @@ namespace artdaq
 		 * \brief Assign the value of the head of the queue to item and then
 		 * remove the head of the queue.
 		 * \param item Reference to output item
-		 * 
+		 *
 		 * Assign the value of the head of the queue to item and then
 		 * remove the head of the queue. If the queue is empty wait until
 		 * is has become non-empty. This may throw any exception thrown by
@@ -511,7 +514,7 @@ namespace artdaq
 		 * \param item Reference to output item
 		 * \param wait Maximum number of seconds to wait for dequeue
 		 * \return Whether an item was dequeued in the given interval
-		 * 
+		 *
 		 * Assign the value at the head of the queue to item and then
 		 * remove the head of the queue. If the queue is empty wait until
 		 * is has become non-empty or until timeDuration has passed.
@@ -585,7 +588,7 @@ namespace artdaq
 		   \return The number of cleared events.
 		*/
 		SizeType clear();
-				
+
 		/**
 		 * \brief Adds the passed count to the counter of dropped events
 		 * \param dropped Number of events dropped by code outside ConcurrentQueue
@@ -601,7 +604,7 @@ namespace artdaq
 		/**
 		 * \brief Set the ready flag for the reader
 		 * \param rdy Value of the ready flag (default: true)
-		 * 
+		 *
 		 * Sets the ready flag for the reader, and the time that the reader became ready or unready.
 		 * Used to help _artdaq_ wait for _art_ to finish initializing.
 		 */
@@ -709,15 +712,15 @@ namespace artdaq
 		SizeType maxSize,
 		detail::MemoryType maxMemory
 	) :
-	  protectElements_()
-	  , readyTime_(std::chrono::steady_clock::now())
-	  , readerReady_(false)
-	  , elements_()
-	  , capacity_(maxSize)
-	  , size_(0)
-	  , memory_(maxMemory)
-	  , used_(0)
-	  , elementsDropped_(0) {}
+		protectElements_()
+		, readyTime_(std::chrono::steady_clock::now())
+		, readerReady_(false)
+		, elements_()
+		, capacity_(maxSize)
+		, size_(0)
+		, memory_(maxMemory)
+		, used_(0)
+		, elementsDropped_(0) {}
 
 	template <class T, class EnqPolicy>
 	ConcurrentQueue<T, EnqPolicy>::~ConcurrentQueue()
@@ -735,37 +738,37 @@ namespace artdaq
 	template <class T, class EnqPolicy>
 	typename EnqPolicy::ReturnType ConcurrentQueue<T, EnqPolicy>::enqNowait(T const& item)
 	{
-		TRACE(12, "ConcurrentQueue<T,EnqPolicy>::enqNowait enter size=%zu capacity=%zu used=%zu memory=%zu", size_, capacity_, used_, memory_);
+		TLOG(12) << "enqNowait enter size=" << size_ << " capacity=" << capacity_ << " used=" << used_ << " memory=" << memory_ << TLOG_ENDL;
 		LockType lock(protectElements_);
 		auto retval = EnqPolicy::doEnq(item, elements_, size_, capacity_, used_, memory_,
-		                               elementsDropped_, queueNotEmpty_);
-		TRACE(12, "ConcurrentQueue<T,EnqPolicy>::enqNowait returning %zu", (SizeType)retval);
+			elementsDropped_, queueNotEmpty_);
+		TLOG(12) << "enqNowait returning " << retval << TLOG_ENDL;
 		return retval;
 	}
 
 	template <class T, class EnqPolicy>
 	void ConcurrentQueue<T, EnqPolicy>::enqWait(T const& item)
 	{
-		TRACE(12, "ConcurrentQueue<T,EnqPolicy>::enqWait enter");
+		TLOG(13) << "enqWait enter" << TLOG_ENDL;
 		WaitLockType lock(protectElements_);
 		while (isFull()) { queueNotFull_.wait(lock); }
 		EnqPolicy::doInsert(item, elements_, size_,
-		                    detail::memoryUsage(item), used_, queueNotEmpty_);
-		TRACE(12, "ConcurrentQueue<T,EnqPolicy>::enqWait returning");
+			detail::memoryUsage(item), used_, queueNotEmpty_);
+		TLOG(13) << "enqWait returning" << TLOG_ENDL;
 	}
 
 	template <class T, class EnqPolicy>
 	bool ConcurrentQueue<T, EnqPolicy>::enqTimedWait(T const& item, detail::seconds const& waitTime)
 	{
-		TRACE(12, "ConcurrentQueue<T,EnqPolicy>::enqTimedWait enter with waitTime=%ld ms size=%zu capacity=%zu used=%zu memory=%zu"
-			, std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count(), size_, capacity_, used_, memory_);
+		TLOG(14) << "ConcurrentQueue<T,EnqPolicy>::enqTimedWait enter with waitTime=" << std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count() << " ms size=" << size_
+			<< " capacity=" << capacity_ << " used=" << used_ << " memory=" << memory_ << TLOG_ENDL;
 		WaitLockType lock(protectElements_);
 		if (isFull())
 		{
 			queueNotFull_.wait_for(lock, waitTime);
 		}
 		bool retval = insertIfPossible(item);
-		TRACE(12, "ConcurrentQueue<T,EnqPolicy>::enqTimedWait returning %d", retval);
+		TLOG(14) << "ConcurrentQueue<T,EnqPolicy>::enqTimedWait returning " << retval << TLOG_ENDL;
 		return retval;
 	}
 
@@ -775,42 +778,41 @@ namespace artdaq
 	template <class T, class EnqPolicy>
 	bool ConcurrentQueue<T, EnqPolicy>::deqNowait(ValueType& item)
 	{
-		TRACE(12, "ConcurrentQueue<T, EnqPolicy>::deqNowait enter");
+		TLOG(15) << "ConcurrentQueue<T, EnqPolicy>::deqNowait enter" << TLOG_ENDL;
 		LockType lock(protectElements_);
 		bool retval = removeHeadIfPossible(item);
-		TRACE(12, "ConcurrentQueue<T, EnqPolicy>::deqNowait returning %d", retval);
+		TLOG(15) << "ConcurrentQueue<T, EnqPolicy>::deqNowait returning " << retval << TLOG_ENDL;
 		return retval;
 	}
 
 	template <class T, class EnqPolicy>
 	void ConcurrentQueue<T, EnqPolicy>::deqWait(ValueType& item)
 	{
-		TRACE(12, "ConcurrentQueue<T, EnqPolicy>::deqWait enter");
+		TLOG(16) << "ConcurrentQueue<T, EnqPolicy>::deqWait enter" << TLOG_ENDL;
 		WaitLockType lock(protectElements_);
 		while (size_ == 0) { queueNotEmpty_.wait(lock); }
 		removeHead(item);
-		TRACE(12, "ConcurrentQueue<T, EnqPolicy>::deqWait returning");
+		TLOG(16) << "ConcurrentQueue<T, EnqPolicy>::deqWait returning" << TLOG_ENDL;
 	}
 
 	template <class T, class EnqPolicy>
 	bool ConcurrentQueue<T, EnqPolicy>::deqTimedWait(ValueType& item, detail::seconds const& waitTime)
 	{
-		TRACE(12, "ConcurrentQueue<T, EnqPolicy>::deqTimedWait enter with waitTime=%ld ms size=%zu"
-			, std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count(), size_);
+		TLOG(17) << "ConcurrentQueue<T, EnqPolicy>::deqTimedWait enter with waitTime=" << std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count() << " ms size=" << size_ << TLOG_ENDL;
 		WaitLockType lock(protectElements_);
 		if (size_ == 0)
 		{
 			queueNotEmpty_.wait_for(lock, waitTime);
 		}
 		bool retval = removeHeadIfPossible(item);
-		TRACE(12, "ConcurrentQueue<T, EnqPolicy>::deqTimedWait returning %d size=%zu", retval, size_);
+		TLOG(17) << "ConcurrentQueue<T, EnqPolicy>::deqTimedWait returning " << retval << " size=" << size_ << TLOG_ENDL;
 		return retval;
 	}
 
 
 	template <class T, class EnqPolicy>
 	bool
-	ConcurrentQueue<T, EnqPolicy>::empty() const
+		ConcurrentQueue<T, EnqPolicy>::empty() const
 	{
 		// No lock is necessary: the read is atomic.
 		return size_ == 0;
@@ -818,7 +820,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	bool
-	ConcurrentQueue<T, EnqPolicy>::full() const
+		ConcurrentQueue<T, EnqPolicy>::full() const
 	{
 		LockType lock(protectElements_);
 		return isFull();
@@ -826,7 +828,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	typename ConcurrentQueue<T, EnqPolicy>::SizeType
-	ConcurrentQueue<T, EnqPolicy>::size() const
+		ConcurrentQueue<T, EnqPolicy>::size() const
 	{
 		// No lock is necessary: the read is atomic.
 		return size_;
@@ -834,7 +836,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	typename ConcurrentQueue<T, EnqPolicy>::SizeType
-	ConcurrentQueue<T, EnqPolicy>::capacity() const
+		ConcurrentQueue<T, EnqPolicy>::capacity() const
 	{
 		// No lock is necessary: the read is atomic.
 		return capacity_;
@@ -842,7 +844,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	bool
-	ConcurrentQueue<T, EnqPolicy>::setCapacity(SizeType newcapacity)
+		ConcurrentQueue<T, EnqPolicy>::setCapacity(SizeType newcapacity)
 	{
 		LockType lock(protectElements_);
 		bool isEmpty = (size_ == 0);
@@ -852,7 +854,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	detail::MemoryType
-	ConcurrentQueue<T, EnqPolicy>::used() const
+		ConcurrentQueue<T, EnqPolicy>::used() const
 	{
 		// No lock is necessary: the read is atomic.
 		return used_;
@@ -860,7 +862,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	detail::MemoryType
-	ConcurrentQueue<T, EnqPolicy>::memory() const
+		ConcurrentQueue<T, EnqPolicy>::memory() const
 	{
 		// No lock is necessary: the read is atomic.
 		return memory_;
@@ -868,7 +870,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	bool
-	ConcurrentQueue<T, EnqPolicy>::setMemory(detail::MemoryType newmemory)
+		ConcurrentQueue<T, EnqPolicy>::setMemory(detail::MemoryType newmemory)
 	{
 		LockType lock(protectElements_);
 		bool isEmpty = (size_ == 0);
@@ -878,7 +880,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	typename ConcurrentQueue<T, EnqPolicy>::SizeType
-	ConcurrentQueue<T, EnqPolicy>::clear()
+		ConcurrentQueue<T, EnqPolicy>::clear()
 	{
 		LockType lock(protectElements_);
 		SizeType clearedEvents = size_;
@@ -891,7 +893,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	void
-	ConcurrentQueue<T, EnqPolicy>::addExternallyDroppedEvents(SizeType n)
+		ConcurrentQueue<T, EnqPolicy>::addExternallyDroppedEvents(SizeType n)
 	{
 		LockType lock(protectElements_);
 		elementsDropped_ += n;
@@ -903,7 +905,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	bool
-	ConcurrentQueue<T, EnqPolicy>::insertIfPossible(T const& item)
+		ConcurrentQueue<T, EnqPolicy>::insertIfPossible(T const& item)
 	{
 		if (isFull())
 		{
@@ -913,14 +915,14 @@ namespace artdaq
 		else
 		{
 			EnqPolicy::doInsert(item, elements_, size_,
-			                    detail::memoryUsage(item), used_, queueNotEmpty_);
+				detail::memoryUsage(item), used_, queueNotEmpty_);
 			return true;
 		}
 	}
 
 	template <class T, class EnqPolicy>
 	bool
-	ConcurrentQueue<T, EnqPolicy>::removeHeadIfPossible(ValueType& item)
+		ConcurrentQueue<T, EnqPolicy>::removeHeadIfPossible(ValueType& item)
 	{
 		if (size_ == 0) { return false; }
 		removeHead(item);
@@ -929,7 +931,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	void
-	ConcurrentQueue<T, EnqPolicy>::removeHead(ValueType& item)
+		ConcurrentQueue<T, EnqPolicy>::removeHead(ValueType& item)
 	{
 		SequenceType holder;
 		// Move the item out of elements_ in a manner that will not throw.
@@ -943,14 +945,14 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	void
-	ConcurrentQueue<T, EnqPolicy>::assignItem(T& item, const T& element)
+		ConcurrentQueue<T, EnqPolicy>::assignItem(T& item, const T& element)
 	{
 		item = element;
 	}
 
 	template <class T, class EnqPolicy>
 	void
-	ConcurrentQueue<T, EnqPolicy>::assignItem(std::pair<T, size_t>& item, const T& element)
+		ConcurrentQueue<T, EnqPolicy>::assignItem(std::pair<T, size_t>& item, const T& element)
 	{
 		item.first = element;
 		item.second = elementsDropped_;
@@ -959,7 +961,7 @@ namespace artdaq
 
 	template <class T, class EnqPolicy>
 	bool
-	ConcurrentQueue<T, EnqPolicy>::isFull() const
+		ConcurrentQueue<T, EnqPolicy>::isFull() const
 	{
 		if (size_ >= capacity_ || used_ >= memory_) { return true; }
 		return false;

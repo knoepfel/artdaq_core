@@ -1,6 +1,8 @@
 #include "artdaq-core/Core/SharedMemoryFragmentManager.hh"
 #include "tracemf.h"
 
+#undef TRACE_NAME
+#define TRACE_NAME "SharedMemoryFragmentManager"
 
 artdaq::SharedMemoryFragmentManager::SharedMemoryFragmentManager(uint32_t shm_key, size_t buffer_count, size_t max_buffer_size, size_t buffer_timeout_us)
 	: SharedMemoryManager(shm_key, buffer_count, max_buffer_size, buffer_timeout_us)
@@ -13,7 +15,7 @@ int artdaq::SharedMemoryFragmentManager::WriteFragment(Fragment&& fragment, bool
 {
 	if (!IsValid()) { return -1; }
 
-	TLOG_ARB(13, "SharedMemoryFragmentManager") << "Sending fragment with seqID=" << fragment.sequenceID() << TLOG_ENDL;
+	TLOG(13) << "Sending fragment with seqID=" << fragment.sequenceID() << TLOG_ENDL;
 	artdaq::RawDataType* fragAddr = fragment.headerAddress();
 	size_t fragSize = fragment.size() * sizeof(artdaq::RawDataType);
 
@@ -21,25 +23,25 @@ int artdaq::SharedMemoryFragmentManager::WriteFragment(Fragment&& fragment, bool
 	auto sts = Write(buf, fragAddr, fragSize);
 	if(sts == fragSize)
 	{
-		TLOG_ARB(13, "SharedMemoryFragmentManager") << "Done sending Fragment with seqID=" << fragment.sequenceID() << TLOG_ENDL;
+		TLOG(13) << "Done sending Fragment with seqID=" << fragment.sequenceID() << TLOG_ENDL;
 		MarkBufferFull(buf);
 		return 0;
 	}
-	TLOG_ERROR("SharedMemoryFragmentManager") << "Unexpected status from SharedMemory Write call!" << TLOG_ENDL;
+	TLOG(TLVL_ERROR) << "Unexpected status from SharedMemory Write call!" << TLOG_ENDL;
 	return -2;
 }
 
 int artdaq::SharedMemoryFragmentManager::ReadFragment(Fragment& fragment)
 {
-	TLOG_ARB(13, "SharedMemoryFragmentManager") << "ReadFragment BEGIN" << TLOG_ENDL;
+	TLOG(14) << "ReadFragment BEGIN" << TLOG_ENDL;
 	detail::RawFragmentHeader tmpHdr;
 
-	TLOG_ARB(13, "SharedMemoryFragmentManager") << "Reading Fragment Header" << TLOG_ENDL;
+	TLOG(14) << "Reading Fragment Header" << TLOG_ENDL;
 	auto sts = ReadFragmentHeader(tmpHdr);
 	if (sts != 0) return sts;
 	fragment.resize(tmpHdr.word_count - tmpHdr.num_words());
 	memcpy(fragment.headerAddress(), &tmpHdr, tmpHdr.num_words() * sizeof(artdaq::RawDataType));
-	TLOG_ARB(13, "SharedMemoryFragmentManager") << "Reading Fragment Body" << TLOG_ENDL;
+	TLOG(14) << "Reading Fragment Body" << TLOG_ENDL;
 	return ReadFragmentData(fragment.headerAddress() + tmpHdr.num_words(), tmpHdr.word_count - tmpHdr.num_words());
 }
 
@@ -61,13 +63,13 @@ int artdaq::SharedMemoryFragmentManager::ReadFragmentHeader(detail::RawFragmentH
 int artdaq::SharedMemoryFragmentManager::ReadFragmentData(RawDataType* destination, size_t words)
 {
 	if (!IsValid() || active_buffer_ == -1 || !CheckBuffer(active_buffer_, BufferSemaphoreFlags::Reading)) {
-		TLOG_ERROR("SharedMemoryFragmentManager") << "ReadFragmentData: Buffer " << active_buffer_ << " failed status checks: IsValid()=" << std::boolalpha << IsValid() << ", CheckBuffer=" << CheckBuffer(active_buffer_, BufferSemaphoreFlags::Reading) << TLOG_ENDL;
+		TLOG(TLVL_ERROR) << "ReadFragmentData: Buffer " << active_buffer_ << " failed status checks: IsValid()=" << std::boolalpha << IsValid() << ", CheckBuffer=" << CheckBuffer(active_buffer_, BufferSemaphoreFlags::Reading) << TLOG_ENDL;
 		return -3;
 	}
 	
 	auto sts = Read(active_buffer_, destination, words * sizeof(RawDataType));
 	if (!sts) {
-		TLOG_ERROR("SharedMemoryFragmentManager") << "ReadFragmentData: Buffer " << active_buffer_ << " returned bad status code from Read" << TLOG_ENDL;
+		TLOG(TLVL_ERROR) << "ReadFragmentData: Buffer " << active_buffer_ << " returned bad status code from Read" << TLOG_ENDL;
 		return -2;
 	}
 

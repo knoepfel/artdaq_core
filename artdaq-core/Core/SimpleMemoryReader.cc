@@ -6,6 +6,9 @@
 #include <string>
 #include "tracemf.h"    // TRACE
 
+#undef TRACE_NAME
+#define TRACE_NAME "SimpleMemoryReader"
+
 namespace artdaq
 {
 	int SimpleMemoryReaderApp(int argc, char** argv)
@@ -18,14 +21,13 @@ namespace artdaq
 				std::istringstream ins(argv[1]);
 				ins >> eec;
 			}
-			SimpleMemoryReader reader(0xA99,0xB99,eec);
+			SimpleMemoryReader reader(0xA99, 0xB99, eec);
 			reader.run();
 			return 0;
 		}
 		catch (std::string const& msg)
 		{
-			std::cerr << "SimpleMemoryReaderApp failed: "
-				<< msg;
+			std::cerr << "SimpleMemoryReaderApp failed: " << msg;
 			return 1;
 		}
 		catch (...)
@@ -35,11 +37,11 @@ namespace artdaq
 	}
 
 	SimpleMemoryReader::
-		SimpleMemoryReader(uint32_t shm_key,uint32_t broadcast_key, std::size_t eec) :
+		SimpleMemoryReader(uint32_t shm_key, uint32_t broadcast_key, std::size_t eec) :
 		incoming_events_(new SharedMemoryEventReceiver(shm_key, broadcast_key))
 		, expectedEventCount_(eec)
 	{
-		TLOG_ARB(50, "SimpleMemoryReader") <<"ctor done (after queue_.setReaderIsReady())" << TLOG_ENDL;
+		TLOG(50) << "ctor done (after queue_.setReaderIsReady())" << TLOG_ENDL;
 	}
 
 	void SimpleMemoryReader::run()
@@ -56,8 +58,7 @@ namespace artdaq
 				got_event = incoming_events_->ReadyForRead();
 				if (!got_event)
 				{
-					TLOG_INFO("SharedMemoryReader")
-						<< "InputFailure: Reading timed out in SharedMemoryReader::readNext()" << TLOG_ENDL;
+					TLOG(TLVL_INFO) << "InputFailure: Reading timed out in SharedMemoryReader::readNext()" << TLOG_ENDL;
 					keep_looping = true;
 				}
 			}
@@ -71,7 +72,7 @@ namespace artdaq
 			if (errflag) break; // Buffer was changed out from under reader!
 			if (fragmentTypes.size() == 0)
 			{
-				TLOG_ERROR("SharedMemoryReader") << "Event has no Fragments! Aborting!" << TLOG_ENDL;
+				TLOG(TLVL_ERROR) << "Event has no Fragments! Aborting!" << TLOG_ENDL;
 				incoming_events_->ReleaseBuffer();
 				break;
 			}
@@ -84,7 +85,7 @@ namespace artdaq
 			//      pointer
 			if (!got_event || firstFragmentType == Fragment::EndOfDataFragmentType)
 			{
-				TLOG_DEBUG("SharedMemoryReader") << "Received shutdown message, returning false" << TLOG_ENDL;
+				TLOG(TLVL_DEBUG) << "Received shutdown message, returning false" << TLOG_ENDL;
 				incoming_events_->ReleaseBuffer();
 				break;
 			}
