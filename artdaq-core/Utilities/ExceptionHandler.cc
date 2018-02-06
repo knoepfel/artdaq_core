@@ -1,3 +1,5 @@
+
+#define TRACE_NAME "ExceptionHandler"
 #include "ExceptionHandler.hh"
 
 #include "canvas/Utilities/Exception.h"
@@ -5,9 +7,6 @@
 #include "tracemf.h"
 
 #include <boost/exception/all.hpp>
-
-#undef TRACE_NAME
-#define TRACE_NAME "ExceptionHandler"
 
 namespace artdaq
 {

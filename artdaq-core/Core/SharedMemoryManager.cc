@@ -1,13 +1,10 @@
+#define TRACE_NAME "SharedMemoryManager"
 #include <cstring>
 #include <sys/shm.h>
 #include "tracemf.h"
 #include "cetlib_except/exception.h"
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "artdaq-core/Utilities/TraceLock.hh"
-
-#undef TRACE_NAME
-#define TRACE_NAME "SharedMemoryManager"
-
 
 artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer_count, size_t buffer_size, uint64_t buffer_timeout_us, bool destructive_read_mode)
 	: shm_segment_id_(-1)

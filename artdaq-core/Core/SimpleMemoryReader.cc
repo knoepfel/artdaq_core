@@ -1,3 +1,4 @@
+#define TRACE_NAME "SimpleMemoryReader"
 #include "artdaq-core/Core/SimpleMemoryReader.hh"
 
 #include <chrono>     // for milliseconds
@@ -5,9 +6,6 @@
 #include <iostream>
 #include <string>
 #include "tracemf.h"    // TRACE
-
-#undef TRACE_NAME
-#define TRACE_NAME "SimpleMemoryReader"
 
 namespace artdaq
 {

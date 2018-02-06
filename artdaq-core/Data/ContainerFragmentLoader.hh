@@ -12,12 +12,13 @@
 
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Data/ContainerFragment.hh"
+
+#undef TRACE_NAME
+#define TRACE_NAME "ContainerFragmentLoader"
 #include "tracemf.h"
 
 #include <iostream>
 
-#undef TRACE_NAME
-#define TRACE_NAME "ContainerFragmentLoader"
 
 namespace artdaq
 {
