@@ -39,14 +39,14 @@ namespace mfplugins
 			fhicl::TableFragment<ELdestination::Config> elDestConfig;
 			fhicl::Atom<bool> append{ fhicl::Name{"append"},fhicl::Comment {"Whether to append to the file or recreate it"},true };
 			fhicl::Atom<std::string> baseDir{ fhicl::Name{"directory"},fhicl::Comment{"The directory into which files will be saved"},"/tmp" };
-			fhicl::Atom<std::string> sep{ fhicl::Name{"separator"},fhicl::Comment{"Separator to use after optional replacement parameters"}, "-" };
+			fhicl::Atom<std::string> sep{ fhicl::Name{"seperator"},fhicl::Comment{"Separator to use after optional replacement parameters"}, "-" };
 			fhicl::Atom<std::string> timePattern{ fhicl::Name{"timestamp_pattern"},fhicl::Comment{"Pattern to use for %t strftime replacement"},"%Y%m%d%H%M%S" };
 			fhicl::Atom<std::string> filePattern{ fhicl::Name{ "pattern" },fhicl::Comment{ "Pattern to use for file naming.\n"
 			" Supported parameters are:\n"
 				" %%: Print a % sign\n"
 				" %N: Print the executable name, as retrieved from /proc/<pid>/exe\n"
 				" %?N: Print the executable name only if it does not already appear in the parsed format. Format is parsed left-to-right.\n"
-				" These options add a separator AFTER if they are filled and if they are not the last token in the file pattern, before the last '.' character.\n"
+				" These options add a seperator AFTER if they are filled and if they are not the last token in the file pattern, before the last '.' character.\n"
 				" %H: Print the hostname, without any domain specifiers (i.e. work.fnal.gov will become work)\n"
 				" %?H: Print the hostname only if it does not already appear in the parsed format.\n"
 				" %p: Print the PID of the application configuring MessageFacility\n"
