@@ -772,7 +772,7 @@ Fragment(std::size_t payload_size, sequence_id_t sequence_id,
 		   payload_size) // User data
 		  )
 {
-  TRACE( 50, "Fragment ctor num_word()=%zu MetadataSize_=%zu payload_size=%zu"
+	TRACEN( "Fragment", 50, "Fragment ctor num_word()=%zu MetadataSize_=%zu payload_size=%zu"
 	 ,artdaq::detail::RawFragmentHeader::num_words(), validatedMetadataSize_<T>(), payload_size );
 	// vals ctor w/o init val is used; make sure header is ALL initialized.
 	for (iterator ii = vals_.begin();
@@ -885,7 +885,7 @@ artdaq::Fragment::updateFragmentHeaderWC_()
 	// Make sure vals_.size() fits inside 32 bits. Left-shift here should
 	// match bitfield size of word_count in RawFragmentHeader.
 	assert(vals_.size() < (1ULL << 32));
-	TRACE( 50, "Fragment::updateFragmentHeaderWC_ adjusting fragmentHeader()->word_count from %u to %zu", (unsigned)(fragmentHeader()->word_count), vals_.size() );
+	TRACEN( "Fragment", 50, "Fragment::updateFragmentHeaderWC_ adjusting fragmentHeader()->word_count from %u to %zu", (unsigned)(fragmentHeader()->word_count), vals_.size() );
 	fragmentHeader()->word_count = vals_.size();
 }
 

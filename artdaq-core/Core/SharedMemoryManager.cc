@@ -1,13 +1,10 @@
+#define TRACE_NAME "SharedMemoryManager"
 #include <cstring>
 #include <sys/shm.h>
 #include "tracemf.h"
 #include "cetlib_except/exception.h"
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "artdaq-core/Utilities/TraceLock.hh"
-
-#undef TRACE_NAME
-#define TRACE_NAME "SharedMemoryManager"
-
 
 artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer_count, size_t buffer_size, uint64_t buffer_timeout_us, bool destructive_read_mode)
 	: shm_segment_id_(-1)
@@ -371,9 +368,9 @@ void artdaq::SharedMemoryManager::IncrementReadPos(int buffer, size_t read)
 	TraceLock lk(buffer_mutexes_[buffer], 19, "IncReadPosBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
 	touchBuffer_(buf);
-	TLOG(15) << TLOG_ENDL;
+	TLOG(15) << "IncrementReadPos: buffer= " << buffer << ", readPos=" << std::to_string(buf->readPos) << ", bytes read=" << std::to_string(read) << TLOG_ENDL;
 	buf->readPos = buf->readPos + read;
-	TLOG(15) << TLOG_ENDL;
+	TLOG(15) << "IncrementReadPos: buffer= " << buffer << ", New readPos is " << std::to_string(buf->readPos) << TLOG_ENDL;
 	if (read == 0)	Detach(true, "LogicError", "Cannot increment Read pos by 0! (buffer=" + std::to_string(buffer) + ", readPos=" + std::to_string(buf->readPos) + ", writePos=" + std::to_string(buf->writePos) + ")");
 }
 
@@ -383,9 +380,9 @@ void artdaq::SharedMemoryManager::IncrementWritePos(int buffer, size_t written)
 	TraceLock lk(buffer_mutexes_[buffer], 20, "IncWritePosBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
 	touchBuffer_(buf);
-	TLOG(16) << TLOG_ENDL;
+	TLOG(16) << "IncrementWritePos: buffer= " << buffer << ", writePos=" << std::to_string(buf->writePos) << ", bytes written=" << std::to_string(written) << TLOG_ENDL;
 	buf->writePos += written;
-	TLOG(16) << TLOG_ENDL;
+	TLOG(16) << "IncrementWritePos: buffer= " << buffer << ", New writePos is " << std::to_string(buf->writePos) << TLOG_ENDL;
 	if (written == 0)  Detach(true, "LogicError", "Cannot increment Write pos by 0!");
 }
 
@@ -394,7 +391,7 @@ bool artdaq::SharedMemoryManager::MoreDataInBuffer(int buffer)
 	//std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
 	TraceLock lk(buffer_mutexes_[buffer], 21, "MoreDataInBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
-	TLOG(17) << TLOG_ENDL;
+	TLOG(17) << "MoreDataInBuffer: buffer= " << buffer << ", readPos=" << std::to_string(buf->readPos) << ", writePos=" << std::to_string(buf->writePos) << TLOG_ENDL;
 	return buf->readPos < buf->writePos;
 }
 
@@ -507,7 +504,7 @@ size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 	auto shmBuf = getBufferInfo_(buffer);
 	checkBuffer_(shmBuf, BufferSemaphoreFlags::Writing);
 	touchBuffer_(shmBuf);
-	TLOG(19) << TLOG_ENDL;
+	TLOG(19) << "Buffer Write Pos is " << std::to_string(shmBuf->writePos) << ", write size is " << std::to_string(size) << TLOG_ENDL;
 	if (shmBuf->writePos + size > shm_ptr_->buffer_size) Detach(true, "SharedMemoryWrite", "Attempted to write more data than fits into Shared Memory! \nRe-run with a larger buffer size!");
 
 	auto pos = GetWritePos(buffer);
