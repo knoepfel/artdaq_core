@@ -36,7 +36,7 @@ canvas          v1_06_04        s48
 canvas          v1_06_03        s47
 canvas          v1_06_02        s46
 TRACE           v3_13_04
-cetbuildtools	v7_00_03	-	only_for_build
+cetbuildtools	v7_01_00	-	only_for_build
 end_product_list
 
 # -nq- means there is no qualifier
