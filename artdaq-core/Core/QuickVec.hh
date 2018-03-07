@@ -23,8 +23,7 @@
 /** \endcond */
 
 //#include "trace.h"		// TRACE
-#ifndef TRACE
-# define TRACE( lvl, ... )
+#ifndef TRACEN
 # define TRACEN( nam, lvl, ... )
 # define UNDEF_TRACE_AT_END
 #endif
@@ -524,7 +523,7 @@ inline void QUICKVEC::push_back(const value_type& val)
 } // namespace
 
 #ifdef UNDEF_TRACE_AT_END
-# undef TRACE
 # undef TRACEN
+# undef UNDEF_TRACE_AT_END
 #endif
 #endif /* QuickVec_hh */
