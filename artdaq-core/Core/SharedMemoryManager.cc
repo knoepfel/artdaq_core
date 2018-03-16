@@ -1,10 +1,27 @@
 #define TRACE_NAME "SharedMemoryManager"
 #include <cstring>
+#include <vector>
 #include <sys/shm.h>
 #include "tracemf.h"
+#include <signal.h>
 #include "cetlib_except/exception.h"
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "artdaq-core/Utilities/TraceLock.hh"
+
+static std::vector<artdaq::SharedMemoryManager*> instances = std::vector<artdaq::SharedMemoryManager*>();
+
+static bool signal_init = false;
+static std::unordered_map<int, struct sigaction> old_actions = std::unordered_map<int, struct sigaction>();
+static void signal_handler(int signum)
+{
+	TLOG_ERROR("SharedMemoryManager") << "A signal of type " << signum << " (" << std::string(strsignal(signum)) << ") was caught by SharedMemoryManager. Detaching all Shared Memory segments, then proceeding with default handlers!";
+	for (auto ii : instances)
+	{
+		ii->Detach();
+	}
+	sigaction(signum, &old_actions[signum], NULL);
+	kill(0, signum);
+}
 
 artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer_count, size_t buffer_size, uint64_t buffer_timeout_us, bool destructive_read_mode)
 	: shm_segment_id_(-1)
@@ -19,8 +36,32 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	requested_shm_parameters_.buffer_timeout_us = buffer_timeout_us;
 	requested_shm_parameters_.destructive_read_mode = destructive_read_mode;
 
+		instances.push_back(this);
+	if (!signal_init) {
+		signal_init = true;
+		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM };
+		for (auto signal : signals) {
+			struct sigaction action;
+			action.sa_handler = signal_handler;
+			sigemptyset(&action.sa_mask);
+			action.sa_flags = 0;
+
+			struct sigaction old_action;
+			sigaction(signal, NULL, &old_action);
+
+			//If the old handler wasn't SIG_IGN (it's a handler that just
+			// "ignore" the signal)
+			if (old_action.sa_handler != SIG_IGN)
+			{
+				//Replace the signal handler of SIGINT with the one described by new_action
+				sigaction(signal, &action, NULL);
+				old_actions[signal] = old_action;
+			}
+		}
+	}
 	Attach();
 }
+
 
 artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept
 {
