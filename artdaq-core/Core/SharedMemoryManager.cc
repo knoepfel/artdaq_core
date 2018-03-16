@@ -10,7 +10,6 @@
 
 static std::vector<artdaq::SharedMemoryManager*> instances = std::vector<artdaq::SharedMemoryManager*>();
 
-static bool signal_init = false;
 static std::unordered_map<int, struct sigaction> old_actions = std::unordered_map<int, struct sigaction>();
 static void signal_handler(int signum)
 {
@@ -36,9 +35,11 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	requested_shm_parameters_.buffer_timeout_us = buffer_timeout_us;
 	requested_shm_parameters_.destructive_read_mode = destructive_read_mode;
 
-		instances.push_back(this);
-	if (!signal_init) {
-		signal_init = true;
+	instances.push_back(this);
+	Attach();
+
+	if (manager_id_ == 0)
+	{
 		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM };
 		for (auto signal : signals) {
 			struct sigaction action;
@@ -59,7 +60,6 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 			}
 		}
 	}
-	Attach();
 }
 
 
