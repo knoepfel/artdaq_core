@@ -19,6 +19,9 @@ static void signal_handler(int signum)
 	{
 		ii->Detach();
 	}
+	sigset_t set;
+	pthread_sigmask(SIG_UNBLOCK, NULL, &set);
+	pthread_sigmask(SIG_UNBLOCK, &set, NULL);
 	sigaction(signum, &old_actions[signum], NULL);
 	kill(0, signum);
 }
@@ -698,6 +701,7 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, std::string catego
 	if (manager_id_ == 0 && shm_segment_id_ > -1)
 	{
 		shmctl(shm_segment_id_, IPC_RMID, NULL);
+		shm_segment_id_ = -1;
 	}
 
 	if (category.size() > 0 && message.size() > 0)
