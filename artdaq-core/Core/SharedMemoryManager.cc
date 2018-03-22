@@ -11,6 +11,7 @@
 static std::vector<artdaq::SharedMemoryManager*> instances = std::vector<artdaq::SharedMemoryManager*>();
 
 static std::unordered_map<int, struct sigaction> old_actions = std::unordered_map<int, struct sigaction>();
+static bool sighandler_init = false;
 static void signal_handler(int signum)
 {
 	TLOG_ERROR("SharedMemoryManager") << "A signal of type " << signum << " (" << std::string(strsignal(signum)) << ") was caught by SharedMemoryManager. Detaching all Shared Memory segments, then proceeding with default handlers!";
@@ -38,15 +39,12 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	instances.push_back(this);
 	Attach();
 
-	if (manager_id_ == 0)
+	if (manager_id_ == 0 && !sighandler_init)
 	{
+		sighandler_init = true;
 		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM };
-		for (auto signal : signals) {
-			struct sigaction action;
-			action.sa_handler = signal_handler;
-			sigemptyset(&action.sa_mask);
-			action.sa_flags = 0;
-
+		for (auto signal : signals) 
+		{
 			struct sigaction old_action;
 			sigaction(signal, NULL, &old_action);
 
@@ -54,6 +52,15 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 			// "ignore" the signal)
 			if (old_action.sa_handler != SIG_IGN)
 			{
+				struct sigaction action;
+				action.sa_handler = signal_handler;
+				sigemptyset(&action.sa_mask);
+				for (auto sigblk : signals)
+				{
+					sigaddset(&action.sa_mask, sigblk);
+				}
+				action.sa_flags = 0;
+
 				//Replace the signal handler of SIGINT with the one described by new_action
 				sigaction(signal, &action, NULL);
 				old_actions[signal] = old_action;
