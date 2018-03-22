@@ -14,16 +14,28 @@ static std::unordered_map<int, struct sigaction> old_actions = std::unordered_ma
 static bool sighandler_init = false;
 static void signal_handler(int signum)
 {
-	TLOG_ERROR("SharedMemoryManager") << "A signal of type " << signum << " (" << std::string(strsignal(signum)) << ") was caught by SharedMemoryManager. Detaching all Shared Memory segments, then proceeding with default handlers!";
+	// Messagefacility may already be gone at this point, TRACE ONLY!
+	TRACE_STREAMER(TLVL_ERROR, &("SharedMemoryManager")[0], 0, 0, 0) << "A signal of type " << signum << " (" << std::string(strsignal(signum)) << ") was caught by SharedMemoryManager. Detaching all Shared Memory segments, then proceeding with default handlers!";
 	for (auto ii : instances)
 	{
-		ii->Detach();
+		if(ii) ii->Detach(false, "", "", true);
+		ii = nullptr;
 	}
+
 	sigset_t set;
 	pthread_sigmask(SIG_UNBLOCK, NULL, &set);
 	pthread_sigmask(SIG_UNBLOCK, &set, NULL);
-	sigaction(signum, &old_actions[signum], NULL);
-	kill(0, signum);
+
+	TRACE_STREAMER(TLVL_ERROR, &("SharedMemoryManager")[0], 0, 0, 0) << "Calling default signal handler";
+	if (signum != SIGUSR2) {
+		sigaction(signum, &old_actions[signum], NULL);
+		kill(0, signum);
+	}
+	else {
+		// Send Interrupt signal if parsing SIGUSR2 (i.e. user-defined exception that should tear down ARTDAQ)
+		sigaction(SIGINT, &old_actions[SIGINT], NULL);
+		kill(0, SIGINT);
+	}
 }
 
 artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer_count, size_t buffer_size, uint64_t buffer_timeout_us, bool destructive_read_mode)
@@ -48,7 +60,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	if (!sighandler_init)
 	{
 		sighandler_init = true;
-		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM };
+		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2 };
 		for (auto signal : signals)
 		{
 			struct sigaction old_action;
@@ -78,9 +90,9 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 
 artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept
 {
-	TLOG(5) << "~SharedMemoryManager called" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "~SharedMemoryManager called" << TLOG_ENDL;
 	Detach();
-	TLOG(5) << "~SharedMemoryManager done" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "~SharedMemoryManager done" << TLOG_ENDL;
 }
 
 void artdaq::SharedMemoryManager::Attach()
@@ -677,8 +689,10 @@ void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 
 void artdaq::SharedMemoryManager::Detach(bool throwException, std::string category, std::string message, bool force)
 {
+	TLOG(TLVL_DEBUG) << "Detach BEGIN: throwException: " << std::boolalpha << throwException << ", force: " << force;
 	if (IsValid())
 	{
+		TLOG(TLVL_DEBUG) << "Detach: Resetting owned buffers";
 		auto bufs = GetBuffersOwnedByManager();
 		for (auto buf : bufs)
 		{
@@ -697,12 +711,14 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, std::string catego
 
 	if (shm_ptr_)
 	{
+		TLOG(TLVL_DEBUG) << "Detach: Detaching shared memory";
 		shmdt(shm_ptr_);
 		shm_ptr_ = NULL;
 	}
 
 	if ((force || manager_id_ == 0) && shm_segment_id_ > -1)
 	{
+		TLOG(TLVL_DEBUG) << "Detach: Marking Shared memory for removal";
 		shmctl(shm_segment_id_, IPC_RMID, NULL);
 		shm_segment_id_ = -1;
 	}
