@@ -42,11 +42,14 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	instances.push_back(this);
 	Attach();
 
-	if (manager_id_ == 0 && !sighandler_init)
+	static std::mutex sighandler_mutex;
+	std::unique_lock<std::mutex> lk(sighandler_mutex);
+
+	if (!sighandler_init)
 	{
 		sighandler_init = true;
 		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM };
-		for (auto signal : signals) 
+		for (auto signal : signals)
 		{
 			struct sigaction old_action;
 			sigaction(signal, NULL, &old_action);
@@ -672,7 +675,7 @@ void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 	buffer->last_touch_time = TimeUtils::gettimeofday_us();
 }
 
-void artdaq::SharedMemoryManager::Detach(bool throwException, std::string category, std::string message)
+void artdaq::SharedMemoryManager::Detach(bool throwException, std::string category, std::string message, bool force)
 {
 	if (IsValid())
 	{
@@ -698,7 +701,7 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, std::string catego
 		shm_ptr_ = NULL;
 	}
 
-	if (manager_id_ == 0 && shm_segment_id_ > -1)
+	if ((force || manager_id_ == 0) && shm_segment_id_ > -1)
 	{
 		shmctl(shm_segment_id_, IPC_RMID, NULL);
 		shm_segment_id_ = -1;
