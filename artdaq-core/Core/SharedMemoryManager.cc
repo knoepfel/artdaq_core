@@ -8,6 +8,8 @@
 #include "artdaq-core/Core/SharedMemoryManager.hh"
 #include "artdaq-core/Utilities/TraceLock.hh"
 
+#define TLVL_DETACH 11
+
 static std::vector<artdaq::SharedMemoryManager*> instances = std::vector<artdaq::SharedMemoryManager*>();
 
 static std::unordered_map<int, struct sigaction> old_actions = std::unordered_map<int, struct sigaction>();
@@ -689,10 +691,10 @@ void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 
 void artdaq::SharedMemoryManager::Detach(bool throwException, std::string category, std::string message, bool force)
 {
-	TLOG(TLVL_DEBUG) << "Detach BEGIN: throwException: " << std::boolalpha << throwException << ", force: " << force;
+	TLOG(TLVL_DETACH) << "Detach BEGIN: throwException: " << std::boolalpha << throwException << ", force: " << force;
 	if (IsValid())
 	{
-		TLOG(TLVL_DEBUG) << "Detach: Resetting owned buffers";
+		TLOG(TLVL_DETACH) << "Detach: Resetting owned buffers";
 		auto bufs = GetBuffersOwnedByManager();
 		for (auto buf : bufs)
 		{
@@ -711,14 +713,14 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, std::string catego
 
 	if (shm_ptr_)
 	{
-		TLOG(TLVL_DEBUG) << "Detach: Detaching shared memory";
+		TLOG(TLVL_DETACH) << "Detach: Detaching shared memory";
 		shmdt(shm_ptr_);
 		shm_ptr_ = NULL;
 	}
 
 	if ((force || manager_id_ == 0) && shm_segment_id_ > -1)
 	{
-		TLOG(TLVL_DEBUG) << "Detach: Marking Shared memory for removal";
+		TLOG(TLVL_DETACH) << "Detach: Marking Shared memory for removal";
 		shmctl(shm_segment_id_, IPC_RMID, NULL);
 		shm_segment_id_ = -1;
 	}
