@@ -228,6 +228,11 @@ namespace artdaq
 		bool IsValid() const { return shm_ptr_ ? true : false; }
 
 		/**
+		 * \brief Determine whether the Shared Memory is marked for destruction (End of Data)
+		 */
+		bool IsEndOfData() const;
+
+		/**
 		 * \brief Get the number of buffers in the shared memory segment
 		 * \return The number of buffers in the shared memory segment
 		 */

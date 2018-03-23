@@ -564,6 +564,25 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 	return false;
 }
 
+bool artdaq::SharedMemoryManager::IsEndOfData() const
+{
+	if (!IsValid) return true;
+
+	struct shmid_ds info;
+	auto sts = shmctl(shm_segment_id_, IPC_STAT, &info);
+	if (sts < 0) {
+		TLOG(TLVL_TRACE) << "Error accessing Shared Memory info: " << errno << " (" << strerror(errno) << ").";
+		return true;
+	}
+
+	if (info.shm_perm.mode & SHM_DEST) {
+		TLOG(TLVL_INFO) << "Shared Memory marked for destruction. Probably an end-of-data condition!";
+		return true;
+	}
+
+	return false;
+}
+
 size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 {
 	TLOG(19) << "Write BEGIN" << TLOG_ENDL;
