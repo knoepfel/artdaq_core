@@ -59,7 +59,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	static std::mutex sighandler_mutex;
 	std::unique_lock<std::mutex> lk(sighandler_mutex);
 
-	if (!sighandler_init)
+	if (!sighandler_init && manager_id_ == 0)
 	{
 		sighandler_init = true;
 		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2 };
