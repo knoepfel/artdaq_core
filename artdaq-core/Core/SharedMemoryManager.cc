@@ -31,12 +31,12 @@ static void signal_handler(int signum)
 	TRACE_STREAMER(TLVL_ERROR, &("SharedMemoryManager")[0], 0, 0, 0) << "Calling default signal handler";
 	if (signum != SIGUSR2) {
 		sigaction(signum, &old_actions[signum], NULL);
-		kill(0, signum);
+		kill(getpid(), signum); // Only send signal to self
 	}
 	else {
 		// Send Interrupt signal if parsing SIGUSR2 (i.e. user-defined exception that should tear down ARTDAQ)
 		sigaction(SIGINT, &old_actions[SIGINT], NULL);
-		kill(0, SIGINT);
+		kill(getpid(), SIGINT); // Only send signal to self
 	}
 }
 
@@ -59,7 +59,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	static std::mutex sighandler_mutex;
 	std::unique_lock<std::mutex> lk(sighandler_mutex);
 
-	if (!sighandler_init && manager_id_ == 0)
+	if (!sighandler_init )//&& manager_id_ == 0) // ELF 3/22/18: Taking out manager_id_==0 requirement as I think kill(getpid()) is enough protection
 	{
 		sighandler_init = true;
 		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2 };
