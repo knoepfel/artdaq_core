@@ -566,7 +566,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 
 bool artdaq::SharedMemoryManager::IsEndOfData() const
 {
-	if (!IsValid) return true;
+	if (!IsValid()) return true;
 
 	struct shmid_ds info;
 	auto sts = shmctl(shm_segment_id_, IPC_STAT, &info);
