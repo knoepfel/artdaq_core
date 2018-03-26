@@ -97,7 +97,7 @@ namespace artdaq
 		 * \param overwrite Whether to allow overwriting full buffers
 		 * \return True if there is a buffer available
 		 */
-		bool ReadyForWrite(bool overwrite) { return WriteReadyCount(overwrite) > 0; }
+		virtual bool ReadyForWrite(bool overwrite) { return WriteReadyCount(overwrite) > 0; }
 
 		/**
 		 * \brief Count the number of buffers that are ready for reading
@@ -108,6 +108,7 @@ namespace artdaq
 		/**
 		 * \brief Count the number of buffers that are ready for writing
 		 * \param overwrite Whether to consider buffers that are in the Full and Reading state as ready for write (non-reliable mode)
+		 * \param reserve Whether to reserve a buffer for the enquirer
 		 * \return The number of buffers ready for writing
 		 */
 		size_t WriteReadyCount(bool overwrite);

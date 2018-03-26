@@ -20,7 +20,7 @@ static void signal_handler(int signum)
 	TRACE_STREAMER(TLVL_ERROR, &("SharedMemoryManager")[0], 0, 0, 0) << "A signal of type " << signum << " (" << std::string(strsignal(signum)) << ") was caught by SharedMemoryManager. Detaching all Shared Memory segments, then proceeding with default handlers!";
 	for (auto ii : instances)
 	{
-		if(ii) ii->Detach(false, "", "", true);
+		if (ii) ii->Detach(false, "", "", true);
 		ii = nullptr;
 	}
 
@@ -59,7 +59,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	static std::mutex sighandler_mutex;
 	std::unique_lock<std::mutex> lk(sighandler_mutex);
 
-	if (!sighandler_init )//&& manager_id_ == 0) // ELF 3/22/18: Taking out manager_id_==0 requirement as I think kill(getpid()) is enough protection
+	if (!sighandler_init)//&& manager_id_ == 0) // ELF 3/22/18: Taking out manager_id_==0 requirement as I think kill(getpid()) is enough protection
 	{
 		sighandler_init = true;
 		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2 };
@@ -275,15 +275,15 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 		ResetBuffer(buffer);
 
 		auto buf = getBufferInfo_(buffer);
-		if (buf->sem == BufferSemaphoreFlags::Empty)
+		if (buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
 		{
 			buf->sem_id = manager_id_;
 			buf->sem = BufferSemaphoreFlags::Writing;
+			touchBuffer_(buf);
+			shm_ptr_->writer_pos = (buffer + 1) % shm_ptr_->buffer_count;
 			if (buf->sem_id != manager_id_) continue;
 			buf->sequence_id = ++shm_ptr_->next_sequence_id;
 			buf->writePos = 0;
-			shm_ptr_->writer_pos = (buffer + 1) % shm_ptr_->buffer_count;
-			touchBuffer_(buf);
 			TLOG(14) << "GetBufferForWriting returning " << buffer << TLOG_ENDL;
 			return buffer;
 		}
@@ -684,10 +684,11 @@ artdaq::SharedMemoryManager::ShmBuffer* artdaq::SharedMemoryManager::getBufferIn
 
 bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphoreFlags flags, bool exceptions)
 {
+	TLOG(TLVL_TRACE) << "checkBuffer_: Checking that buffer " << buffer->sequence_id << " has sem_id " << manager_id_ << " (Current: " << buffer->sem_id << ") and is in state " << FlagToString(flags) << " (current: " << FlagToString(buffer->sem) << ")";
 	if (exceptions)
 	{
 		if (buffer->sem != flags) Detach(true, "StateAccessViolation", "Shared Memory buffer is not in the correct state! (expected " + FlagToString(flags) + ", actual " + FlagToString(buffer->sem) + ")");
-		if (buffer->sem_id != manager_id_)  Detach(true, "OwnerAccessViolation", "Shared Memory buffer is not owned by this manager instance!");
+		if (buffer->sem_id != manager_id_)  Detach(true, "OwnerAccessViolation", "Shared Memory buffer is not owned by this manager instance! (Expected: " + std::to_string(manager_id_) + ", Actual: " + std::to_string(buffer->sem_id) + ")");
 	}
 	bool ret = (buffer->sem_id == manager_id_ || (buffer->sem_id == -1 && (flags == BufferSemaphoreFlags::Full || flags == BufferSemaphoreFlags::Empty))) && buffer->sem == flags;
 

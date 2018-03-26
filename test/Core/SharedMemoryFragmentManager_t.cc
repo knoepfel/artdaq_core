@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 	}
 
 	std::cout << "Writing Test Fragment to Shared Memory" << std::endl;
-	man.WriteFragment(std::move(frag), false);
+	man.WriteFragment(std::move(frag), false, 0);
 
 	std::cout << "Reading Test Fragment Header" << std::endl;
 	artdaq::detail::RawFragmentHeader header;
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 	{
 		BOOST_REQUIRE_EQUAL(*(frag.dataBegin() + ii), *(frag2.dataBegin() + ii));
 	}
-	std::cout << "SharedMemoryFragmentManager test complete" << std::endl;
+	std::cout << "SharedMemoryFragmentManager DataFlow test complete" << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(WholeFragment)
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(WholeFragment)
 	}
 
 	std::cout << "Writing Test Fragment to Shared Memory" << std::endl;
-	man.WriteFragment(std::move(frag), false);
+	man.WriteFragment(std::move(frag), false, 0);
 
 	std::cout << "Reading Test Fragment Header" << std::endl;
 	artdaq::Fragment recvdFrag;
@@ -133,7 +133,44 @@ BOOST_AUTO_TEST_CASE(WholeFragment)
 		//std::cout << std::to_string(*(frag.dataBegin() + ii)) << " =?= " << *(recvdFrag.dataBegin() + ii) << std::endl;
 		BOOST_REQUIRE_EQUAL(*(frag.dataBegin() + ii), *(recvdFrag.dataBegin() + ii));
 	}
-	std::cout << "SharedMemoryFragmentManager test complete" << std::endl;
+	std::cout << "SharedMemoryFragmentManager WholeFragment test complete" << std::endl;
+}
+
+
+BOOST_AUTO_TEST_CASE(Timeout)
+{
+	std::cout << "Initializing SharedMemoryFragmentManagers for Timeout Test" << std::endl;
+	srand(time(0));
+	uint32_t key = 0x7357 + rand() % 0x10000000;
+	artdaq::SharedMemoryFragmentManager man(key, 1, 0x1000);
+
+	auto fragSizeWords = 0x1000 / sizeof(artdaq::RawDataType) - artdaq::detail::RawFragmentHeader::num_words() - 1;
+
+	std::cout << "Creating test Fragment" << std::endl;
+	artdaq::Fragment frag(fragSizeWords);
+	frag.setSequenceID(0x10);
+	frag.setFragmentID(0x20);
+	auto type = artdaq::Fragment::DataFragmentType;
+	frag.setSystemType(type);
+	frag.setTimestamp(0x30);
+	for (size_t ii = 0; ii < fragSizeWords; ++ii)
+	{
+		*(frag.dataBegin() + ii) = ii;
+	}
+
+	std::cout << "Reserving buffer to cause timeout to happen" << std::endl;
+	auto ret = man.GetBufferForWriting(true);
+	BOOST_REQUIRE_EQUAL(ret, 0);
+	
+	std::cout << "Attempting to write Fragment to Shared Memory. This should time out." << std::endl;
+	auto start_time = std::chrono::steady_clock::now();
+	ret = man.WriteFragment(std::move(frag), true, 100000);
+	auto duration = artdaq::TimeUtils::GetElapsedTimeMicroseconds(start_time);
+
+	BOOST_REQUIRE_EQUAL(ret, -3);
+	BOOST_REQUIRE_GE(duration, 100000);
+
+	std::cout << "SharedMemoryFragmentManager Timeout test complete" << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

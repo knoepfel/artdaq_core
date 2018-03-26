@@ -30,9 +30,10 @@ namespace artdaq {
 		 * \brief Write a Fragment to the Shared Memory
 		 * \param fragment Fragment to write
 		 * \param overwrite Whether to set the overwrite flag
+		 * \param timeout_us Time to wait for shared memory to be free (0: No timeout) (Timeout does not apply if overwrite == false)
 		 * \return 0 on success
 		 */
-		int WriteFragment(Fragment&& fragment, bool overwrite);
+		int WriteFragment(Fragment&& fragment, bool overwrite, size_t timeout_us);
 
 		/**
 		 * \brief Read a Fragment from the Shared Memory
@@ -56,9 +57,14 @@ namespace artdaq {
 		*/
 		int ReadFragmentData(RawDataType* destination, size_t words);
 
+		/**
+		 * \brief Check if a buffer is ready for writing, and if so, reserves it for use
+		 * \param overwrite Whether to overwrite Full buffers (non-reliable mode)
+		 */
+		bool ReadyForWrite(bool overwrite) override;
+
 	private:
 		int active_buffer_;
-
 	};
 }
 
