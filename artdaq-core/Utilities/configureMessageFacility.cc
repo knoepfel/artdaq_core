@@ -264,8 +264,8 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	mf::SetModuleName(progname);
 	mf::SetContext(progname);
 #  endif
-	TLOG(4) << "Message Facility Config input is: " << pstr;
-	TLOG_INFO("configureMessageFacility") << "Message Facility Application " << progname << " configured with: " << pset.to_string();
+	TLOG(TLVL_TRACE) << "Message Facility Config input is: " << pstr;
+	TLOG(TLVL_INFO) << "Message Facility Application " << progname << " configured with: " << pset.to_string();
 }
 
 std::string artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)

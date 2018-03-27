@@ -6,6 +6,7 @@
 #include "cetlib/quiet_unit_test.hpp"
 #include "cetlib_except/exception.h"
 
+#define TRACE_NAME "SharedMemoryManager_t"
 #include "tracemf.h"
 
 BOOST_AUTO_TEST_SUITE(SharedMemoryManager_test)
@@ -13,7 +14,7 @@ BOOST_AUTO_TEST_SUITE(SharedMemoryManager_test)
 BOOST_AUTO_TEST_CASE(Construct)
 {
 	artdaq::configureMessageFacility("SharedMemoryManager_t", true, true);
-	TLOG_DEBUG("SharedMemoryManager_t") << "BEGIN TEST Construct" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "BEGIN TEST Construct" ;
 	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000,0x10000);
@@ -22,12 +23,12 @@ BOOST_AUTO_TEST_CASE(Construct)
 	BOOST_REQUIRE_EQUAL(man.size(), 10);
 	BOOST_REQUIRE_EQUAL(man.GetAttachedCount(), 0);
 	BOOST_REQUIRE_EQUAL(man.GetKey(), key);
-	TLOG_DEBUG("SharedMemoryManager_t") << "END TEST Construct" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "END TEST Construct" ;
 }
 
 BOOST_AUTO_TEST_CASE(Attach)
 {
-	TLOG_DEBUG("SharedMemoryManager_t") << "BEGIN TEST Attach" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "BEGIN TEST Attach" ;
 	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
@@ -45,12 +46,12 @@ BOOST_AUTO_TEST_CASE(Attach)
 	BOOST_REQUIRE_EQUAL(man2.GetAttachedCount(), 1);
 	BOOST_REQUIRE_EQUAL(man2.GetKey(), key);
 
-	TLOG_DEBUG("SharedMemoryManager_t") << "END TEST Attach" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "END TEST Attach" ;
 }
 
 BOOST_AUTO_TEST_CASE(DataFlow)
 {
-	TLOG_DEBUG("SharedMemoryManager_t") << "BEGIN TEST DataFlow" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "BEGIN TEST DataFlow" ;
 	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000);
@@ -111,13 +112,13 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 	BOOST_REQUIRE_EQUAL(man2.GetBuffersOwnedByManager().size(), 0);
 	BOOST_REQUIRE_EQUAL(man.GetBuffersOwnedByManager().size(), 0);
 	BOOST_REQUIRE_EQUAL(man.WriteReadyCount(false), 10);
-	TLOG_DEBUG("SharedMemoryManager_t") << "END TEST DataFlow" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "END TEST DataFlow" ;
 }
 
 BOOST_AUTO_TEST_CASE(Exceptions)
 {
 	artdaq::configureMessageFacility("SharedMemoryManager_t", true, true);
-	TLOG_DEBUG("SharedMemoryManager_t") << "BEGIN TEST Exceptions" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "BEGIN TEST Exceptions" ;
 	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000);
@@ -199,12 +200,12 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 	BOOST_REQUIRE_EXCEPTION(man.MarkBufferEmpty(readbuf), cet::exception, [&](cet::exception e) { return e.category() == "OwnerAccessViolation"; });
 	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
 
-	TLOG_DEBUG("SharedMemoryManager_t") << "END TEST Exceptions" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "END TEST Exceptions" ;
 }
 
 BOOST_AUTO_TEST_CASE(Broadcast)
 {
-	TLOG_DEBUG("SharedMemoryManager_t") << "BEGIN TEST Broadcast" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "BEGIN TEST Broadcast" ;
 	srand(artdaq::TimeUtils::gettimeofday_us());
 	uint32_t key = 0x7357 + rand() % 0x10000000;
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000, false);
@@ -308,7 +309,7 @@ BOOST_AUTO_TEST_CASE(Broadcast)
 	BOOST_REQUIRE_EQUAL(man.WriteReadyCount(true), 10);
 	sleep(1);
 	BOOST_REQUIRE_EQUAL(man.WriteReadyCount(false), 10);
-	TLOG_DEBUG("SharedMemoryManager_t") << "END TEST Broadcast" << TLOG_ENDL;
+	TLOG(TLVL_DEBUG) << "END TEST Broadcast" ;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

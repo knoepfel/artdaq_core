@@ -41,7 +41,7 @@ namespace artdaq
 	                                   , expectedEventCount_(eec)
 	{
 		queue_.setReaderIsReady();
-		TRACE( 50, "SimpleQueueReader ctor done (after queue_.setReaderIsReady())" );
+		TLOG(50) << "SimpleQueueReader ctor done (after queue_.setReaderIsReady())";
 	}
 
 	void SimpleQueueReader::run()

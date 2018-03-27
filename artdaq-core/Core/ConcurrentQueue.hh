@@ -738,37 +738,37 @@ namespace artdaq
 	template <class T, class EnqPolicy>
 	typename EnqPolicy::ReturnType ConcurrentQueue<T, EnqPolicy>::enqNowait(T const& item)
 	{
-		TLOG(12) << "enqNowait enter size=" << size_ << " capacity=" << capacity_ << " used=" << used_ << " memory=" << memory_ << TLOG_ENDL;
+		TLOG(12) << "enqNowait enter size=" << size_ << " capacity=" << capacity_ << " used=" << used_ << " memory=" << memory_ ;
 		LockType lock(protectElements_);
 		auto retval = EnqPolicy::doEnq(item, elements_, size_, capacity_, used_, memory_,
 			elementsDropped_, queueNotEmpty_);
-		TLOG(12) << "enqNowait returning " << retval << TLOG_ENDL;
+		TLOG(12) << "enqNowait returning " << retval ;
 		return retval;
 	}
 
 	template <class T, class EnqPolicy>
 	void ConcurrentQueue<T, EnqPolicy>::enqWait(T const& item)
 	{
-		TLOG(13) << "enqWait enter" << TLOG_ENDL;
+		TLOG(13) << "enqWait enter" ;
 		WaitLockType lock(protectElements_);
 		while (isFull()) { queueNotFull_.wait(lock); }
 		EnqPolicy::doInsert(item, elements_, size_,
 			detail::memoryUsage(item), used_, queueNotEmpty_);
-		TLOG(13) << "enqWait returning" << TLOG_ENDL;
+		TLOG(13) << "enqWait returning" ;
 	}
 
 	template <class T, class EnqPolicy>
 	bool ConcurrentQueue<T, EnqPolicy>::enqTimedWait(T const& item, detail::seconds const& waitTime)
 	{
 		TLOG(14) << "ConcurrentQueue<T,EnqPolicy>::enqTimedWait enter with waitTime=" << std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count() << " ms size=" << size_
-			<< " capacity=" << capacity_ << " used=" << used_ << " memory=" << memory_ << TLOG_ENDL;
+			<< " capacity=" << capacity_ << " used=" << used_ << " memory=" << memory_ ;
 		WaitLockType lock(protectElements_);
 		if (isFull())
 		{
 			queueNotFull_.wait_for(lock, waitTime);
 		}
 		bool retval = insertIfPossible(item);
-		TLOG(14) << "ConcurrentQueue<T,EnqPolicy>::enqTimedWait returning " << retval << TLOG_ENDL;
+		TLOG(14) << "ConcurrentQueue<T,EnqPolicy>::enqTimedWait returning " << retval ;
 		return retval;
 	}
 
@@ -778,34 +778,34 @@ namespace artdaq
 	template <class T, class EnqPolicy>
 	bool ConcurrentQueue<T, EnqPolicy>::deqNowait(ValueType& item)
 	{
-		TLOG(15) << "ConcurrentQueue<T, EnqPolicy>::deqNowait enter" << TLOG_ENDL;
+		TLOG(15) << "ConcurrentQueue<T, EnqPolicy>::deqNowait enter" ;
 		LockType lock(protectElements_);
 		bool retval = removeHeadIfPossible(item);
-		TLOG(15) << "ConcurrentQueue<T, EnqPolicy>::deqNowait returning " << retval << TLOG_ENDL;
+		TLOG(15) << "ConcurrentQueue<T, EnqPolicy>::deqNowait returning " << retval ;
 		return retval;
 	}
 
 	template <class T, class EnqPolicy>
 	void ConcurrentQueue<T, EnqPolicy>::deqWait(ValueType& item)
 	{
-		TLOG(16) << "ConcurrentQueue<T, EnqPolicy>::deqWait enter" << TLOG_ENDL;
+		TLOG(16) << "ConcurrentQueue<T, EnqPolicy>::deqWait enter" ;
 		WaitLockType lock(protectElements_);
 		while (size_ == 0) { queueNotEmpty_.wait(lock); }
 		removeHead(item);
-		TLOG(16) << "ConcurrentQueue<T, EnqPolicy>::deqWait returning" << TLOG_ENDL;
+		TLOG(16) << "ConcurrentQueue<T, EnqPolicy>::deqWait returning" ;
 	}
 
 	template <class T, class EnqPolicy>
 	bool ConcurrentQueue<T, EnqPolicy>::deqTimedWait(ValueType& item, detail::seconds const& waitTime)
 	{
-		TLOG(17) << "ConcurrentQueue<T, EnqPolicy>::deqTimedWait enter with waitTime=" << std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count() << " ms size=" << size_ << TLOG_ENDL;
+		TLOG(17) << "ConcurrentQueue<T, EnqPolicy>::deqTimedWait enter with waitTime=" << std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count() << " ms size=" << size_ ;
 		WaitLockType lock(protectElements_);
 		if (size_ == 0)
 		{
 			queueNotEmpty_.wait_for(lock, waitTime);
 		}
 		bool retval = removeHeadIfPossible(item);
-		TLOG(17) << "ConcurrentQueue<T, EnqPolicy>::deqTimedWait returning " << retval << " size=" << size_ << TLOG_ENDL;
+		TLOG(17) << "ConcurrentQueue<T, EnqPolicy>::deqTimedWait returning " << retval << " size=" << size_ ;
 		return retval;
 	}
 

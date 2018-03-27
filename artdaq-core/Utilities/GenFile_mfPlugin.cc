@@ -1,3 +1,5 @@
+#define TRACE_NAME "GenFileOutput"
+
 #include "cetlib/PluginTypeDeducer.h"
 #include "cetlib/ostream_handle.h"
 #if MESSAGEFACILITY_HEX_VERSION >= 0x20106 // v2_01_06 => cetlib v3_02_00 => new clang support
@@ -164,11 +166,11 @@ namespace mfplugins
 		}
 
 		size_t pos = 0;
-		TLOG_DEBUG("GenFile") << "filePattern is: " << filePattern << TLOG_ENDL;
+		TLOG(TLVL_DEBUG) << "filePattern is: " << filePattern ;
 		while (filePattern.find("%", pos) != std::string::npos)
 		{
 			pos = filePattern.find("%", pos) + 1;
-			TLOG_ARB(5, "GenFile") << "Found % at " << std::to_string(pos - 1) << ", next char: " << filePattern[pos] << "." << TLOG_ENDL;
+			TLOG(5) << "Found % at " << std::to_string(pos - 1) << ", next char: " << filePattern[pos] << "." ;
 			switch (filePattern[pos])
 			{
 			case '%': // "%%"
@@ -230,10 +232,10 @@ namespace mfplugins
 				pos -= 2;
 				break;
 			}
-			TLOG_ARB(6, "GenFile") << "filePattern is now: " << filePattern << TLOG_ENDL;
+			TLOG(6) << "filePattern is now: " << filePattern ;
 		}
 		std::string fileName = baseDir + "/" + filePattern;
-		TLOG_DEBUG("GenFile") << "fileName is: " << fileName << TLOG_ENDL;
+		TLOG(TLVL_DEBUG) << "fileName is: " << fileName ;
 
 		output_ = std::make_unique<cet::ostream_handle>(fileName.c_str(), append ? std::ios::app : std::ios::trunc);
 	}
