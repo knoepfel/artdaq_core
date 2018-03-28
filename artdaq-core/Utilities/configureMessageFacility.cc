@@ -164,7 +164,11 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	ss << "  } ";
 
 	std::string pstr(ss.str());
-	return pstr;
+
+	//Canonicalize string:
+	fhicl::ParameterSet tmp_pset;
+	fhicl::make_ParameterSet(pstr, tmp_pset);
+	return tmp_pset.to_string();
 }  
 // generateMessageFacilityConfiguration
 
