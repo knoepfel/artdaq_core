@@ -536,7 +536,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 		return false;
 	}
 	if (delta <= shm_ptr_->buffer_timeout_us || shmBuf->sem == BufferSemaphoreFlags::Empty) return false;
-	TLOG(TLVL_TRACE) << "Buffer " << buffer << " is stale, time=" << TimeUtils::gettimeofday_us() << ", last touch=" << shmBuf->last_touch_time << ", d=" << delta << ", timeout=" << shm_ptr_->buffer_timeout_us ;
+	TLOG(25) << "Buffer " << buffer << " is stale, time=" << TimeUtils::gettimeofday_us() << ", last touch=" << shmBuf->last_touch_time << ", d=" << delta << ", timeout=" << shm_ptr_->buffer_timeout_us ;
 
 	if (shmBuf->sem_id == manager_id_ && shmBuf->sem == BufferSemaphoreFlags::Writing)
 	{
