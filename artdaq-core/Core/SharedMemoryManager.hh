@@ -115,9 +115,10 @@ namespace artdaq
 
 		/**
 		 * \brief Get the list of all buffers currently owned by this manager instance.
+         * \param locked Default = true, Whether to lock search_mutex_ before checking buffer ownership (skipped in Detach)
 		 * \return A std::deque<int> of buffer IDs currently owned by this manager instance.
 		 */
-		std::deque<int> GetBuffersOwnedByManager();
+		std::deque<int> GetBuffersOwnedByManager(bool locked = true);
 
 		/**
 		 * \brief Get the current size of the buffer's data

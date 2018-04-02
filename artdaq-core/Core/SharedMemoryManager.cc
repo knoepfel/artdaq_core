@@ -20,7 +20,10 @@ static void signal_handler(int signum)
 	TRACE_STREAMER(TLVL_ERROR, &("SharedMemoryManager")[0], 0, 0, 0) << "A signal of type " << signum << " (" << std::string(strsignal(signum)) << ") was caught by SharedMemoryManager. Detaching all Shared Memory segments, then proceeding with default handlers!";
 	for (auto ii : instances)
 	{
-		if (ii) ii->Detach(false, "", "", true);
+
+		if (ii) {
+            ii->Detach(false, "", "", true);
+        }
 		ii = nullptr;
 	}
 
@@ -382,11 +385,12 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite)
 	return count;
 }
 
-std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager()
+std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager(bool locked)
 {
 	//std::unique_lock<std::mutex> lk(search_mutex_);
 	std::deque<int> output;
 	if (!IsValid()) return output;
+    if(locked) {
 	TraceLock lk(search_mutex_, 16, "GetOwnedSearch");
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
@@ -396,6 +400,18 @@ std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager()
 			output.push_back(ii);
 		}
 	}
+    }
+    else
+    {
+	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
+	{
+		auto buf = getBufferInfo_(ii);
+		if (buf->sem_id == manager_id_)
+		{
+			output.push_back(ii);
+		}
+	}
+    }
 
 	return output;
 }
@@ -714,7 +730,7 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, std::string catego
 	if (IsValid())
 	{
 		TLOG(TLVL_DETACH) << "Detach: Resetting owned buffers";
-		auto bufs = GetBuffersOwnedByManager();
+		auto bufs = GetBuffersOwnedByManager(false);
 		for (auto buf : bufs)
 		{
 			auto shmBuf = getBufferInfo_(buf);
