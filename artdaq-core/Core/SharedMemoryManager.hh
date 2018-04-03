@@ -56,7 +56,7 @@ namespace artdaq
 		 * \param shm_key The key to use when attaching/creating the shared memory segment
 		 * \param buffer_count The number of buffers in the shared memory
 		 * \param buffer_size The size of each buffer
-		 * \param buffer_timeout_us The maximum amount of time a buffer can be left untouched by its owner
+		 * \param buffer_timeout_us The maximum amount of time a buffer can be left untouched by its owner (if 0, buffers do not expire)
 		 * before being returned to its previous state.
 		 * \param destructive_read_mode Whether a read operation empties the buffer (default: true, false for broadcast mode)
 		 */

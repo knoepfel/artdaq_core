@@ -112,7 +112,7 @@ std::set<artdaq::Fragment::type_t> artdaq::SharedMemoryEventReceiver::GetFragmen
 		if (err) return std::set<Fragment::type_t>();
 		auto fragHdr = reinterpret_cast<artdaq::detail::RawFragmentHeader*>(current_data_source_->GetReadPos(current_read_buffer_));
 		output.insert(fragHdr->type);
-        current_data_source_->IncrementReadPos(current_read_buffer_, fragHdr->word_count * sizeof(RawDataType));
+		current_data_source_->IncrementReadPos(current_read_buffer_, fragHdr->word_count * sizeof(RawDataType));
 	}
 
 	return output;
