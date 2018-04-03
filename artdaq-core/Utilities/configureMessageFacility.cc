@@ -256,7 +256,10 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
     pstr = pset.to_string();
     pset.erase("TRACE");
 
-#if CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
+#if CANVAS_HEX_VERSION >= 0x30300  // art v2_11_00
+        mf::StartMessageFacility(pset, progname);
+
+#elif CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
 	mf::StartMessageFacility(pset);
 
 	mf::SetApplicationName(progname);

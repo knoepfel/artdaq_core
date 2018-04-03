@@ -4,8 +4,7 @@ cet_make(
   artdaq-core_Data
   fhiclcpp
   cetlib
-  MF_MessageLogger
-  MF_Utilities
+  ${MESSAGEFACILITY_LIBS}
   )
 
 install_headers()

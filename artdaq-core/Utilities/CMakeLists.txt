@@ -1,8 +1,7 @@
 cet_make(
 	EXCLUDE GenFile_mfPlugin.cc
   LIBRARIES 
-  MF_MessageLogger
-  MF_Utilities
+  ${MESSAGEFACILITY_LIBS}
   fhiclcpp
   ${CETLIB_LIBS}
   ${Boost_DATE_TIME_LIBRARY}
@@ -11,9 +10,8 @@ cet_make(
 )
 
 basic_plugin( "GenFile" "mfPlugin"
-    ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
-${MF_MESSAGESERVICE}
+   ${MESSAGEFACILITY_LIBS}
+   ${MF_MESSAGESERVICE}
     ${FHICLCPP}
     ${CETLIB}
 	${CETLIB_EXCEPT}
