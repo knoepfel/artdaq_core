@@ -7,7 +7,7 @@
 
 //#include <cstddef>
 #include "artdaq-core/Data/dictionarycontrol.hh"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include <map>
 #include "artdaq-core/Data/detail/RawFragmentHeader.hh"
 

@@ -3,7 +3,7 @@
 #include "ExceptionHandler.hh"
 
 #include "canvas/Utilities/Exception.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "tracemf.h"
 
 #include <boost/exception/all.hpp>
