@@ -8,6 +8,7 @@
 
 #define TRACE_NAME "SharedMemoryManager_t"
 #include "tracemf.h"
+#include "SharedMemoryTestShims.hh"
 
 BOOST_AUTO_TEST_SUITE(SharedMemoryManager_test)
 
@@ -15,8 +16,7 @@ BOOST_AUTO_TEST_CASE(Construct)
 {
 	artdaq::configureMessageFacility("SharedMemoryManager_t", true, true);
 	TLOG(TLVL_DEBUG) << "BEGIN TEST Construct" ;
-	srand(artdaq::TimeUtils::gettimeofday_us());
-	uint32_t key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = GetRandomKey(0x7357);
 	artdaq::SharedMemoryManager man(key, 10, 0x1000,0x10000);
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man.GetMyId(), 0);
@@ -29,8 +29,7 @@ BOOST_AUTO_TEST_CASE(Construct)
 BOOST_AUTO_TEST_CASE(Attach)
 {
 	TLOG(TLVL_DEBUG) << "BEGIN TEST Attach" ;
-	srand(artdaq::TimeUtils::gettimeofday_us());
-	uint32_t key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = GetRandomKey(0x7357);
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000);
 
@@ -52,8 +51,7 @@ BOOST_AUTO_TEST_CASE(Attach)
 BOOST_AUTO_TEST_CASE(DataFlow)
 {
 	TLOG(TLVL_DEBUG) << "BEGIN TEST DataFlow" ;
-	srand(artdaq::TimeUtils::gettimeofday_us());
-	uint32_t key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = GetRandomKey(0x7357);
 	artdaq::SharedMemoryManager man(key, 10, 0x1000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000);
 
@@ -119,8 +117,7 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 {
 	artdaq::configureMessageFacility("SharedMemoryManager_t", true, true);
 	TLOG(TLVL_DEBUG) << "BEGIN TEST Exceptions" ;
-	srand(artdaq::TimeUtils::gettimeofday_us());
-	uint32_t key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = GetRandomKey(0x7357);
 	artdaq::SharedMemoryManager man(key, 10, 0x1000);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000);
 	BOOST_REQUIRE_EQUAL(man.ReadyForWrite(false), true);
@@ -206,8 +203,7 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 BOOST_AUTO_TEST_CASE(Broadcast)
 {
 	TLOG(TLVL_DEBUG) << "BEGIN TEST Broadcast" ;
-	srand(artdaq::TimeUtils::gettimeofday_us());
-	uint32_t key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = GetRandomKey(0x7357);
 	artdaq::SharedMemoryManager man(key, 10, 0x1000, 0x10000, false);
 	artdaq::SharedMemoryManager man2(key, 10, 0x1000, 0x10000, false);
 	artdaq::SharedMemoryManager man3(key, 10, 0x1000, 0x10000, false);

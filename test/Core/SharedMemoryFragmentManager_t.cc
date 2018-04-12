@@ -7,6 +7,7 @@
 #define BOOST_TEST_MODULE(SharedMemoryFragmentManager_t)
 #include "cetlib/quiet_unit_test.hpp"
 #include "cetlib_except/exception.h"
+#include "SharedMemoryTestShims.hh"
 
 
 BOOST_AUTO_TEST_SUITE(SharedMemoryFragmentManager_test)
@@ -15,8 +16,7 @@ BOOST_AUTO_TEST_CASE(Construct)
 {
 	artdaq::configureMessageFacility("SharedMemoryFragmentManager_t", true, true);
 	TLOG(TLVL_INFO) << "BEGIN TEST Construct" ;
-	srand(time(0));
-	artdaq::SharedMemoryFragmentManager man(0x7357 + rand() % 0x10000000, 10, 0x1000);
+	artdaq::SharedMemoryFragmentManager man(GetRandomKey(0xF4A6), 10, 0x1000);
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man.GetMyId(), 0);
 	BOOST_REQUIRE_EQUAL(man.size(), 10);
@@ -27,8 +27,7 @@ BOOST_AUTO_TEST_CASE(Construct)
 BOOST_AUTO_TEST_CASE(Attach)
 {
 	TLOG(TLVL_INFO) << "BEGIN TEST Attach";
-	srand(time(0));
-	uint32_t key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = GetRandomKey(0xF4A6);
 	artdaq::SharedMemoryFragmentManager man(key, 10, 0x1000);
 	artdaq::SharedMemoryFragmentManager man2(key, 10, 0x1000);
 
@@ -48,9 +47,8 @@ BOOST_AUTO_TEST_CASE(Attach)
 BOOST_AUTO_TEST_CASE(DataFlow)
 {
 	TLOG(TLVL_INFO) << "BEGIN TEST DataFlow";
-	srand(time(0));
 	TLOG(TLVL_DEBUG) << "Initializing SharedMemoryFragmentManagers for DataFlow test" ;
-	uint32_t key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = GetRandomKey(0xF4A6);
 	artdaq::SharedMemoryFragmentManager man(key, 10, 0x1000);
 	artdaq::SharedMemoryFragmentManager man2(key, 10, 0x1000);
 
@@ -101,8 +99,7 @@ BOOST_AUTO_TEST_CASE(WholeFragment)
 {
 	TLOG(TLVL_INFO) << "BEGIN TEST WholeFragment";
 	TLOG(TLVL_DEBUG) << "Initializing SharedMemoryFragmentManagers for WholeFragment Test" ;
-	srand(time(0));
-	uint32_t key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = GetRandomKey(0xF4A6);
 	artdaq::SharedMemoryFragmentManager man(key, 10, 0x1000);
 	artdaq::SharedMemoryFragmentManager man2(key, 10, 0x1000);
 
@@ -150,8 +147,7 @@ BOOST_AUTO_TEST_CASE(Timeout)
 {
 	TLOG(TLVL_INFO) << "BEGIN TEST Timeout";
 	TLOG(TLVL_DEBUG) << "Initializing SharedMemoryFragmentManagers for Timeout Test" ;
-	srand(time(0));
-	uint32_t key = 0x7357 + rand() % 0x10000000;
+	uint32_t key = GetRandomKey(0xF4A6);
 	artdaq::SharedMemoryFragmentManager man(key, 1, 0x1000);
 
 	auto fragSizeWords = 0x1000 / sizeof(artdaq::RawDataType) - artdaq::detail::RawFragmentHeader::num_words() - 1;
