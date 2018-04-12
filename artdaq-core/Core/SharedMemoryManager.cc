@@ -113,15 +113,22 @@ void artdaq::SharedMemoryManager::Attach()
 	shm_segment_id_ = shmget(shm_key_, shmSize, 0666);
 	if (shm_segment_id_ == -1 && requested_shm_parameters_.buffer_count > 0 && manager_id_ <= 0)
 	{
-		TLOG(TLVL_DEBUG) << "Creating shared memory segment with key 0x" << std::hex << shm_key_ ;
+		TLOG(TLVL_DEBUG) << "Creating shared memory segment with key 0x" << std::hex << shm_key_ << " and size " << shmSize;
 		shm_segment_id_ = shmget(shm_key_, shmSize, IPC_CREAT | 0666);
 		manager_id_ = 0;
+
+		if (shm_segment_id_ == -1)
+		{
+			TLOG(TLVL_ERROR) << "Error creating shared memory segment, errno=" << errno << " (" << strerror(errno) << ")";
+		}
 	}
-
-	while (shm_segment_id_ == -1 && TimeUtils::GetElapsedTimeMilliseconds(start_time) < 1000)
+	else
 	{
-		shm_segment_id_ = shmget(shm_key_, shmSize, 0666);
+		while (shm_segment_id_ == -1 && TimeUtils::GetElapsedTimeMilliseconds(start_time) < 1000)
+		{
+			shm_segment_id_ = shmget(shm_key_, shmSize, 0666);
 
+		}
 	}
 	TLOG(TLVL_DEBUG) << "shm_key == 0x" << std::hex << shm_key_ << ", shm_segment_id == " << shm_segment_id_ ;
 
