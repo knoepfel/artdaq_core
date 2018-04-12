@@ -56,7 +56,7 @@ namespace artdaq
 		 * \param shm_key The key to use when attaching/creating the shared memory segment
 		 * \param buffer_count The number of buffers in the shared memory
 		 * \param buffer_size The size of each buffer
-		 * \param buffer_timeout_us The maximum amount of time a buffer can be left untouched by its owner
+		 * \param buffer_timeout_us The maximum amount of time a buffer can be left untouched by its owner (if 0, buffers do not expire)
 		 * before being returned to its previous state.
 		 * \param destructive_read_mode Whether a read operation empties the buffer (default: true, false for broadcast mode)
 		 */
@@ -97,7 +97,7 @@ namespace artdaq
 		 * \param overwrite Whether to allow overwriting full buffers
 		 * \return True if there is a buffer available
 		 */
-		bool ReadyForWrite(bool overwrite) { return WriteReadyCount(overwrite) > 0; }
+		virtual bool ReadyForWrite(bool overwrite) { return WriteReadyCount(overwrite) > 0; }
 
 		/**
 		 * \brief Count the number of buffers that are ready for reading
@@ -108,15 +108,17 @@ namespace artdaq
 		/**
 		 * \brief Count the number of buffers that are ready for writing
 		 * \param overwrite Whether to consider buffers that are in the Full and Reading state as ready for write (non-reliable mode)
+		 * \param reserve Whether to reserve a buffer for the enquirer
 		 * \return The number of buffers ready for writing
 		 */
 		size_t WriteReadyCount(bool overwrite);
 
 		/**
 		 * \brief Get the list of all buffers currently owned by this manager instance.
+         * \param locked Default = true, Whether to lock search_mutex_ before checking buffer ownership (skipped in Detach)
 		 * \return A std::deque<int> of buffer IDs currently owned by this manager instance.
 		 */
-		std::deque<int> GetBuffersOwnedByManager();
+		std::deque<int> GetBuffersOwnedByManager(bool locked = true);
 
 		/**
 		 * \brief Get the current size of the buffer's data
@@ -228,6 +230,11 @@ namespace artdaq
 		bool IsValid() const { return shm_ptr_ ? true : false; }
 
 		/**
+		 * \brief Determine whether the Shared Memory is marked for destruction (End of Data)
+		 */
+		bool IsEndOfData() const;
+
+		/**
 		 * \brief Get the number of buffers in the shared memory segment
 		 * \return The number of buffers in the shared memory segment
 		 */
@@ -289,8 +296,9 @@ namespace artdaq
 		 * \param throwException Whether to throw an exception after detaching
 		 * \param category Category for the cet::exception
 		 * \param message Message for the cet::exception
+		 * \param force Whether to mark shared memory for destruction even if not owner (i.e. from signal handler)
 		 */
-		void Detach(bool throwException = false, std::string category = "", std::string message = "");
+		void Detach(bool throwException = false, std::string category = "", std::string message = "", bool force = false);
 
 		/**
 		 * \brief Gets the configured timeout for buffers to be declared "stale"

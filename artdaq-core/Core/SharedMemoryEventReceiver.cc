@@ -16,21 +16,22 @@ artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(uint32_t shm_key, u
 	, data_(shm_key)
 	, broadcasts_(broadcast_shm_key)
 {
-	TLOG_TRACE("SharedMemoryEventReceiver") << "SharedMemoryEventReceiver CONSTRUCTOR" << TLOG_ENDL;
+	TLOG(TLVL_TRACE) << "SharedMemoryEventReceiver CONSTRUCTOR" ;
 }
 
 bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t timeout_us)
 {
-	TLOG(4) << "ReadyForRead BEGIN" << TLOG_ENDL;
+	TLOG(TLVL_TRACE) << "ReadyForRead BEGIN" ;
 	if (current_read_buffer_ != -1 && current_data_source_ && current_header_)
 	{
-		TLOG_TRACE("SharedMemoryEventReceiver") << "ReadyForRead Returning true because already reading buffer" << TLOG_ENDL;
+		TLOG(TLVL_TRACE) << "ReadyForRead Returning true because already reading buffer" ;
 		return true;
 	}
 
+	bool first = true;
 	auto start_time = TimeUtils::gettimeofday_us();
 	int buf = -1;
-	while (TimeUtils::gettimeofday_us() - start_time < timeout_us)
+	while (first || TimeUtils::gettimeofday_us() - start_time < timeout_us)
 	{
 		if (broadcasts_.ReadyForRead())
 		{
@@ -44,7 +45,7 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 		}
 		if (buf != -1 && current_data_source_)
 		{
-			TLOG_TRACE("SharedMemoryEventReceiver") << "ReadyForRead Found buffer, returning true" << TLOG_ENDL;
+			TLOG(TLVL_TRACE) << "ReadyForRead Found buffer, returning true" ;
 			current_read_buffer_ = buf;
 			current_data_source_->ResetReadPos(buf);
 			current_header_ = reinterpret_cast<detail::RawEventHeader*>(current_data_source_->GetReadPos(buf));
@@ -68,28 +69,29 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 			return true;
 		}
 		current_data_source_ = nullptr;
-		usleep( 1000 );
+		first = false;
+		usleep( 100 );
 	}
-	TLOG(4) << "ReadyForRead returning false" << TLOG_ENDL;
+	TLOG(TLVL_TRACE) << "ReadyForRead returning false" ;
 	return false;
 }
 
 artdaq::detail::RawEventHeader* artdaq::SharedMemoryEventReceiver::ReadHeader(bool& err)
 {
-	TLOG_TRACE("SharedMemoryEventReceiver") << "ReadHeader BEGIN" << TLOG_ENDL;
+	TLOG(TLVL_TRACE) << "ReadHeader BEGIN" ;
 	if (current_read_buffer_ != -1 && current_data_source_)
 	{
 		err = !current_data_source_->CheckBuffer(current_read_buffer_, SharedMemoryManager::BufferSemaphoreFlags::Reading);
 		if (err)
 		{
-			TLOG_WARNING("SharedMemoryEventReceiver") << "Buffer was in incorrect state, resetting" << TLOG_ENDL;
+			TLOG(TLVL_WARNING) << "Buffer was in incorrect state, resetting" ;
 			current_data_source_ = nullptr;
 			current_read_buffer_ = -1;
 			current_header_ = nullptr;
 			return nullptr;
 		}
 	}
-	TLOG_TRACE("SharedMemoryEventReceiver") << "Already have buffer, returning stored header" << TLOG_ENDL;
+	TLOG(TLVL_TRACE) << "Already have buffer, returning stored header" ;
 	return current_header_;
 }
 
@@ -110,7 +112,7 @@ std::set<artdaq::Fragment::type_t> artdaq::SharedMemoryEventReceiver::GetFragmen
 		if (err) return std::set<Fragment::type_t>();
 		auto fragHdr = reinterpret_cast<artdaq::detail::RawFragmentHeader*>(current_data_source_->GetReadPos(current_read_buffer_));
 		output.insert(fragHdr->type);
-        current_data_source_->IncrementReadPos(current_read_buffer_, fragHdr->word_count * sizeof(RawDataType));
+		current_data_source_->IncrementReadPos(current_read_buffer_, fragHdr->word_count * sizeof(RawDataType));
 	}
 
 	return output;
@@ -193,21 +195,21 @@ std::string artdaq::SharedMemoryEventReceiver::toString()
 
 void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()
 {
-	TLOG_TRACE("SharedMemoryEventReceiver") << "ReleaseBuffer BEGIN" << TLOG_ENDL;
+	TLOG(TLVL_TRACE) << "ReleaseBuffer BEGIN" ;
 	try
 	{
 		current_data_source_->MarkBufferEmpty(current_read_buffer_);
 	}
 	catch (cet::exception e)
 	{
-		TLOG_WARNING("SharedMemoryEventReceiver") << "A cet::exception occured while trying to release the buffer: " << e << TLOG_ENDL;
+		TLOG(TLVL_WARNING) << "A cet::exception occured while trying to release the buffer: " << e ;
 	}
 	catch (...)
 	{
-		TLOG_ERROR("SharedMemoryEventReceiver") << "An unknown exception occured while trying to release the buffer" << TLOG_ENDL;
+		TLOG(TLVL_ERROR) << "An unknown exception occured while trying to release the buffer" ;
 	}
 	current_read_buffer_ = -1;
 	current_header_ = nullptr;
 	current_data_source_ = nullptr;
-	TLOG_TRACE("SharedMemoryEventReceiver") << "ReleaseBuffer END" << TLOG_ENDL;
+	TLOG(TLVL_TRACE) << "ReleaseBuffer END" ;
 }

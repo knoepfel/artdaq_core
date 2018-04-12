@@ -33,11 +33,11 @@ inline TraceLock::TraceLock(std::mutex& mutex,int level, std::string description
 	, description_(description)
 	, level_(level)
 {
-	TLOG_ARB(level_, "TraceLock") << "Acquired Lock " << description_ << ", mutex=" << (void*)&mutex << ", lock=" << (void*)&lock_ << TLOG_ENDL;
+	TLOG_ARB(level_, "TraceLock") << "Acquired Lock " << description_ << ", mutex=" << (void*)&mutex << ", lock=" << (void*)&lock_ ;
 }
 
 inline TraceLock::~TraceLock() {
-	TLOG_ARB(level_, "TraceLock") << "Releasing lock " << description_ << ", lock=" << (void*)&lock_ << TLOG_ENDL;
+	TLOG_ARB(level_, "TraceLock") << "Releasing lock " << description_ << ", lock=" << (void*)&lock_ ;
 }
 
 #endif

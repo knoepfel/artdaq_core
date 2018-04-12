@@ -32,6 +32,8 @@ BOOST_AUTO_TEST_CASE(AddEmptyFragment)
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 1);
 	auto type = artdaq::Fragment::EmptyFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
+
+	delete frag;
 }
 
 BOOST_AUTO_TEST_CASE(AddFragment_Ptr)

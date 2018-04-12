@@ -164,7 +164,11 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	ss << "  } ";
 
 	std::string pstr(ss.str());
-	return pstr;
+
+	//Canonicalize string:
+	fhicl::ParameterSet tmp_pset;
+	fhicl::make_ParameterSet(pstr, tmp_pset);
+	return tmp_pset.to_string();
 }  
 // generateMessageFacilityConfiguration
 
@@ -267,8 +271,8 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	mf::SetModuleName(progname);
 	mf::SetContext(progname);
 #  endif
-	TLOG(4) << "Message Facility Config input is: " << pstr;
-	TLOG_INFO("configureMessageFacility") << "Message Facility Application " << progname << " configured with: " << pset.to_string();
+	TLOG(TLVL_TRACE) << "Message Facility Config input is: " << pstr;
+	TLOG(TLVL_INFO) << "Message Facility Application " << progname << " configured with: " << pset.to_string();
 }
 
 std::string artdaq::setMsgFacAppName(const std::string& appType, unsigned short port)

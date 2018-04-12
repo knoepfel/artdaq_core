@@ -39,7 +39,7 @@ namespace artdaq
 		incoming_events_(new SharedMemoryEventReceiver(shm_key, broadcast_key))
 		, expectedEventCount_(eec)
 	{
-		TLOG(50) << "ctor done (after queue_.setReaderIsReady())" << TLOG_ENDL;
+		TLOG(50) << "ctor done (after queue_.setReaderIsReady())" ;
 	}
 
 	void SimpleMemoryReader::run()
@@ -56,7 +56,7 @@ namespace artdaq
 				got_event = incoming_events_->ReadyForRead();
 				if (!got_event)
 				{
-					TLOG(TLVL_INFO) << "InputFailure: Reading timed out in SharedMemoryReader::readNext()" << TLOG_ENDL;
+					TLOG(TLVL_INFO) << "InputFailure: Reading timed out in SharedMemoryReader::readNext()" ;
 					keep_looping = true;
 				}
 			}
@@ -70,7 +70,7 @@ namespace artdaq
 			if (errflag) break; // Buffer was changed out from under reader!
 			if (fragmentTypes.size() == 0)
 			{
-				TLOG(TLVL_ERROR) << "Event has no Fragments! Aborting!" << TLOG_ENDL;
+				TLOG(TLVL_ERROR) << "Event has no Fragments! Aborting!" ;
 				incoming_events_->ReleaseBuffer();
 				break;
 			}
@@ -83,7 +83,7 @@ namespace artdaq
 			//      pointer
 			if (!got_event || firstFragmentType == Fragment::EndOfDataFragmentType)
 			{
-				TLOG(TLVL_DEBUG) << "Received shutdown message, returning false" << TLOG_ENDL;
+				TLOG(TLVL_DEBUG) << "Received shutdown message, returning false" ;
 				incoming_events_->ReleaseBuffer();
 				break;
 			}

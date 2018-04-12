@@ -13,8 +13,6 @@
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Data/ContainerFragment.hh"
 
-#undef TRACE_NAME
-#define TRACE_NAME "ContainerFragmentLoader"
 #include "tracemf.h"
 
 #include <iostream>
@@ -125,8 +123,8 @@ inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment
 		artdaq::detail::RawFragmentHeader::num_words() +
 		words_to_frag_words_(Metadata::size_words))
 	{
-		TLOG(TLVL_ERROR) << "ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object" << TLOG_ENDL;
-		TLOG(TLVL_ERROR) << "artdaq_Fragment size: " << artdaq_Fragment_.size() << ", Expected size: " << artdaq::detail::RawFragmentHeader::num_words() + words_to_frag_words_(Metadata::size_words) << TLOG_ENDL;
+		TLOG(TLVL_ERROR,"ContainerFragmentLoader") << "ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object" ;
+		TLOG(TLVL_ERROR,"ContainerFragmentLoader") << "artdaq_Fragment size: " << artdaq_Fragment_.size() << ", Expected size: " << artdaq::detail::RawFragmentHeader::num_words() + words_to_frag_words_(Metadata::size_words) ;
 
 		throw cet::exception("InvalidFragment") << "ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object";
 	}
@@ -144,31 +142,31 @@ inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 {
 	auto currSize = sizeof(artdaq::Fragment::value_type) * artdaq_Fragment_.dataSize(); // Resize takes into account header and metadata size
 	artdaq_Fragment_.resizeBytes(bytes + currSize);
-	TLOG(4) << "addSpace_: dataEnd_ is now at " << (void*)dataEnd_();
+	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << (void*)dataEnd_();
 }
 
 inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 {
 	if (metadata()->block_count >= CONTAINER_FRAGMENT_COUNT_MAX)
 	{
-		TLOG(TLVL_ERROR) << "addFragment: Fragment is full, cannot add more fragments!" << TLOG_ENDL;
+		TLOG(TLVL_ERROR,"ContainerFragmentLoader") << "addFragment: Fragment is full, cannot add more fragments!" ;
 		throw cet::exception("ContainerFull") << "ContainerFragmentLoader::addFragment: Fragment is full, cannot add more fragments!";
 	}
 
-	TLOG(4) << "addFragment: Adding Fragment with payload size " << frag.dataSizeBytes() << " to Container";
+	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addFragment: Adding Fragment with payload size " << frag.dataSizeBytes() << " to Container";
 	if (metadata()->fragment_type == Fragment::EmptyFragmentType) metadata()->fragment_type = frag.type();
 	else if (frag.type() != metadata()->fragment_type)
 	{
-		TLOG(TLVL_ERROR) << "addFragment: Trying to add a fragment of different type than what's already been added!" << TLOG_ENDL;
+		TLOG(TLVL_ERROR,"ContainerFragmentLoader") << "addFragment: Trying to add a fragment of different type than what's already been added!" ;
 		throw cet::exception("WrongFragmentType") << "ContainerFragmentLoader::addFragment: Trying to add a fragment of different type than what's already been added!";
 	}
-	TLOG(4) << "addFragment: Payload Size is " << artdaq_Fragment_.dataSizeBytes() << ", lastFragmentIndex is " << lastFragmentIndex() << ", and frag.size is " << frag.sizeBytes();
+	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addFragment: Payload Size is " << artdaq_Fragment_.dataSizeBytes() << ", lastFragmentIndex is " << lastFragmentIndex() << ", and frag.size is " << frag.sizeBytes();
 	if (artdaq_Fragment_.dataSizeBytes() < lastFragmentIndex() + frag.sizeBytes())
 	{
 		addSpace_(frag.sizeBytes());
 	}
 	frag.setSequenceID(artdaq_Fragment_.sequenceID());
-	TLOG(4) << "addFragment, copying " << frag.sizeBytes() << " bytes from " << (void*)frag.headerAddress() << " to " << (void*)dataEnd_();
+	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addFragment, copying " << frag.sizeBytes() << " bytes from " << (void*)frag.headerAddress() << " to " << (void*)dataEnd_();
 	memcpy(dataEnd_(), frag.headerAddress(), frag.sizeBytes());
 	metadata()->index[block_count()] = lastFragmentIndex() + frag.sizeBytes();
 	metadata()->block_count++;
