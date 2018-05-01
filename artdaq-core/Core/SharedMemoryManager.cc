@@ -610,6 +610,21 @@ bool artdaq::SharedMemoryManager::IsEndOfData() const
 	return false;
 }
 
+uint16_t artdaq::SharedMemoryManager::GetAttachedCount() const
+{
+	if (!IsValid()) return 0;
+
+	struct shmid_ds info;
+	auto sts = shmctl(shm_segment_id_, IPC_STAT, &info);
+	if (sts < 0)
+	{
+		TLOG(TLVL_TRACE) << "Error accessing Shared Memory info: " << errno << " (" << strerror(errno) << ").";
+		return 0;
+	}
+	
+	return info.shm_nattch;
+}
+
 size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 {
 	TLOG(19) << "Write BEGIN";

@@ -198,7 +198,7 @@ namespace artdaq
 		 * \brief Get the number of attached SharedMemoryManagers
 		 * \return The number of attached SharedMemoryManagers
 		 */
-		uint16_t GetAttachedCount() const { return IsValid() ? shm_ptr_->next_id.load() - 1 : -1; }
+		uint16_t GetAttachedCount() const;
 
 		/**
 		 * \brief Reset the attached manager count to 0

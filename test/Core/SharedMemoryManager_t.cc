@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(Construct)
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man.GetMyId(), 0);
 	BOOST_REQUIRE_EQUAL(man.size(), 10);
-	BOOST_REQUIRE_EQUAL(man.GetAttachedCount(), 0);
+	BOOST_REQUIRE_EQUAL(man.GetAttachedCount(), 1);
 	BOOST_REQUIRE_EQUAL(man.GetKey(), key);
 	TLOG(TLVL_DEBUG) << "END TEST Construct" ;
 }
@@ -36,13 +36,13 @@ BOOST_AUTO_TEST_CASE(Attach)
 	BOOST_REQUIRE_EQUAL(man.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man.GetMyId(), 0);
 	BOOST_REQUIRE_EQUAL(man.size(), 10);
-	BOOST_REQUIRE_EQUAL(man.GetAttachedCount(), 1);
+	BOOST_REQUIRE_EQUAL(man.GetAttachedCount(), 2);
 	BOOST_REQUIRE_EQUAL(man.GetKey(), key);
 
 	BOOST_REQUIRE_EQUAL(man2.IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man2.GetMyId(), 1);
 	BOOST_REQUIRE_EQUAL(man2.size(), 10);
-	BOOST_REQUIRE_EQUAL(man2.GetAttachedCount(), 1);
+	BOOST_REQUIRE_EQUAL(man2.GetAttachedCount(), 2);
 	BOOST_REQUIRE_EQUAL(man2.GetKey(), key);
 
 	TLOG(TLVL_DEBUG) << "END TEST Attach" ;
