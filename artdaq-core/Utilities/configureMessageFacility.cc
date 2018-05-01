@@ -24,8 +24,16 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	char* artdaqMfextensionsDir = getenv("ARTDAQ_MFEXTENSIONS_DIR");
 	char* useMFExtensionsS = getenv("ARTDAQ_MFEXTENSIONS_ENABLED");
 	bool useMFExtensions = false;
-	if (useMFExtensionsS != nullptr && !(strncmp(useMFExtensionsS, "0", 1) == 0)) {
+	if (useMFExtensionsS != nullptr && !(strncmp(useMFExtensionsS, "0", 1) == 0))
+	{
 		useMFExtensions = true;
+	}
+
+	char* printTimestampsToConsoleS = getenv("ARTDAQ_LOG_TIMESTAMPS_TO_CONSOLE");
+	bool printTimestampsToConsole = true;
+	if (printTimestampsToConsoleS != nullptr && strncmp(printTimestampsToConsoleS, "0", 1) == 0)
+	{
+		printTimestampsToConsole = false;
 	}
 
 	std::string logfileDir = "";
@@ -73,7 +81,8 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			logfileName.append("/");
 			logfileName.append(progname);
 			logfileName.append("-");
-			if (hostString.size() > 0 && logfileName.find(hostString) == std::string::npos) {
+			if (hostString.size() > 0 && logfileName.find(hostString) == std::string::npos)
+			{
 				logfileName.append(hostString);
 				logfileName.append("-");
 			}
@@ -95,25 +104,31 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		if (artdaqMfextensionsDir != nullptr && useMFExtensions)
 		{
 			ss << "    console : { "
-				<< "      type : \"ANSI\" threshold : " << outputLevel
+				<< "      type : \"ANSI\" threshold : " << outputLevel;
+			if (!printTimestampsToConsole)
+			{
 #if MESSAGEFACILITY_HEX_VERSION < 0x20103
-				<< "      noTimeStamps : true "
+				ss << "      noTimeStamps : true ";
 #else
-				<< "      format: { timestamp: none } "
+				ss << "      format: { timestamp: none } ";
 #endif
-				<< "      bell_on_error: true "
-				<< "    } ";
+			}
+			ss << "      bell_on_error: true ";
+			ss << "    } ";
 		}
 		else
 		{
 			ss << "    console : { "
-				<< "      type : \"cout\" threshold :" << outputLevel
+				<< "      type : \"cout\" threshold :" << outputLevel;
+			if (!printTimestampsToConsole)
+			{
 #if MESSAGEFACILITY_HEX_VERSION < 0x20103
-				<< "      noTimeStamps : true "
+				ss << "      noTimeStamps : true ";
 #else
-				<< "       format: { timestamp: none } "
+				ss << "       format: { timestamp: none } ";
 #endif
-				<< "    } ";
+			}
+			ss << "    } ";
 		}
 	}
 
@@ -169,7 +184,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	fhicl::ParameterSet tmp_pset;
 	fhicl::make_ParameterSet(pstr, tmp_pset);
 	return tmp_pset.to_string();
-}  
+}
 // generateMessageFacilityConfiguration
 
 void artdaq::configureTRACE(fhicl::ParameterSet &trace_pset)
@@ -196,14 +211,17 @@ void artdaq::configureTRACE(fhicl::ParameterSet &trace_pset)
 	std::unordered_map<std::string, bool> envs_set_to_unset;
 	for (auto env : trace_envs)	envs_set_to_unset[env] = false;
 	// tricky - some env. vars. will over ride info in "mapped" (file) context while others cannot. 
-	for (auto name : names) {
+	for (auto name : names)
+	{
 		if (name == "TRACE_NUMENTS" || name == "TRACE_ARGSMAX"
 			|| name == "TRACE_MSGMAX" || name == "TRACE_FILE") // only applicable if env.var. set before before traceInit
 			// don't override and don't "set_to_unset" (if "mapping", want any subprocess to map also)
 			setenv(name.c_str(), trace_pset.get<std::string>(name).c_str(), 0);
 		// These next 3 are looked at when TRACE_CNTL("namlvlset") is called. And, if mapped, get into file! (so may want to unset env???)
-		else if (name == "TRACE_LIMIT_MS") { // there is also TRACE_CNTL
-			if (!getenv(name.c_str())) {
+		else if (name == "TRACE_LIMIT_MS")
+		{ // there is also TRACE_CNTL
+			if (!getenv(name.c_str()))
+			{
 				envs_set_to_unset[name] = true;
 				std::vector<uint32_t> limit = trace_pset.get<std::vector<uint32_t>>(name);
 				// could check that it is size()==3???
@@ -211,22 +229,28 @@ void artdaq::configureTRACE(fhicl::ParameterSet &trace_pset)
 				setenv(name.c_str(), limits.c_str(), 0);
 			}
 		}
-		else if (name == "TRACE_MODE") { // env.var. only applicable if TRACE_NAMLVLSET is set, BUT could TRACE_CNTL("mode",mode)???
-			if (!getenv(name.c_str())) {
+		else if (name == "TRACE_MODE")
+		{ // env.var. only applicable if TRACE_NAMLVLSET is set, BUT could TRACE_CNTL("mode",mode)???
+			if (!getenv(name.c_str()))
+			{
 				envs_set_to_unset[name] = true;
 				setenv(name.c_str(), trace_pset.get<std::string>(name).c_str(), 0);
 			}
 		}
-		else if (name == "TRACE_NAMLVLSET") {
-			if (!getenv(name.c_str())) {
+		else if (name == "TRACE_NAMLVLSET")
+		{
+			if (!getenv(name.c_str()))
+			{
 				envs_set_to_unset[name] = true;
 				std::stringstream lvlsbldr; // levels builder
 				fhicl::ParameterSet lvls_pset = trace_pset.get<fhicl::ParameterSet>(name);
 				std::vector<std::string> tnames = lvls_pset.get_names();
-				for (auto tname : tnames) {
+				for (auto tname : tnames)
+				{
 					lvlsbldr << tname;
 					std::vector<uint64_t> msks = lvls_pset.get<std::vector<uint64_t>>(tname);
-					for (auto msk : msks) {
+					for (auto msk : msks)
+					{
 						lvlsbldr << " 0x" << std::hex << (unsigned long long)msk;
 					}
 					lvlsbldr << "\n";
@@ -246,18 +270,19 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	fhicl::make_ParameterSet(pstr, pset);
 
 	fhicl::ParameterSet trace_pset;
-	if (!pset.get_if_present<fhicl::ParameterSet>("TRACE", trace_pset)) {
+	if (!pset.get_if_present<fhicl::ParameterSet>("TRACE", trace_pset))
+	{
 		fhicl::ParameterSet trace_dflt_pset;
 		fhicl::make_ParameterSet("TRACE:{TRACE_MSGMAX:0 TRACE_LIMIT_MS:[10,500,1500]}", trace_dflt_pset);
 		pset.put<fhicl::ParameterSet>("TRACE", trace_dflt_pset.get<fhicl::ParameterSet>("TRACE"));
 		trace_pset = pset.get<fhicl::ParameterSet>("TRACE");
 	}
 	configureTRACE(trace_pset);
-    pstr = pset.to_string();
-    pset.erase("TRACE");
+	pstr = pset.to_string();
+	pset.erase("TRACE");
 
 #if CANVAS_HEX_VERSION >= 0x30300  // art v2_11_00
-        mf::StartMessageFacility(pset, progname);
+	mf::StartMessageFacility(pset, progname);
 
 #elif CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
 	mf::StartMessageFacility(pset);

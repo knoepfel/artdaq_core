@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_core  v3_02_00
-defaultqual	e14:s50
+parent artdaq_core  v3_02_01
+defaultqual	e15:s64
 
 # These optional lines define the installed directories where
 # headers, libraries, and executables will be found
@@ -33,11 +33,7 @@ canvas          v3_00_03        s56
 canvas          v3_00_02        s54
 canvas          v3_00_01        s53
 canvas          v2_00_02        s50
-canvas          v2_00_01        s49
-canvas          v1_06_04        s48
-canvas          v1_06_03        s47
-canvas          v1_06_02        s46
-TRACE           v3_13_06
+TRACE           v3_13_07
 cetbuildtools	v7_02_01	-	only_for_build
 end_product_list
 
@@ -122,34 +118,6 @@ e14:s50:debug		e14:debug	-               -nq-	-std=c++14
 e14:s50:prof		e14:prof	-               -nq-	-std=c++14
 nu:e14:s50:debug	nu:e14:debug	-               -nq-	-std=c++14
 nu:e14:s50:prof		nu:e14:prof	-               -nq-	-std=c++14
-e14:s49:debug		e14:debug	-               -nq-	-std=c++14
-e14:s49:prof		e14:prof	-               -nq-	-std=c++14
-nu:e14:s49:debug	nu:e14:debug	-               -nq-	-std=c++14
-nu:e14:s49:prof		nu:e14:prof	-               -nq-	-std=c++14
-e14:s48:debug		e14:debug	-               -nq-	-std=c++14
-e14:s48:prof		e14:prof	-               -nq-	-std=c++14
-nu:e14:s48:debug	nu:e14:debug	-               -nq-	-std=c++14
-nu:e14:s48:prof		nu:e14:prof	-               -nq-	-std=c++14
-e10:s48:debug		e10:debug	-               -nq-	-std=c++14
-e10:s48:prof		e10:prof	-               -nq-	-std=c++14
-nu:e10:s48:debug	nu:e10:debug	-               -nq-	-std=c++14
-nu:e10:s48:prof		nu:e10:prof	-               -nq-	-std=c++14
-e14:s47:debug		e14:debug	-               -nq-	-std=c++14
-e14:s47:prof		e14:prof	-               -nq-	-std=c++14
-nu:e14:s47:debug	nu:e14:debug	-               -nq-	-std=c++14
-nu:e14:s47:prof		nu:e14:prof	-               -nq-	-std=c++14
-e10:s47:debug		e10:debug	-               -nq-	-std=c++14
-e10:s47:prof		e10:prof	-               -nq-	-std=c++14
-nu:e10:s47:debug	nu:e10:debug	-               -nq-	-std=c++14
-nu:e10:s47:prof		nu:e10:prof	-               -nq-	-std=c++14
-e14:s46:debug		e14:debug	-               -nq-	-std=c++14
-e14:s46:prof		e14:prof	-               -nq-	-std=c++14
-nu:e14:s46:debug	nu:e14:debug	-               -nq-	-std=c++14
-nu:e14:s46:prof		nu:e14:prof	-               -nq-	-std=c++14
-e10:s46:debug		e10:debug	-               -nq-	-std=c++14
-e10:s46:prof		e10:prof	-               -nq-	-std=c++14
-nu:e10:s46:debug	nu:e10:debug	-               -nq-	-std=c++14
-nu:e10:s46:prof		nu:e10:prof	-               -nq-	-std=c++14
 end_qualifier_list
 
 
