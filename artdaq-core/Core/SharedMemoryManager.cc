@@ -10,7 +10,7 @@
 
 #define TLVL_DETACH 11
 
-static std::vector<artdaq::SharedMemoryManager*> instances = std::vector<artdaq::SharedMemoryManager*>();
+static std::vector<artdaq::SharedMemoryManager const*> instances = std::vector<artdaq::SharedMemoryManager const*>();
 
 static std::unordered_map<int, struct sigaction> old_actions = std::unordered_map<int, struct sigaction>();
 static bool sighandler_init = false;
@@ -23,7 +23,7 @@ static void signal_handler(int signum)
 
 		if (ii)
 		{
-			ii->Detach(false, "", "", true);
+			const_cast<artdaq::SharedMemoryManager*>(ii)->Detach(false, "", "", true);
 		}
 		ii = nullptr;
 	}
