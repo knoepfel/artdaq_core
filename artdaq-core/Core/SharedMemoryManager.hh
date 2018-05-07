@@ -35,7 +35,7 @@ namespace artdaq
 		 * \param flag BufferSemaphoreFlags variable to convert
 		 * \return String representation of flag
 		 */
-		static std::string FlagToString(BufferSemaphoreFlags flag)
+		static inline std::string FlagToString(BufferSemaphoreFlags flag)
 		{
 			switch (flag)
 			{
