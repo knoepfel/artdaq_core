@@ -1,7 +1,11 @@
 #define TRACE_NAME "SharedMemoryManager"
 #include <cstring>
 #include <vector>
+#include <sys/ipc.h>
 #include <sys/shm.h>
+#ifndef SHM_DEST // Lynn reports that this is missing on Mac OS X?!?
+#define SHM_DEST 01000
+#endif
 #include "tracemf.h"
 #include <signal.h>
 #include "cetlib_except/exception.h"
