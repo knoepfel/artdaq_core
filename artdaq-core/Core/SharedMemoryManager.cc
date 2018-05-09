@@ -279,8 +279,8 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 {
 	TLOG(14) << "GetBufferForWriting BEGIN";
-	//std::unique_lock<std::mutex> lk(search_mutex_);
-	TraceLock lk(search_mutex_, 12, "GetBufferForWritingSearch");
+	std::unique_lock<std::mutex> lk(search_mutex_);
+	//TraceLock lk(search_mutex_, 12, "GetBufferForWritingSearch");
 	auto wp = shm_ptr_->writer_pos.load();
 
 	// First, only look for "Empty" buffers
@@ -360,8 +360,8 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount()
 {
 	if (!IsValid()) return 0;
 	TLOG(23) << "0x" << std::hex << shm_key_ << " ReadReadyCount BEGIN";
-	//std::unique_lock<std::mutex> lk(search_mutex_);
-	TraceLock lk(search_mutex_, 14, "ReadReadyCountSearch");
+	std::unique_lock<std::mutex> lk(search_mutex_);
+	//TraceLock lk(search_mutex_, 14, "ReadReadyCountSearch");
 	size_t count = 0;
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
@@ -545,8 +545,8 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer, bool force)
 
 bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 {
-	//std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
-	TraceLock lk(buffer_mutexes_[buffer], 25, "ResetBuffer" + std::to_string(buffer));
+	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	//TraceLock lk(buffer_mutexes_[buffer], 25, "ResetBuffer" + std::to_string(buffer));
 	auto shmBuf = getBufferInfo_(buffer);
 	/*
 		if (shmBuf->sequence_id < shm_ptr_->lowest_seq_id_read - size() && shmBuf->sem == BufferSemaphoreFlags::Full)
