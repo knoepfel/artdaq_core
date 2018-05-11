@@ -192,8 +192,8 @@ void artdaq::SharedMemoryManager::Attach()
 			TLOG(TLVL_DEBUG) << "Initialization Complete: "
 				<< "key: 0x" << std::hex << shm_key_
 				<< ", manager ID: " << manager_id_
-				<< ", Buffer size: " << std::to_string(shm_ptr_->buffer_size)
-				<< ", Buffer count: " << std::to_string(shm_ptr_->buffer_count);
+				<< ", Buffer size: " << shm_ptr_->buffer_size
+				<< ", Buffer count: " << shm_ptr_->buffer_count;
 			return;
 		}
 		else
@@ -511,9 +511,9 @@ void artdaq::SharedMemoryManager::IncrementReadPos(int buffer, size_t read)
 	//TraceLock lk(buffer_mutexes_[buffer], 19, "IncReadPosBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
 	touchBuffer_(buf);
-	TLOG(15) << "IncrementReadPos: buffer= " << buffer << ", readPos=" << std::to_string(buf->readPos) << ", bytes read=" << std::to_string(read);
+	TLOG(15) << "IncrementReadPos: buffer= " << buffer << ", readPos=" << buf->readPos << ", bytes read=" << read;
 	buf->readPos = buf->readPos + read;
-	TLOG(15) << "IncrementReadPos: buffer= " << buffer << ", New readPos is " << std::to_string(buf->readPos);
+	TLOG(15) << "IncrementReadPos: buffer= " << buffer << ", New readPos is " << buf->readPos;
 	if (read == 0)	Detach(true, "LogicError", "Cannot increment Read pos by 0! (buffer=" + std::to_string(buffer) + ", readPos=" + std::to_string(buf->readPos) + ", writePos=" + std::to_string(buf->writePos) + ")");
 }
 
@@ -523,9 +523,9 @@ void artdaq::SharedMemoryManager::IncrementWritePos(int buffer, size_t written)
 	//TraceLock lk(buffer_mutexes_[buffer], 20, "IncWritePosBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
 	touchBuffer_(buf);
-	TLOG(16) << "IncrementWritePos: buffer= " << buffer << ", writePos=" << std::to_string(buf->writePos) << ", bytes written=" << std::to_string(written);
+	TLOG(16) << "IncrementWritePos: buffer= " << buffer << ", writePos=" << buf->writePos << ", bytes written=" << written;
 	buf->writePos += written;
-	TLOG(16) << "IncrementWritePos: buffer= " << buffer << ", New writePos is " << std::to_string(buf->writePos);
+	TLOG(16) << "IncrementWritePos: buffer= " << buffer << ", New writePos is " << buf->writePos;
 	if (written == 0)  Detach(true, "LogicError", "Cannot increment Write pos by 0!");
 }
 
@@ -534,7 +534,7 @@ bool artdaq::SharedMemoryManager::MoreDataInBuffer(int buffer)
 	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
 	//TraceLock lk(buffer_mutexes_[buffer], 21, "MoreDataInBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
-	TLOG(17) << "MoreDataInBuffer: buffer= " << buffer << ", readPos=" << std::to_string(buf->readPos) << ", writePos=" << std::to_string(buf->writePos);
+	TLOG(17) << "MoreDataInBuffer: buffer= " << buffer << ", readPos=" << std::to_string(buf->readPos) << ", writePos=" << buf->writePos;
 	return buf->readPos < buf->writePos;
 }
 
@@ -684,7 +684,7 @@ size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 	auto shmBuf = getBufferInfo_(buffer);
 	checkBuffer_(shmBuf, BufferSemaphoreFlags::Writing);
 	touchBuffer_(shmBuf);
-	TLOG(19) << "Buffer Write Pos is " << std::to_string(shmBuf->writePos) << ", write size is " << std::to_string(size);
+	TLOG(19) << "Buffer Write Pos is " << shmBuf->writePos << ", write size is " << size;
 	if (shmBuf->writePos + size > shm_ptr_->buffer_size) Detach(true, "SharedMemoryWrite", "Attempted to write more data than fits into Shared Memory! \nRe-run with a larger buffer size!");
 
 	auto pos = GetWritePos(buffer);
@@ -787,7 +787,7 @@ bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphor
 
 	if (!ret)
 	{
-		TLOG(TLVL_WARNING) << "CheckBuffer detected issue with buffer " << std::to_string(buffer->sequence_id) << "!"
+		TLOG(TLVL_WARNING) << "CheckBuffer detected issue with buffer " << buffer->sequence_id << "!"
 			<< " ID: " << buffer->sem_id << " (" << manager_id_ << "), Flag: " << FlagToString(buffer->sem) << " (" << FlagToString(flags) << "). "
 			<< "ID -1 is okay if desired flag is \"Full\" or \"Empty\".";
 	}
@@ -798,7 +798,7 @@ bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphor
 void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 {
 	if (buffer->sem_id != manager_id_) return;
-	TLOG(TLVL_TRACE) << "touchBuffer_: Touching buffer with sequence_id " << std::to_string(buffer->sequence_id);
+	TLOG(TLVL_TRACE) << "touchBuffer_: Touching buffer with sequence_id " << buffer->sequence_id;
 	buffer->last_touch_time = TimeUtils::gettimeofday_us();
 }
 

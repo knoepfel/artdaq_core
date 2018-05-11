@@ -24,7 +24,7 @@ namespace artdaq
 		catch (const art::Exception& e)
 		{
 			TLOG(TLVL_ERROR) << "art::Exception object caught:" <<
-				" returnCode = " << std::to_string(e.returnCode()) <<
+				" returnCode = " << e.returnCode() <<
 				", categoryCode = " << e.categoryCode() <<
 				", category = " << e.category();
 			TLOG(TLVL_ERROR) << "art::Exception object stream:" << e;

@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(WholeFragment)
 	TLOG(TLVL_DEBUG) << "Checking Test Fragment Data Contents" ;
 	for (size_t ii = 0; ii < fragSizeWords; ++ii)
 	{
-		//TLOG(TLVL_DEBUG) << std::to_string(*(frag.dataBegin() + ii)) << " =?= " << *(recvdFrag.dataBegin() + ii) ;
+		//TLOG(TLVL_DEBUG) << *(frag.dataBegin() + ii) << " =?= " << *(recvdFrag.dataBegin() + ii) ;
 		BOOST_REQUIRE_EQUAL(*(frag.dataBegin() + ii), *(recvdFrag.dataBegin() + ii));
 	}
 	TLOG(TLVL_DEBUG) << "SharedMemoryFragmentManager WholeFragment test complete" ;
