@@ -108,7 +108,6 @@ namespace artdaq
 		/**
 		 * \brief Count the number of buffers that are ready for writing
 		 * \param overwrite Whether to consider buffers that are in the Full and Reading state as ready for write (non-reliable mode)
-		 * \param reserve Whether to reserve a buffer for the enquirer
 		 * \return The number of buffers ready for writing
 		 */
 		size_t WriteReadyCount(bool overwrite);

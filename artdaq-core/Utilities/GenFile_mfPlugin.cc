@@ -56,18 +56,33 @@ namespace mfplugins
 
 	public:
 #if MESSAGEFACILITY_HEX_VERSION < 0x20103 // v2_01_03 is s58, pre v2_01_03 is s50
+		/**
+		 * \brief ELGenFileOutput Constructor
+		 * \param pset fhicl::ParameterSet used to configure GenFileOutput
+		 */
 		ELGenFileOutput(const fhicl::ParameterSet& pset);
 #else
+		/**
+		 * \brief ELGenFileOutput Constructor
+		 * \param pset Validated ParameterSet used to configure GenFileOutput
+		 */
 		ELGenFileOutput(Parameters const& pset);
 #endif
 
+		/// Default virtual destructor
 		virtual ~ELGenFileOutput() {}
 
-		virtual void routePayload(const std::ostringstream&, const ErrorObj&
-		) override;
+		/**
+		 * \brief Serialize a MessageFacility message to the output stream
+		 * \param o Stringstream object containing message data
+		 * \param e MessageFacility object containing header information
+		 */
+		virtual void routePayload(const std::ostringstream& o, const ErrorObj& e) override;
 
-		virtual void flush(
-		) override;
+		/**
+		 * \brief Flush any text in the ostream buffer to disk
+		 */
+		virtual void flush() override;
 
 	private:
 		std::unique_ptr<cet::ostream_handle> output_;
@@ -248,13 +263,13 @@ namespace mfplugins
 	{
 		output_->flush();
 	}
-} // end namespace mfplugins
+	} // end namespace mfplugins
 
-  //======================================================================
-  //
-  // makePlugin function
-  //
-  //======================================================================
+	  //======================================================================
+	  //
+	  // makePlugin function
+	  //
+	  //======================================================================
 
 extern "C"
 {
