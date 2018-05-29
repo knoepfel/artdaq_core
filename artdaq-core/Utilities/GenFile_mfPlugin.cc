@@ -172,7 +172,7 @@ namespace mfplugins
 		while (filePattern.find("%", pos) != std::string::npos)
 		{
 			pos = filePattern.find("%", pos) + 1;
-			TLOG(5) << "Found % at " << (pos - 1) << ", next char: " << filePattern[pos] << ".";
+			TLOG(5,1) << "Found % at " << (pos - 1) << ", next char: " << filePattern[pos] << ".";
 			switch (filePattern[pos])
 			{
 			case '%': // "%%"
