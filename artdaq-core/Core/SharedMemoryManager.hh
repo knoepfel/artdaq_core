@@ -148,8 +148,9 @@ namespace artdaq
 		* \brief Increment the write position for a given buffer
 		* \param buffer Buffer ID of buffer
 		* \param written Number of bytes by which to increment write position
+		* \return Whether the write is allowed
 		*/
-		void IncrementWritePos(int buffer, size_t written);
+		bool IncrementWritePos(int buffer, size_t written);
 
 		/**
 		 * \brief Determine if more data is available to be read, based on the read position and data size

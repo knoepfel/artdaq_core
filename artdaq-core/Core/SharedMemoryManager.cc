@@ -517,16 +517,23 @@ void artdaq::SharedMemoryManager::IncrementReadPos(int buffer, size_t read)
 	if (read == 0)	Detach(true, "LogicError", "Cannot increment Read pos by 0! (buffer=" + std::to_string(buffer) + ", readPos=" + std::to_string(buf->readPos) + ", writePos=" + std::to_string(buf->writePos) + ")");
 }
 
-void artdaq::SharedMemoryManager::IncrementWritePos(int buffer, size_t written)
+bool artdaq::SharedMemoryManager::IncrementWritePos(int buffer, size_t written)
 {
 	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
 	//TraceLock lk(buffer_mutexes_[buffer], 20, "IncWritePosBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
 	touchBuffer_(buf);
+	if (buf->writePos + written > shm_ptr_->buffer_size)
+	{
+		TLOG(TLVL_ERROR) << "Requested write size is larger than the buffer size! (sz=" << std::hex << shm_ptr_->buffer_size << ", cur + req=" << buf->writePos + written << ")";
+		return false;
+	}
 	TLOG(16) << "IncrementWritePos: buffer= " << buffer << ", writePos=" << buf->writePos << ", bytes written=" << written;
 	buf->writePos += written;
 	TLOG(16) << "IncrementWritePos: buffer= " << buffer << ", New writePos is " << buf->writePos;
 	if (written == 0)  Detach(true, "LogicError", "Cannot increment Write pos by 0!");
+
+	return true;
 }
 
 bool artdaq::SharedMemoryManager::MoreDataInBuffer(int buffer)
