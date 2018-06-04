@@ -27,7 +27,7 @@ static void signal_handler(int signum)
 
 		if (ii)
 		{
-			const_cast<artdaq::SharedMemoryManager*>(ii)->Detach(false, "", "", true);
+			const_cast<artdaq::SharedMemoryManager*>(ii)->Detach(false, "", "", false);
 		}
 		ii = nullptr;
 	}
