@@ -90,14 +90,14 @@ namespace artdaq
 		 * \brief Whether any buffer is ready for read
 		 * \return True if there is a buffer available
 		 */
-		bool ReadyForRead() { return ReadReadyCount() > 0; }
+		bool ReadyForRead();
 
 		/**
 		 * \brief Whether any buffer is available for write
 		 * \param overwrite Whether to allow overwriting full buffers
 		 * \return True if there is a buffer available
 		 */
-		virtual bool ReadyForWrite(bool overwrite) { return WriteReadyCount(overwrite) > 0; }
+		virtual bool ReadyForWrite(bool overwrite);
 
 		/**
 		 * \brief Count the number of buffers that are ready for reading
@@ -108,7 +108,6 @@ namespace artdaq
 		/**
 		 * \brief Count the number of buffers that are ready for writing
 		 * \param overwrite Whether to consider buffers that are in the Full and Reading state as ready for write (non-reliable mode)
-		 * \param reserve Whether to reserve a buffer for the enquirer
 		 * \return The number of buffers ready for writing
 		 */
 		size_t WriteReadyCount(bool overwrite);
@@ -149,8 +148,9 @@ namespace artdaq
 		* \brief Increment the write position for a given buffer
 		* \param buffer Buffer ID of buffer
 		* \param written Number of bytes by which to increment write position
+		* \return Whether the write is allowed
 		*/
-		void IncrementWritePos(int buffer, size_t written);
+		bool IncrementWritePos(int buffer, size_t written);
 
 		/**
 		 * \brief Determine if more data is available to be read, based on the read position and data size

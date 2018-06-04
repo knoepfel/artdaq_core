@@ -60,6 +60,7 @@ namespace artdaq {
 		/**
 		 * \brief Check if a buffer is ready for writing, and if so, reserves it for use
 		 * \param overwrite Whether to overwrite Full buffers (non-reliable mode)
+		 * \return True if SharedMemoryFragmentManager is ready for Fragment data
 		 */
 		bool ReadyForWrite(bool overwrite) override;
 

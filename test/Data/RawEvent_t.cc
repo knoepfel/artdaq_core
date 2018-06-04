@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_SUITE(RawEvent_test)
 		// header.  This doesn't work for the DS50 aggregator as it packs multiple
 		// fragments with different sequence IDs into a single RawEvent.  This test
 		// verifies that the we're able to do this.
-		artdaq::RawEvent r1(1, 1, 1);
+		artdaq::RawEvent r1(1, 1, 1, 1);
 		std::unique_ptr<artdaq::Fragment> f1(new artdaq::Fragment(1, 1));
 		std::unique_ptr<artdaq::Fragment> f2(new artdaq::Fragment(2, 1));
 		std::unique_ptr<artdaq::Fragment> f3(new artdaq::Fragment(3, 1));

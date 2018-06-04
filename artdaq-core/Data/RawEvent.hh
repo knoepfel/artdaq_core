@@ -31,10 +31,12 @@ namespace artdaq
 	{
 		typedef uint32_t run_id_t; ///< Run numbers are 32 bits
 		typedef uint32_t subrun_id_t; ///< Subrun numbers are 32 bits
+		typedef uint32_t event_id_t; ///< Event numbers are 32 bits
 		typedef Fragment::sequence_id_t sequence_id_t; ///< Field size should be the same as the Fragment::sequence_id field
 
 		run_id_t run_id; ///< Fragments don't know about runs
 		subrun_id_t subrun_id; ///< Fragments don't know about subruns
+		event_id_t event_id; ///< Event number should be either sequence ID or Timestamp of component Fragments
 		sequence_id_t sequence_id; ///< RawEvent sequence_id should be the same as its component Fragment sequence_ids.
 		bool is_complete; ///< Does the event contain the expected number of Fragment objects?
 
@@ -42,14 +44,17 @@ namespace artdaq
 		 * \brief Constructs the RawEventHeader struct with the given parameters
 		 * \param run The current Run number
 		 * \param subrun The current Subrun number
-		 * \param event The current sequence_id
+		 * \param event The current event number
+		 * \param seq The current Sequence ID
 		 */
 		RawEventHeader(run_id_t run,
 		               subrun_id_t subrun,
-		               sequence_id_t event) :
+					   event_id_t event,
+		               sequence_id_t seq) :
 		                                    run_id(run)
 		                                    , subrun_id(subrun)
-		                                    , sequence_id(event)
+											, event_id(event)
+		                                    , sequence_id(seq)
 		                                    , is_complete(false) { }
 	};
 
@@ -66,15 +71,17 @@ namespace artdaq
 	public:
 		typedef detail::RawEventHeader::run_id_t run_id_t; ///< Run numbers are 32 bits
 		typedef detail::RawEventHeader::subrun_id_t subrun_id_t; ///< Subrun numbers are 32 bits
+		typedef detail::RawEventHeader::event_id_t event_id_t; ///< Event numbers are 32 bits
 		typedef detail::RawEventHeader::sequence_id_t sequence_id_t; ///< Field size should be the same as the Fragment::sequence_id field
 
 		/**
 		 * \brief Constructs a RawEvent with the given parameters
 		 * \param run The current Run number
 		 * \param subrun The current Subrun number
-		 * \param event The current sequence_id
+		 * \param event The current Event number
+		 * \param seq The current sequence_id
 		 */
-		RawEvent(run_id_t run, subrun_id_t subrun, sequence_id_t event);
+		RawEvent(run_id_t run, subrun_id_t subrun, event_id_t event, sequence_id_t seq);
 
 		/**
 		 * \brief Constructs a RawEvent using the given RawEventHeader
@@ -122,6 +129,12 @@ namespace artdaq
 		 * \return The subrun number stored in the RawEventHeader
 		 */
 		subrun_id_t subrunID() const;
+
+		/**
+		 * \brief Retrieve the event number from the RawEventHeader
+		 * \return The event number stored in the RawEventHeader
+		 */
+		event_id_t eventID() const;
 
 		/**
 		 * \brief Retrieve the sequence id from the RawEventHeader
@@ -181,8 +194,8 @@ namespace artdaq
 	typedef std::shared_ptr<RawEvent> RawEvent_ptr; ///< A shared_ptr to a RawEvent
 
 	inline
-	RawEvent::RawEvent(run_id_t run, subrun_id_t subrun, sequence_id_t event) :
-	                                                                          header_(run, subrun, event)
+	RawEvent::RawEvent(run_id_t run, subrun_id_t subrun, event_id_t event, sequence_id_t seq) :
+	                                                                          header_(run, subrun, event, seq)
 	                                                                          , fragments_() { }
 
 	inline RawEvent::RawEvent(detail::RawEventHeader hdr) : header_(hdr), fragments_()
@@ -218,6 +231,7 @@ namespace artdaq
 
 	inline RawEvent::run_id_t RawEvent::runID() const { return header_.run_id; }
 	inline RawEvent::subrun_id_t RawEvent::subrunID() const { return header_.subrun_id; }
+	inline RawEvent::event_id_t RawEvent::eventID() const { return header_.event_id; }
 	inline RawEvent::sequence_id_t RawEvent::sequenceID() const { return header_.sequence_id; }
 	inline bool RawEvent::isComplete() const { return header_.is_complete; }
 

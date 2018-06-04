@@ -155,7 +155,7 @@ std::string artdaq::SharedMemoryEventReceiver::printBuffers_(SharedMemoryManager
 	std::ostringstream ostr;
 	for (size_t ii = 0; ii < data_source->size(); ++ii)
 	{
-		ostr << "Buffer " << std::to_string(ii) << ": " << std::endl;
+		ostr << "Buffer " << ii << ": " << std::endl;
 
 		data_source->ResetReadPos(ii);
 		data_source->IncrementReadPos(ii, sizeof(detail::RawEventHeader));
@@ -163,12 +163,12 @@ std::string artdaq::SharedMemoryEventReceiver::printBuffers_(SharedMemoryManager
 		while (data_source->MoreDataInBuffer(ii))
 		{
 			auto fragHdr = reinterpret_cast<artdaq::detail::RawFragmentHeader*>(data_source->GetReadPos(ii));
-			ostr << "    Fragment " << std::to_string(fragHdr->fragment_id) << ": Sequence ID: " << std::to_string(fragHdr->sequence_id) << ", Type:" << std::to_string(fragHdr->type);
+			ostr << "    Fragment " << fragHdr->fragment_id << ": Sequence ID: " << fragHdr->sequence_id << ", Type:" << fragHdr->type;
 			if (fragHdr->MakeVerboseSystemTypeMap().count(fragHdr->type))
 			{
 				ostr << " (" << fragHdr->MakeVerboseSystemTypeMap()[fragHdr->type] << ")";
 			}
-			ostr << ", Size: " << std::to_string(fragHdr->word_count) << " words." << std::endl;
+			ostr << ", Size: " << fragHdr->word_count << " words." << std::endl;
 			data_source->IncrementReadPos(ii, fragHdr->word_count * sizeof(RawDataType));
 		}
 

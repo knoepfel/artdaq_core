@@ -34,6 +34,7 @@ namespace artdaq
 	 * \brief Set the message facility application name using the specified application type and port number
 	 * \param appType Application name
 	 * \param port XMLRPC port of this application instance
+	 * \return Name of the application as set for MessageFacility
 	 */
 	std::string setMsgFacAppName(const std::string& appType, unsigned short port);
 }
