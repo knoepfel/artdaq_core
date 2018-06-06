@@ -21,7 +21,6 @@ perllib  product_dir
 product		version		optional
 canvas_root_io  v1_01_06        s68
 canvas_root_io  v1_01_05        s67
-canvas_root_io  v1_01_05        s67
 canvas_root_io  v1_01_03        s66
 canvas_root_io  v1_01_02        s65
 canvas_root_io  v1_01_02        s64
