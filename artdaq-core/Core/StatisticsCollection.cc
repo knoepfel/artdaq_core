@@ -1,4 +1,5 @@
 #include "artdaq-core/Core/StatisticsCollection.hh"
+#include <iostream>
 
 namespace artdaq
 {
@@ -11,7 +12,14 @@ namespace artdaq
 	StatisticsCollection::StatisticsCollection() : calculationInterval_(1.0)
 	{
 		thread_stop_requested_ = false;
-		calculation_thread_ = std::make_unique<boost::thread>(boost::bind(&StatisticsCollection::run, this));
+		try {
+			calculation_thread_ = std::make_unique<boost::thread>(boost::bind(&StatisticsCollection::run, this));
+		}
+		catch (const boost::exception& e)
+		{
+			std::cerr << "Caught boost::exception starting Statistics Collection thread: " << boost::diagnostic_information(e) << ", errno=" << errno << std::endl;
+			exit(5);
+		}
 	}
 
 	StatisticsCollection::~StatisticsCollection() noexcept
@@ -22,15 +30,15 @@ namespace artdaq
 	}
 
 	void StatisticsCollection::
-	addMonitoredQuantity(const std::string& name,
-	                     MonitoredQuantityPtr mqPtr)
+		addMonitoredQuantity(const std::string& name,
+			MonitoredQuantityPtr mqPtr)
 	{
 		std::lock_guard<std::mutex> scopedLock(map_mutex_);
 		monitoredQuantityMap_[name] = mqPtr;
 	}
 
 	MonitoredQuantityPtr
-	StatisticsCollection::getMonitoredQuantity(const std::string& name) const
+		StatisticsCollection::getMonitoredQuantity(const std::string& name) const
 	{
 		std::lock_guard<std::mutex> scopedLock(map_mutex_);
 		MonitoredQuantityPtr emptyResult;
