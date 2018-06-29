@@ -68,7 +68,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	if (!sighandler_init)//&& manager_id_ == 0) // ELF 3/22/18: Taking out manager_id_==0 requirement as I think kill(getpid()) is enough protection
 	{
 		sighandler_init = true;
-		std::vector<int> signals = { SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2 };
+		std::vector<int> signals = { SIGINT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2 }; // SIGQUIT is used by art in normal operation
 		for (auto signal : signals)
 		{
 			struct sigaction old_action;
@@ -709,17 +709,20 @@ void* artdaq::SharedMemoryManager::GetBufferStart(int buffer)
 
 uint8_t* artdaq::SharedMemoryManager::dataStart_() const
 {
+	if (shm_ptr_ == nullptr) return nullptr;
 	return reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + shm_ptr_->buffer_count * sizeof(ShmBuffer);
 }
 
 uint8_t* artdaq::SharedMemoryManager::bufferStart_(int buffer)
 {
+	if (shm_ptr_ == nullptr) return nullptr;
 	if (buffer >= shm_ptr_->buffer_count)  Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 	return dataStart_() + buffer * shm_ptr_->buffer_size;
 }
 
 artdaq::SharedMemoryManager::ShmBuffer* artdaq::SharedMemoryManager::getBufferInfo_(int buffer)
 {
+	if (shm_ptr_ == nullptr) return nullptr;
 	if (buffer >= shm_ptr_->buffer_count)  Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 	return reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + buffer * sizeof(ShmBuffer));
 }
