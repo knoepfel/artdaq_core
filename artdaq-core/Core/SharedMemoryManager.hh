@@ -128,6 +128,11 @@ namespace artdaq
 		size_t BufferDataSize(int buffer);
 
 		/**
+		 * \brief Get the size of of a single buffer
+		 */
+		size_t BufferSize() {return (shm_ptr_ != nullptr ? shm_ptr_->buffer_size : 0);}
+
+		/**
 		 * \brief Set the read position of the given buffer to the beginning of the buffer
 		 * \param buffer Buffer ID of buffer
 		 */
