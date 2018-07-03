@@ -304,7 +304,7 @@ namespace artdaq
 
 		void _reset_results();
 
-		TIME_POINT_T _lastCalculationTime;
+		std::atomic<TIME_POINT_T> _lastCalculationTime;
 		long long _workingSampleCount;
 		double _workingValueSum;
 		double _workingValueSumOfSquares;

@@ -14,17 +14,16 @@
 
 #define TLVL_DETACH 11
 
-static std::vector<artdaq::SharedMemoryManager const*> instances = std::vector<artdaq::SharedMemoryManager const*>();
+static std::set<artdaq::SharedMemoryManager const*> instances = std::set<artdaq::SharedMemoryManager const*>();
 
 static std::unordered_map<int, struct sigaction> old_actions = std::unordered_map<int, struct sigaction>();
 static bool sighandler_init = false;
 static void signal_handler(int signum)
 {
 	// Messagefacility may already be gone at this point, TRACE ONLY!
-	TRACE_STREAMER(TLVL_ERROR, &("SharedMemoryManager")[0], 0, 0, 0) << "A signal of type " << signum << " (" << std::string(strsignal(signum)) << ") was caught by SharedMemoryManager. Detaching all Shared Memory segments, then proceeding with default handlers!";
+	TRACE_STREAMER(TLVL_ERROR, &("SharedMemoryManager")[0], 0, 0, 0) << "A signal of type " << signum << " was caught by SharedMemoryManager. Detaching all Shared Memory segments, then proceeding with default handlers!";
 	for (auto ii : instances)
 	{
-
 		if (ii)
 		{
 			const_cast<artdaq::SharedMemoryManager*>(ii)->Detach(false, "", "", false);
@@ -63,7 +62,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	requested_shm_parameters_.buffer_timeout_us = buffer_timeout_us;
 	requested_shm_parameters_.destructive_read_mode = destructive_read_mode;
 
-	instances.push_back(this);
+	instances.insert(this);
 	Attach();
 
 	static std::mutex sighandler_mutex;
@@ -101,6 +100,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 
 artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept
 {
+	instances.erase(this);
 	TLOG(TLVL_DEBUG) << "~SharedMemoryManager called";
 	Detach();
 	TLOG(TLVL_DEBUG) << "~SharedMemoryManager done";
