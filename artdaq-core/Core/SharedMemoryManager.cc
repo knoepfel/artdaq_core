@@ -697,10 +697,10 @@ size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 	auto pos = GetWritePos(buffer);
 	memcpy(pos, data, size);
 	shmBuf->writePos = shmBuf->writePos + size;
-	if (shmBuf->sequence_id > last_seen_id_)
-	{
-		last_seen_id_ = shmBuf->sequence_id;
-	}
+
+	auto last_seen = last_seen_id_.load();
+	while (last_seen < shmBuf->sequence_id && !last_seen_id_.compare_exchange_weak(last_seen, shmBuf->sequence_id)) {}
+
 	TLOG(19) << "Write END";
 	return size;
 }

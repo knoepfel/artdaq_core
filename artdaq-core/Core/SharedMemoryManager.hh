@@ -370,7 +370,7 @@ namespace artdaq
 		mutable std::unordered_map<int, std::mutex> buffer_mutexes_;
 		mutable std::mutex search_mutex_;
 
-		size_t last_seen_id_;
+		std::atomic<size_t> last_seen_id_;
 		size_t min_write_size_;
 	};
 
