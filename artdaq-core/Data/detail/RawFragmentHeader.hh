@@ -129,10 +129,10 @@ struct artdaq::detail::RawFragmentHeader
 	static const version_t CurrentVersion = 0x1; ///< The CurrentVersion field should be incremented whenever the RawFragmentHeader changes
 	static const sequence_id_t InvalidSequenceID = 0xFFFFFFFFFFFF; ///< The sequence_id field is currently 48-bits
 	static const fragment_id_t InvalidFragmentID = 0xFFFF; ///< The fragment_id field is currently 16-bits
-	static const timestamp_t InvalidTimestamp = 0xFFFFFFFFFFFFFFFF; ///< The timestamp field is currently 32-bits
+	static const timestamp_t InvalidTimestamp = 0xFFFFFFFFFFFFFFFF; ///< The timestamp field is currently 64-bits
 
 	RawDataType word_count : 32; ///< number of RawDataType words in this Fragment
-	RawDataType version : 16; ///< The version of the fragment. Currently always InvalidVersion
+	RawDataType version : 16; ///< The version of the fragment.
 	RawDataType type : 8; ///< The type of the fragment, either system or user-defined
 	RawDataType metadata_word_count : 8; ///< The number of RawDataType words in the user-defined metadata
 
