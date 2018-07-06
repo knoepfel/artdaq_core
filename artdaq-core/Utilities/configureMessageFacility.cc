@@ -1,9 +1,8 @@
 #include "artdaq-core/Utilities/configureMessageFacility.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#if CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
+
 # include "fhiclcpp/ParameterSet.h"
 # include <boost/lexical_cast.hpp>
-#endif
 #include "fhiclcpp/make_ParameterSet.h"
 #include "cetlib_except/exception.h"
 #include <boost/filesystem.hpp>
@@ -107,11 +106,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 				<< "      type : \"ANSI\" threshold : " << outputLevel;
 			if (!printTimestampsToConsole)
 			{
-#if MESSAGEFACILITY_HEX_VERSION < 0x20103
-				ss << "      noTimeStamps : true ";
-#else
 				ss << "      format: { timestamp: none } ";
-#endif
 			}
 			ss << "      bell_on_error: true ";
 			ss << "    } ";
@@ -122,11 +117,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 				<< "      type : \"cout\" threshold :" << outputLevel;
 			if (!printTimestampsToConsole)
 			{
-#if MESSAGEFACILITY_HEX_VERSION < 0x20103
-				ss << "      noTimeStamps : true ";
-#else
 				ss << "       format: { timestamp: none } ";
-#endif
 			}
 			ss << "    } ";
 		}
@@ -284,17 +275,12 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 #if CANVAS_HEX_VERSION >= 0x30300  // art v2_11_00
 	mf::StartMessageFacility(pset, progname);
 
-#elif CANVAS_HEX_VERSION >= 0x20002	// art v2_07_03 means a new versions of fhicl, boost, etc
+#else
 	mf::StartMessageFacility(pset);
 
 	mf::SetApplicationName(progname);
 
 	mf::setEnabledState("");
-#  else
-	mf::StartMessageFacility(mf::MessageFacilityService::MultiThread, pset);
-
-	mf::SetModuleName(progname);
-	mf::SetContext(progname);
 #  endif
 	TLOG(TLVL_TRACE) << "Message Facility Config input is: " << pstr;
 	TLOG(TLVL_INFO) << "Message Facility Application " << progname << " configured with: " << pset.to_string();

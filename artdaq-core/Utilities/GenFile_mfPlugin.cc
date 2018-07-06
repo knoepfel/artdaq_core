@@ -2,9 +2,7 @@
 
 #include "cetlib/PluginTypeDeducer.h"
 #include "cetlib/ostream_handle.h"
-#if MESSAGEFACILITY_HEX_VERSION >= 0x20106 // v2_01_06 => cetlib v3_02_00 => new clang support
 #include "cetlib/ProvideMakePluginMacros.h"
-#endif
 #include "fhiclcpp/ParameterSet.h"
 
 #include "boost/date_time/posix_time/posix_time.hpp"
@@ -28,7 +26,6 @@ namespace mfplugins
 	/// </summary>
 	class ELGenFileOutput : public ELdestination
 	{
-#if MESSAGEFACILITY_HEX_VERSION >= 0x20103
 		struct Config
 		{
 			fhicl::TableFragment<ELdestination::Config> elDestConfig;
@@ -52,22 +49,13 @@ namespace mfplugins
 
 		};
 		using Parameters = fhicl::WrappedTable<Config>;
-#endif
 
 	public:
-#if MESSAGEFACILITY_HEX_VERSION < 0x20103 // v2_01_03 is s58, pre v2_01_03 is s50
-		/**
-		 * \brief ELGenFileOutput Constructor
-		 * \param pset fhicl::ParameterSet used to configure GenFileOutput
-		 */
-		ELGenFileOutput(const fhicl::ParameterSet& pset);
-#else
 		/**
 		 * \brief ELGenFileOutput Constructor
 		 * \param pset Validated ParameterSet used to configure GenFileOutput
 		 */
 		ELGenFileOutput(Parameters const& pset);
-#endif
 
 		/// Default virtual destructor
 		virtual ~ELGenFileOutput() {}
@@ -96,16 +84,7 @@ namespace mfplugins
 	//======================================================================
 	// ELGenFileOutput c'tor
 	//======================================================================
-#if MESSAGEFACILITY_HEX_VERSION < 0x20103 
-	ELGenFileOutput::ELGenFileOutput(const fhicl::ParameterSet& pset)
-		: ELdestination(pset)
-	{
-		bool append = pset.get<bool>("append", true);
-		std::string baseDir = pset.get<std::string>("directory", "/tmp");
-		std::string sep = pset.get<std::string>("separator", "-");
-		std::string timePattern = pset.get<std::string>("timestamp_pattern", "%Y%m%d%H%M%S"); // For strftime
-		std::string filePattern = pset.get<std::string>("pattern", "%N-%?H%t-%p.log");
-#else
+
 	ELGenFileOutput::ELGenFileOutput(Parameters const& pset) : ELdestination(pset().elDestConfig())
 	{
 		bool append = pset().append();
@@ -113,7 +92,6 @@ namespace mfplugins
 		std::string sep = pset().sep();
 		std::string timePattern = pset().timePattern();
 		std::string filePattern = pset().filePattern();
-#endif
 
 		auto pid = getpid();
 		std::string exeString = "";
@@ -273,18 +251,10 @@ namespace mfplugins
 
 extern "C"
 {
-
-#if MESSAGEFACILITY_HEX_VERSION >= 0x20106 // v2_01_06 => cetlib v3_02_00 => new clang support
 	MAKE_PLUGIN_START(auto, std::string const&, fhicl::ParameterSet const& pset)
 	{
 		return std::make_unique<mfplugins::ELGenFileOutput>(pset);
 	} MAKE_PLUGIN_END
-#else
-	auto makePlugin(std::string const&, fhicl::ParameterSet const& pset)
-	{
-		return std::make_unique<mfplugins::ELGenFileOutput>(pset);
-	}
-#endif
 }
 
 DEFINE_BASIC_PLUGINTYPE_FUNC(mf::service::ELdestination)
