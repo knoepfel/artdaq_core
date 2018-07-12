@@ -6,7 +6,7 @@
 #include <deque>
 #include "artdaq-core/Utilities/TimeUtils.hh"
 #include <mutex>
-#include <unordered_map>
+#include <vector>
 #include <set>
 
 namespace artdaq
@@ -372,7 +372,7 @@ namespace artdaq
 		ShmStruct* shm_ptr_;
 		uint32_t shm_key_;
 		int manager_id_;
-		mutable std::unordered_map<int, std::mutex> buffer_mutexes_;
+		mutable std::vector<std::mutex> buffer_mutexes_;
 		mutable std::mutex search_mutex_;
 
 		std::atomic<size_t> last_seen_id_;
