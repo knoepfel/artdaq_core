@@ -247,7 +247,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 					buffer_ptr = buf;
 					seqID = buf->sequence_id;
 					buffer_num = buffer;
-					break;
+					if(seqID == last_seen_id_ + 1) break;
 				}
 			}
 		}
