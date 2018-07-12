@@ -30,8 +30,9 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 
 	bool first = true;
 	auto start_time = TimeUtils::gettimeofday_us();
+	uint64_t time_diff = 0;
 	int buf = -1;
-	while (first || TimeUtils::gettimeofday_us() - start_time < timeout_us)
+	while (first || time_diff < timeout_us)
 	{
 		if (broadcasts_.ReadyForRead())
 		{
@@ -70,7 +71,9 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 		}
 		current_data_source_ = nullptr;
 		first = false;
-		usleep( 100 );
+
+		time_diff = TimeUtils::gettimeofday_us() - start_time;
+		usleep(time_diff < 10000 ? time_diff : 10000 );
 	}
 	TLOG(TLVL_TRACE) << "ReadyForRead returning false" ;
 	return false;
