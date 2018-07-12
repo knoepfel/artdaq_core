@@ -613,12 +613,12 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer, bool force)
 
 	if ((force && (manager_id_ == 0 || manager_id_ == shmBuf->sem_id)) || (!force && shm_ptr_->destructive_read_mode))
 	{
-		TLOG(18) << "MarkBufferEmpty Resetting buffer to Empty state";
+		TLOG(18) << "MarkBufferEmpty Resetting buffer " << buffer << " to Empty state";
 		shmBuf->writePos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Empty;
 		if (shm_ptr_->reader_pos == static_cast<unsigned>(buffer) && !shm_ptr_->destructive_read_mode)
 		{
-			TLOG(18) << "MarkBufferEmpty Broadcast mode; incrementing reader_pos";
+			TLOG(18) << "MarkBufferEmpty Broadcast mode; incrementing reader_pos from " << shm_ptr_->reader_pos << " to " << (buffer + 1) % shm_ptr_->buffer_count;
 			shm_ptr_->reader_pos = (buffer + 1) % shm_ptr_->buffer_count;
 		}
 	}
