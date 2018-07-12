@@ -247,6 +247,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 					buffer_ptr = buf;
 					seqID = buf->sequence_id;
 					buffer_num = buffer;
+					break;
 				}
 			}
 		}
@@ -261,16 +262,25 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 			TLOG(13) << "GetBufferForReading Found buffer " << buffer_num;
 			buffer_ptr->sem_id = manager_id_;
 			buffer_ptr->sem = BufferSemaphoreFlags::Reading;
-			if (buffer_ptr->sem_id != manager_id_) { continue; } // Failed to acquire buffer
+			if (buffer_ptr->sem_id != manager_id_) {
+				TLOG(13) << "GetBufferForReading: Failed to acquire buffer " << buffer_num << " (someone else changed manager ID while I was changing sem)";
+				continue; 
+			}
 			buffer_ptr->readPos = 0;
 			touchBuffer_(buffer_ptr);
-			if (buffer_ptr->sem_id != manager_id_) { continue; } // Failed to acquire buffer
+			if (buffer_ptr->sem_id != manager_id_) {
+				TLOG(13) << "GetBufferForReading: Failed to acquire buffer " << buffer_num << " (someone else changed manager ID while I was touching buffer SHOULD NOT HAPPEN!)";
+				continue;
+			}
 			if (shm_ptr_->destructive_read_mode && shm_ptr_->lowest_seq_id_read == last_seen_id_)
 			{
 				shm_ptr_->lowest_seq_id_read = seqID;
 			}
 			last_seen_id_ = seqID;
 			if (shm_ptr_->destructive_read_mode) shm_ptr_->reader_pos = (buffer_num + 1) % shm_ptr_->buffer_count;
+			
+			TLOG(13) << "GetBufferForReading returning " << buffer_num;
+			return buffer_num;
 		}
 		retry = false;
 	}
