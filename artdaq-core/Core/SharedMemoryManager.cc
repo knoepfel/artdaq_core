@@ -661,7 +661,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 		return false;
 	}
 	if (shm_ptr_->buffer_timeout_us == 0 || delta <= shm_ptr_->buffer_timeout_us || shmBuf->sem == BufferSemaphoreFlags::Empty) return false;
-	TLOG(27) << "Buffer " << buffer << " is stale, time=" << TimeUtils::gettimeofday_us() << ", last touch=" << shmBuf->last_touch_time << ", d=" << delta << ", timeout=" << shm_ptr_->buffer_timeout_us;
+	TLOG(27) << "Buffer " << buffer << " at " << (void*)shmBuf << " is stale, time=" << TimeUtils::gettimeofday_us() << ", last touch=" << shmBuf->last_touch_time << ", d=" << delta << ", timeout=" << shm_ptr_->buffer_timeout_us;
 
 	if (shmBuf->sem_id == manager_id_ && shmBuf->sem == BufferSemaphoreFlags::Writing)
 	{
@@ -875,7 +875,7 @@ bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphor
 void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 {
 	if (buffer->sem_id != manager_id_) return;
-	TLOG(TLVL_TRACE) << "touchBuffer_: Touching buffer with sequence_id " << buffer->sequence_id;
+	TLOG(TLVL_TRACE) << "touchBuffer_: Touching buffer at " << (void*) buffer << " with sequence_id " << buffer->sequence_id;
 	buffer->last_touch_time = TimeUtils::gettimeofday_us();
 }
 
