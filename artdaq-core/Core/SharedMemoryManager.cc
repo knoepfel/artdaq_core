@@ -679,7 +679,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 
 	if (shmBuf->sem_id != manager_id_ && shmBuf->sem == BufferSemaphoreFlags::Reading)
 	{
-		TLOG(TLVL_WARNING) << "Stale Read buffer " << buffer << " ( " << delta << " / " << shm_ptr_->buffer_timeout_us << " us ) detected! Resetting...";
+		TLOG(TLVL_WARNING) << "Stale Read buffer " << buffer << " at " << (void*)shmBuf << " ( " << delta << " / " << shm_ptr_->buffer_timeout_us << " us ) detected! Resetting...";
 		shmBuf->readPos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Full;
 		shmBuf->sem_id = -1;
