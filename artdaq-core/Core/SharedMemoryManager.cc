@@ -764,9 +764,9 @@ bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 	touchBuffer_(shmBuf);
 	if (shmBuf->readPos + size > shm_ptr_->buffer_size)
 	{
-	    TLOG(TLVL_ERROR) << "Attempted to read more data than fits into Shared Memory, bufferSize=" << shm_ptr_->buffer_size
-			     << ",readPos=" << shmBuf->readPos << ",readSize=" << size;
-	    Detach(true, "SharedMemoryRead", "Attempted to read more data than exists in Shared Memory!");
+		TLOG(TLVL_ERROR) << "Attempted to read more data than fits into Shared Memory, bufferSize=" << shm_ptr_->buffer_size
+		                 << ",readPos=" << shmBuf->readPos << ",readSize=" << size;
+		Detach(true, "SharedMemoryRead", "Attempted to read more data than exists in Shared Memory!");
 	}
 
 	auto pos = GetReadPos(buffer);
