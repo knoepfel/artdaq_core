@@ -7,7 +7,7 @@
 #include "artdaq-core/Utilities/TimeUtils.hh"
 #include <mutex>
 #include <vector>
-#include <set>
+#include <list>
 
 namespace artdaq
 {
@@ -333,6 +333,12 @@ namespace artdaq
 		 * \param size Size (in bytes) after which a buffer will be considered non-empty
 		 */
 		void SetMinWriteSize(size_t size) { min_write_size_ = size; }
+
+		/**
+		 * \brief Get a report on the status of each buffer
+		 * \return A list of manager_id, semaphore pairs
+		 */
+		std::list<std::pair<int, BufferSemaphoreFlags>> GetBufferReport();
 	private:
 		struct ShmBuffer
 		{

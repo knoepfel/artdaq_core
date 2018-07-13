@@ -1,6 +1,7 @@
 #define TRACE_NAME "SharedMemoryManager"
 #include <cstring>
 #include <unordered_map>
+#include <set>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #ifndef SHM_DEST // Lynn reports that this is missing on Mac OS X?!?
@@ -247,7 +248,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 					buffer_ptr = buf;
 					seqID = buf->sequence_id;
 					buffer_num = buffer;
-					if(seqID == last_seen_id_ + 1) break;
+					if (seqID == last_seen_id_ + 1) break;
 				}
 			}
 		}
@@ -264,7 +265,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 			buffer_ptr->sem = BufferSemaphoreFlags::Reading;
 			if (buffer_ptr->sem_id != manager_id_) {
 				TLOG(13) << "GetBufferForReading: Failed to acquire buffer " << buffer_num << " (someone else changed manager ID while I was changing sem)";
-				continue; 
+				continue;
 			}
 			buffer_ptr->readPos = 0;
 			touchBuffer_(buffer_ptr);
@@ -278,7 +279,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 			}
 			last_seen_id_ = seqID;
 			if (shm_ptr_->destructive_read_mode) shm_ptr_->reader_pos = (buffer_num + 1) % shm_ptr_->buffer_count;
-			
+
 			TLOG(13) << "GetBufferForReading returning " << buffer_num;
 			return buffer_num;
 		}
@@ -735,12 +736,12 @@ size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 	checkBuffer_(shmBuf, BufferSemaphoreFlags::Writing);
 	touchBuffer_(shmBuf);
 	TLOG(19) << "Buffer Write Pos is " << shmBuf->writePos << ", write size is " << size;
-	if (shmBuf->writePos + size > shm_ptr_->buffer_size) 
-    {
+	if (shmBuf->writePos + size > shm_ptr_->buffer_size)
+	{
 		TLOG(TLVL_ERROR) << "Attempted to write more data than fits into Shared Memory, bufferSize=" << shm_ptr_->buffer_size
-		                 << ",writePos=" << shmBuf->writePos << ",writeSize=" << size;
+			<< ",writePos=" << shmBuf->writePos << ",writeSize=" << size;
 		Detach(true, "SharedMemoryWrite", "Attempted to write more data than fits into Shared Memory! \nRe-run with a larger buffer size!");
-    }
+	}
 
 	auto pos = GetWritePos(buffer);
 	memcpy(pos, data, size);
@@ -765,7 +766,7 @@ bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 	if (shmBuf->readPos + size > shm_ptr_->buffer_size)
 	{
 		TLOG(TLVL_ERROR) << "Attempted to read more data than fits into Shared Memory, bufferSize=" << shm_ptr_->buffer_size
-		                 << ",readPos=" << shmBuf->readPos << ",readSize=" << size;
+			<< ",readPos=" << shmBuf->readPos << ",readSize=" << size;
 		Detach(true, "SharedMemoryRead", "Attempted to read more data than exists in Shared Memory!");
 	}
 
@@ -824,6 +825,17 @@ void* artdaq::SharedMemoryManager::GetBufferStart(int buffer)
 	return bufferStart_(buffer);
 }
 
+std::list<std::pair<int, artdaq::SharedMemoryManager::BufferSemaphoreFlags>> artdaq::SharedMemoryManager::GetBufferReport()
+{
+	auto output = std::list<std::pair<int, BufferSemaphoreFlags>>();
+	for (size_t ii = 0; ii < size(); ++ii)
+	{
+		auto buf = getBufferInfo_(ii);
+		output.emplace_back(std::make_pair(buf->sem_id.load(), buf->sem.load()));
+	}
+	return output;
+}
+
 uint8_t* artdaq::SharedMemoryManager::dataStart_() const
 {
 	if (shm_ptr_ == nullptr) return nullptr;
@@ -875,7 +887,7 @@ bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphor
 void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 {
 	if (buffer->sem_id != manager_id_) return;
-	TLOG(TLVL_TRACE) << "touchBuffer_: Touching buffer at " << (void*) buffer << " with sequence_id " << buffer->sequence_id;
+	TLOG(TLVL_TRACE) << "touchBuffer_: Touching buffer at " << (void*)buffer << " with sequence_id " << buffer->sequence_id;
 	buffer->last_touch_time = TimeUtils::gettimeofday_us();
 }
 
