@@ -237,7 +237,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 			auto buf = getBufferInfo_(buffer);
 			if (!buf) continue;
 			TLOG(14) << "GetBufferForReading: Buffer " << buffer << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
-			if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && buf->sequence_id > last_seen_id_)
+			if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 			{
 				if (buf->sequence_id < seqID)
 				{
@@ -373,7 +373,7 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount()
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
 		TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
-		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && buf->sequence_id > last_seen_id_)
+		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
 			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << " is either unowned or owned by this manager, and is marked full.";
 			++count;
