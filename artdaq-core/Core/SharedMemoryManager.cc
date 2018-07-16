@@ -402,6 +402,55 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite)
 	return count;
 }
 
+bool artdaq::SharedMemoryManager::ReadyForRead()
+{
+	if (!IsValid()) return false;
+	TLOG(23) << "0x" << std::hex << shm_key_ << " ReadyForRead BEGIN";
+	std::unique_lock<std::mutex> lk(search_mutex_);
+	//TraceLock lk(search_mutex_, 14, "ReadyForReadSearch");
+
+	auto rp = shm_ptr_->reader_pos.load();
+
+	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
+	{
+		auto buffer = (rp + ii) % shm_ptr_->buffer_count;
+		TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Checking if buffer " << buffer << " is stale.";
+		ResetBuffer(buffer);
+		auto buf = getBufferInfo_(buffer);
+		if (!buf) continue;
+		TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Buffer " << buffer << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )" << " seq_id=" << buf->sequence_id << " >? " << last_seen_id_;
+		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
+		{
+			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Buffer " << buffer << " is either unowned or owned by this manager, and is marked full.";
+			return true;
+		}
+	}
+	return false;
+}
+
+bool artdaq::SharedMemoryManager::ReadyForWrite(bool overwrite)
+{
+	if (!IsValid()) return false;
+	std::unique_lock<std::mutex> lk(search_mutex_);
+	//TraceLock lk(search_mutex_, 15, "ReadyForWriteSearch");
+
+	auto wp = shm_ptr_->writer_pos.load();
+
+	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
+	{
+		auto buffer = (wp + ii) % shm_ptr_->buffer_count;
+		ResetBuffer(buffer);
+		auto buf = getBufferInfo_(buffer);
+		if (!buf) continue;
+		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
+			|| (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager(bool locked)
 {
 	//std::unique_lock<std::mutex> lk(search_mutex_);
