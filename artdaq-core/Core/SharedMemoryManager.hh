@@ -90,14 +90,14 @@ namespace artdaq
 		 * \brief Whether any buffer is ready for read
 		 * \return True if there is a buffer available
 		 */
-	         bool ReadyForRead();
+		bool ReadyForRead();
 
 		/**
 		 * \brief Whether any buffer is available for write
 		 * \param overwrite Whether to allow overwriting full buffers
 		 * \return True if there is a buffer available
 		 */
-	         virtual bool ReadyForWrite(bool overwrite);
+		virtual bool ReadyForWrite(bool overwrite);
 
 		/**
 		 * \brief Count the number of buffers that are ready for reading
