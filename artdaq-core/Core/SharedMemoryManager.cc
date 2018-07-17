@@ -10,6 +10,8 @@
 #include "artdaq-core/Utilities/TraceLock.hh"
 
 #define TLVL_DETACH 11
+#define TLVL_BUFFER 40
+#define TLVL_BUFLCK 41
 
 static std::vector<artdaq::SharedMemoryManager const*> instances = std::vector<artdaq::SharedMemoryManager const*>();
 
@@ -236,7 +238,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 
 			auto buf = getBufferInfo_(buffer);
 			if (!buf) continue;
-			TLOG(14) << "GetBufferForReading: Buffer " << buffer << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
+			TLOG(14) << "GetBufferForReading: Buffer " << buffer << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << ", seq_id=" << buf->sequence_id;
 			if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 			{
 				if (buf->sequence_id < seqID)
@@ -620,7 +622,11 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer, bool force)
 bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 {
 	if (buffer >= shm_ptr_->buffer_count)  Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
+
+	TLOG(TLVL_BUFLCK) << "ResetBuffer: obtaining buffer_mutex lock for buffer " << buffer;
 	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	TLOG(TLVL_BUFLCK) << "ResetBuffer: obtained buffer_mutex lock for buffer " << buffer;
+
 	//TraceLock lk(buffer_mutexes_[buffer], 25, "ResetBuffer" + std::to_string(buffer));
 	auto shmBuf = getBufferInfo_(buffer);
 	if (!shmBuf) return false;
@@ -642,7 +648,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 		return false;
 	}
 	if (shm_ptr_->buffer_timeout_us == 0 || delta <= shm_ptr_->buffer_timeout_us || shmBuf->sem == BufferSemaphoreFlags::Empty) return false;
-	TLOG(27) << "Buffer " << buffer << " is stale, time=" << TimeUtils::gettimeofday_us() << ", last touch=" << shmBuf->last_touch_time << ", d=" << delta << ", timeout=" << shm_ptr_->buffer_timeout_us;
+	TLOG(27) << "Buffer " << buffer << " is stale, time=" << TimeUtils::gettimeofday_us() << ", last touch=" << shmBuf->last_touch_time << ", d=" << delta << ", timeout=" << shm_ptr_->buffer_timeout_us << ", state is " << FlagToString(shmBuf->sem);
 
 	if (shmBuf->sem_id == manager_id_ && shmBuf->sem == BufferSemaphoreFlags::Writing)
 	{
@@ -650,7 +656,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 	}
 	if (!shm_ptr_->destructive_read_mode && shmBuf->sem == BufferSemaphoreFlags::Full)
 	{
-		TLOG(TLVL_DEBUG) << "Resetting old broadcast mode buffer";
+	        TLOG(TLVL_DEBUG) << "Resetting old broadcast mode buffer " << buffer << " (seqid=" << shmBuf->sequence_id << "). State: Full-->Empty";
 		shmBuf->writePos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Empty;
 		shmBuf->sem_id = -1;
@@ -660,7 +666,8 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 
 	if (shmBuf->sem_id != manager_id_ && shmBuf->sem == BufferSemaphoreFlags::Reading)
 	{
-		TLOG(TLVL_WARNING) << "Stale Read buffer ( " << delta << " / " << shm_ptr_->buffer_timeout_us << " us ) detected! Resetting...";
+	  TLOG(TLVL_WARNING) << "Stale Read buffer " << buffer << " ( " << delta << " / " << shm_ptr_->buffer_timeout_us << " us ) detected!" 
+			     << " (seqid=" << shmBuf->sequence_id << ") Resetting... Reading-->Full";
 		shmBuf->readPos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Full;
 		shmBuf->sem_id = -1;
