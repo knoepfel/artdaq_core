@@ -235,12 +235,13 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 			auto buffer = (ii + rp) % shm_ptr_->buffer_count;
 
 
-			TLOG(14) << "GetBufferForReading Checking if buffer " << buffer << " is stale";
+			TLOG(14) << "GetBufferForReading Checking if buffer " << buffer << " is stale. Shm destructive_read_mode="<<destructive_read_mode;
 			ResetBuffer(buffer);
 
 			auto buf = getBufferInfo_(buffer);
 			if (!buf) continue;
-			TLOG(14) << "GetBufferForReading: Buffer " << buffer << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
+			TLOG(14) << "GetBufferForReading: Buffer " << buffer << ": sem=" << FlagToString(buf->sem)
+					 << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
 			if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && buf->sequence_id > last_seen_id_)
 			{
 				if (buf->sequence_id < seqID)
