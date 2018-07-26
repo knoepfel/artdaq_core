@@ -296,7 +296,8 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 
 int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 {
-	TLOG(14) << "GetBufferForWriting BEGIN";
+	TLOG(14) << "GetBufferForWriting BEGIN, overwrite="<< (overwrite? "true":"false");
+	
 	std::unique_lock<std::mutex> lk(search_mutex_);
 	//TraceLock lk(search_mutex_, 12, "GetBufferForWritingSearch");
 	auto wp = shm_ptr_->writer_pos.load();
@@ -324,6 +325,9 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 		}
 	}
 
+//GAL: Disabling buffer overwrites, until the "delivery reliability" functionality is understood and fixed.
+//Related to: Support #20339, Bug #20373
+#if 0 
 	if (overwrite)
 	{
 		// Then, look for "Full" buffers
@@ -372,7 +376,7 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 			}
 		}
 	}
-
+#endif
 	TLOG(14) << "GetBufferForWriting Returning -1 because no buffers are ready";
 	return -1;
 }
