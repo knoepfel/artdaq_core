@@ -46,10 +46,10 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 		}
 		if (buf != -1 && current_data_source_)
 		{
-			TLOG(TLVL_TRACE) << "ReadyForRead Found buffer, returning true" ;
 			current_read_buffer_ = buf;
 			current_data_source_->ResetReadPos(buf);
 			current_header_ = reinterpret_cast<detail::RawEventHeader*>(current_data_source_->GetReadPos(buf));
+			TLOG(TLVL_TRACE) << "ReadyForRead Found buffer, returning true. event hdr sequence_id=" << current_header_->sequence_id;
 
 			// Ignore any Init fragments after the first
 			if (current_data_source_ == &broadcasts_)
