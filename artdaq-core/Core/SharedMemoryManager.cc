@@ -235,7 +235,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 			auto buffer = (ii + rp) % shm_ptr_->buffer_count;
 
 
-			TLOG(14) << "GetBufferForReading Checking if buffer " << buffer << " is stale. Shm destructive_read_mode="<<destructive_read_mode;
+			TLOG(14) << "GetBufferForReading Checking if buffer " << buffer << " is stale. Shm destructive_read_mode="<<shm_ptr_->destructive_read_mode;
 			ResetBuffer(buffer);
 
 			auto buf = getBufferInfo_(buffer);
