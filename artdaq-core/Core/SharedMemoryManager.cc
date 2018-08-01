@@ -27,6 +27,10 @@ static void signal_handler(int signum)
 	{
 		if (ii)
 		{
+			const_cast<artdaq::SharedMemoryManager*>(ii)->Detach(false, "", ""
+			                                                     , false /* don't force destruct segment, allows reconnection (applicable for
+																		    restart and/or multiple art processes (i.e. dispatcher)) */
+			                                                     );
 			const_cast<artdaq::SharedMemoryManager*>(ii)->Detach(false, "", "", false);
 		}
 		ii = nullptr;
@@ -240,11 +244,10 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 
 			auto buf = getBufferInfo_(buffer);
 			if (!buf) continue;
-			TLOG(14) << "GetBufferForReading: Buffer " << buffer << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
-			if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 			TLOG(14) << "GetBufferForReading: Buffer " << buffer << ": sem=" << FlagToString(buf->sem)
 					 << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
-			if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && buf->sequence_id > last_seen_id_)
+			if (   buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_)
+			    && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_) )
 			{
 				if (buf->sequence_id < seqID)
 				{
@@ -252,7 +255,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 					seqID = buf->sequence_id;
 					buffer_num = buffer;
 					touchBuffer_(buf);
-					if (seqID == last_seen_id_ + 1) break;
+					if (shm_ptr_->destructive_read_mode || seqID == last_seen_id_ + 1) break;
 				}
 			}
 		}
