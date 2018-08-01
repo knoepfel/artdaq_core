@@ -325,9 +325,6 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 		}
 	}
 
-//GAL: Disabling buffer overwrites, until the "delivery reliability" functionality is understood and fixed.
-//Related to: Support #20339, Bug #20373
-#if 0 
 	if (overwrite)
 	{
 		// Then, look for "Full" buffers
@@ -376,7 +373,6 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 			}
 		}
 	}
-#endif
 	TLOG(14) << "GetBufferForWriting Returning -1 because no buffers are ready";
 	return -1;
 }
@@ -398,6 +394,7 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount()
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
 			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << " is either unowned or owned by this manager, and is marked full.";
+			touchBuffer_(buf);
 			++count;
 		}
 	}
@@ -444,6 +441,7 @@ bool artdaq::SharedMemoryManager::ReadyForRead()
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
 			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Buffer " << buffer << " is either unowned or owned by this manager, and is marked full.";
+			touchBuffer_(buf);
 			return true;
 		}
 	}
