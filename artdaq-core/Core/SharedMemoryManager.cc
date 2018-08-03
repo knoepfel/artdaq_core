@@ -31,7 +31,6 @@ static void signal_handler(int signum)
 			                                                     , false /* don't force destruct segment, allows reconnection (applicable for
 																		    restart and/or multiple art processes (i.e. dispatcher)) */
 			                                                     );
-			const_cast<artdaq::SharedMemoryManager*>(ii)->Detach(false, "", "", false);
 		}
 		ii = nullptr;
 	}
