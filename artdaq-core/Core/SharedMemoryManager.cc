@@ -299,7 +299,8 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 
 int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 {
-	TLOG(14) << "GetBufferForWriting BEGIN";
+	TLOG(14) << "GetBufferForWriting BEGIN, overwrite="<< (overwrite? "true":"false");
+	
 	std::unique_lock<std::mutex> lk(search_mutex_);
 	//TraceLock lk(search_mutex_, 12, "GetBufferForWritingSearch");
 	auto wp = shm_ptr_->writer_pos.load();
@@ -375,7 +376,6 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 			}
 		}
 	}
-
 	TLOG(14) << "GetBufferForWriting Returning -1 because no buffers are ready";
 	return -1;
 }
@@ -397,6 +397,7 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount()
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
 			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << " is either unowned or owned by this manager, and is marked full.";
+			touchBuffer_(buf);
 			++count;
 		}
 	}
@@ -443,6 +444,7 @@ bool artdaq::SharedMemoryManager::ReadyForRead()
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
 			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Buffer " << buffer << " is either unowned or owned by this manager, and is marked full.";
+			touchBuffer_(buf);
 			return true;
 		}
 	}
@@ -687,6 +689,9 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 
 	if (shmBuf->sem_id != manager_id_ && shmBuf->sem == BufferSemaphoreFlags::Reading)
 	{
+		// Ron wants to re-check for potential interleave of buffer state updates
+		size_t delta = TimeUtils::gettimeofday_us() - shmBuf->last_touch_time;
+		if (delta <= shm_ptr_->buffer_timeout_us) return false;
 		TLOG(TLVL_WARNING) << "Stale Read buffer " << buffer << " at " << (void*)shmBuf << " ( " << delta << " / " << shm_ptr_->buffer_timeout_us << " us ) detected! Resetting...";
 		shmBuf->readPos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Full;
