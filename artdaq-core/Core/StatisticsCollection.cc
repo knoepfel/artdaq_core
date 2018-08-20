@@ -26,7 +26,7 @@ namespace artdaq
 	{
 		// stop and clean up the thread
 		requestStop();
-		calculation_thread_->join();
+		if(calculation_thread_ && calculation_thread_.joinable()) calculation_thread_->join();
 	}
 
 	void StatisticsCollection::
