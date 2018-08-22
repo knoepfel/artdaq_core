@@ -16,6 +16,7 @@
 
 #include "artdaq-core/Data/detail/RawFragmentHeader.hh"
 #include "artdaq-core/Data/detail/RawFragmentHeaderV0.hh"
+#include "artdaq-core/Data/detail/RawFragmentHeaderV1.hh"
 #include "artdaq-core/Data/dictionarycontrol.hh"
 #include "artdaq-core/Core/QuickVec.hh"
 #include <iostream>
@@ -1145,6 +1146,16 @@ artdaq::Fragment::fragmentHeader()
 			if (szDiff > 0) vals_.insert(vals_.begin(), szDiff, 0);
 			memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
 		}
+		case 1:
+		{
+			std::cout << "Upgrading RawFragmentHeaderV1 (non const)" << std::endl;
+			auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1 *>(&vals_[0]);
+			auto new_hdr = old_hdr->upgrade();
+
+			auto szDiff = hdr->num_words() - old_hdr->num_words();
+			if (szDiff > 0) vals_.insert(vals_.begin(), szDiff, 0);
+			memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+		}
 		break;
 		default:
 			throw cet::exception("Fragment") << "A Fragment with an unknown version (" << std::to_string(hdr->version) << ") was received!";
@@ -1170,6 +1181,17 @@ artdaq::Fragment::fragmentHeader() const
 		{
 			std::cout << "Upgrading RawFragmentHeaderV0 (const)" << std::endl;
 			auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 const*>(&vals_[0]);
+			auto new_hdr = old_hdr->upgrade();
+
+			auto szDiff = hdr->num_words() - old_hdr->num_words();
+			auto vals_nc = const_cast<DATAVEC_T*>(&vals_);
+			if (szDiff > 0) vals_nc->insert(vals_nc->begin(), szDiff, 0);
+			memcpy(&(*vals_nc)[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+		}
+		case 1:
+		{
+			std::cout << "Upgrading RawFragmentHeaderV1 (const)" << std::endl;
+			auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1 const*>(&vals_[0]);
 			auto new_hdr = old_hdr->upgrade();
 
 			auto szDiff = hdr->num_words() - old_hdr->num_words();

@@ -126,7 +126,7 @@ struct artdaq::detail::RawFragmentHeader
 	// encoded; if any of the sizes are changed, the corresponding
 	// values must be updated.
 	static const version_t InvalidVersion = 0xFFFF; ///< The version field is currently 16-bits.
-	static const version_t CurrentVersion = 0x1; ///< The CurrentVersion field should be incremented whenever the RawFragmentHeader changes
+	static const version_t CurrentVersion = 0x2; ///< The CurrentVersion field should be incremented whenever the RawFragmentHeader changes
 	static const sequence_id_t InvalidSequenceID = 0xFFFFFFFFFFFF; ///< The sequence_id field is currently 48-bits
 	static const fragment_id_t InvalidFragmentID = 0xFFFF; ///< The fragment_id field is currently 16-bits
 	static const timestamp_t InvalidTimestamp = 0xFFFFFFFFFFFFFFFF; ///< The timestamp field is currently 64-bits
@@ -138,8 +138,13 @@ struct artdaq::detail::RawFragmentHeader
 
 	RawDataType sequence_id : 48; ///< The 48-bit sequence_id uniquely identifies events within the _artdaq_ system
 	RawDataType fragment_id : 16; ///< The fragment_id uniquely identifies a particular piece of hardware within the _artdaq_ system
+
 	RawDataType timestamp : 64; ///< The 64-bit timestamp field is the output of a user-defined clock used for building time-correlated events
 
+	RawDataType valid : 1; ///< Flag for whether the Fragment has been transported correctly through the artdaq system
+	RawDataType complete : 1; ///< Flag for whether the Fragment completely represents an event for its hardware
+	RawDataType unused1 : 30; ///< Reserved space for future header additions
+	RawDataType unused2 : 32; ///< Reserved space for future header additions
 
 	// ****************************************************
 	// New fields MUST be added to the END of this list!!!
