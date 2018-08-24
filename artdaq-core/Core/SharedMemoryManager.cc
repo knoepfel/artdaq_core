@@ -1019,6 +1019,7 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, std::string catego
 
 		if (throwException)
 		{
+			TRACE_CNTL("modeM", (uint64_t)0);
 			throw cet::exception(category) << message;
 		}
 	}
