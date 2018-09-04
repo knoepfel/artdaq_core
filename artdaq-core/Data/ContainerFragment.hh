@@ -74,7 +74,7 @@ public:
 
 	Metadata const* UpgradeMetadata(MetadataV0 const* in) const
 	{
-		TLOG(TLVL_INFO) << "Upgrading ContainerFragment::MetadataV0 into new ContainerFragment::Metadata"; "
+		TLOG(TLVL_INFO) << "Upgrading ContainerFragment::MetadataV0 into new ContainerFragment::Metadata";
 		assert(in->block_count < std::numeric_limits<Metadata::count_t>::max());
 		metadata_alloc_ = true;
 		Metadata md;
