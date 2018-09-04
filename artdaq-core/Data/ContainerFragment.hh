@@ -74,6 +74,7 @@ public:
 
 	Metadata const* UpgradeMetadata(MetadataV0 const* in) const
 	{
+		TLOG(TLVL_INFO) << "Upgrading ContainerFragment::MetadataV0 into new ContainerFragment::Metadata"; "
 		assert(in->block_count < std::numeric_limits<Metadata::count_t>::max());
 		metadata_alloc_ = true;
 		Metadata md;
@@ -240,6 +241,7 @@ protected:
 
 	const size_t* create_index_() const
 	{
+		TLOG(TLVL_DEBUG) << "Creating new index for ContainerFragment";
 		auto tmp = new size_t[metadata()->block_count];
 
 		auto current = reinterpret_cast<uint8_t const*>(artdaq_Fragment_.dataBegin());
@@ -256,6 +258,7 @@ protected:
 
 	void reset_index_ptr_() const
 	{
+		TLOG(TLVL_DEBUG) << "Request to reset index_ptr recieved.";
 		if (metadata()->has_index)
 		{
 			index_ptr_ = reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset);
