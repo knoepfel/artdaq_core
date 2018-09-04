@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(AddEmptyFragment)
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 	cfl.addFragment(*frag);
 
-	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader));
+	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + sizeof(size_t));
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 1);
 	auto type = artdaq::Fragment::EmptyFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
@@ -52,8 +52,8 @@ BOOST_AUTO_TEST_CASE(AddFragment_Ptr)
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 	cfl.addFragment(tmpFrag);
 
-	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type));
-	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(artdaq::ContainerFragment::Metadata));
+	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(size_t));
+	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(size_t) + sizeof(artdaq::ContainerFragment::Metadata));
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 1);
 	auto type = artdaq::Fragment::FirstUserFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
@@ -84,8 +84,8 @@ BOOST_AUTO_TEST_CASE(AddFragment_Ref)
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 	cfl.addFragment(frag);
 
-	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type));
-	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(artdaq::ContainerFragment::Metadata));
+	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(size_t));
+	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(size_t) + sizeof(artdaq::ContainerFragment::Metadata));
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 1);
 	auto type = artdaq::Fragment::FirstUserFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
@@ -126,8 +126,8 @@ BOOST_AUTO_TEST_CASE(AddFragments)
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 	cfl.addFragments(frags);
 
-	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), 2 * (sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type)));
-	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * (sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type)) + sizeof(artdaq::detail::RawFragmentHeader) + sizeof(artdaq::ContainerFragment::Metadata));
+	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), 2 * (sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(size_t)));
+	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * (sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(size_t)) + sizeof(artdaq::detail::RawFragmentHeader) + sizeof(artdaq::ContainerFragment::Metadata));
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 2);
 	auto type = artdaq::Fragment::FirstUserFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
@@ -165,12 +165,12 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 	f2.setUserType(artdaq::Fragment::FirstUserFragmentType);
 	BOOST_REQUIRE_EXCEPTION(artdaq::ContainerFragmentLoader cfl2(f2), cet::exception, [&](cet::exception e) { return e.category() == "InvalidFragment"; });
 
-	// Adding a Fragment to a full Container is an exception
-	for (int ii = 0; ii < artdaq::CONTAINER_FRAGMENT_COUNT_MAX; ++ii)
-	{
-		cfl.addFragment(f2);
-	}
-	BOOST_REQUIRE_EXCEPTION(cfl.addFragment(f2), cet::exception, [&](cet::exception e) { return e.category() == "ContainerFull"; });
+	//// Adding a Fragment to a full Container is an exception
+	//for (int ii = 0; ii < artdaq::CONTAINER_FRAGMENT_COUNT_MAX; ++ii)
+	//{
+	//	cfl.addFragment(f2);
+	//}
+	//BOOST_REQUIRE_EXCEPTION(cfl.addFragment(f2), cet::exception, [&](cet::exception e) { return e.category() == "ContainerFull"; });
 
 	// Adding a Fragment of different type to a Container is an exception
 	artdaq::Fragment f3(0);

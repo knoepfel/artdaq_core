@@ -9,19 +9,9 @@
 
 // Implementation of "ContainerFragment", an artdaq::Fragment overlay class
 
-#ifndef CONTAINER_FRAGMENT_CAPACITY
-/// The maximum capacity of the ContainerFragment (in fragments)
-#define CONTAINER_FRAGMENT_CAPACITY 100
-#endif
-
 namespace artdaq
 {
 	class ContainerFragment;
-
-	/**
-	 * \brief The maximum capacity of the ContainerFragment (in fragments)
-	 */
-	static const int CONTAINER_FRAGMENT_COUNT_MAX = CONTAINER_FRAGMENT_CAPACITY;
 }
 
 /**
@@ -31,11 +21,18 @@ class artdaq::ContainerFragment
 {
 public:
 
+	static constexpr uint8_t CURRENT_VERSION = 1;
+
 	/**
 	 * \brief Contains the information necessary for retrieving Fragment objects from the ContainerFragment
 	 */
-	struct Metadata
+	struct MetadataV0
 	{
+		/**
+		 * \brief The maximum capacity of the ContainerFragment (in fragments)
+		 */
+		static constexpr int CONTAINER_FRAGMENT_COUNT_MAX = 100;
+
 		typedef uint8_t data_t; ///< Basic unit of data-retrieval
 		typedef uint64_t count_t; ///< Size of block_count variables
 
@@ -49,8 +46,46 @@ public:
 		/// Size of the Metadata object
 		static size_t const size_words = 8ul + CONTAINER_FRAGMENT_COUNT_MAX * sizeof(size_t) / sizeof(data_t); // Units of Header::data_t
 	};
+	static_assert (sizeof(MetadataV0) == MetadataV0::size_words * sizeof(MetadataV0::data_t), "ContainerFragment::MetadataV0 size changed");
 
+	/**
+	 * \brief Contains the information necessary for retrieving Fragment objects from the ContainerFragment
+	 */
+	struct Metadata
+	{
+		typedef uint8_t data_t; ///< Basic unit of data-retrieval
+		typedef uint64_t count_t; ///< Size of block_count variables
+
+		count_t block_count : 16; ///< The number of Fragment objects stored in the ContainerFragment
+		count_t fragment_type : 8; ///< The Fragment::type_t of stored Fragment objects
+		count_t version : 4;
+		count_t missing_data : 1; ///< Flag if the ContainerFragment knows that it is missing data
+		count_t has_index : 1;
+		count_t unused_flag1 : 1;
+		count_t unused_flag2 : 1;
+		count_t unused : 32;
+
+		uint64_t index_offset;
+				
+		/// Size of the Metadata object
+		static size_t const size_words = 16ul; // Units of Header::data_t
+	};
 	static_assert (sizeof(Metadata) == Metadata::size_words * sizeof(Metadata::data_t), "ContainerFragment::Metadata size changed");
+
+	Metadata const* UpgradeMetadata(MetadataV0 const* in) const
+	{
+		assert(in->block_count < std::numeric_limits<Metadata::count_t>::max());
+		metadata_alloc_ = true;
+		Metadata md;
+		md.block_count = in->block_count;
+		md.fragment_type = in->fragment_type;
+		md.has_index = 0;
+		md.missing_data = in->missing_data;
+		md.version = 0;
+		index_ptr_ = in->index;
+		metadata_ = new Metadata(md);
+		return metadata_;
+	}
 
 	/**
 	 * \param f The Fragment object to use for data storage
@@ -58,13 +93,35 @@ public:
 	 * The constructor simply sets its const private member "artdaq_Fragment_"
 	 * to refer to the artdaq::Fragment object
 	*/
-	explicit ContainerFragment(Fragment const& f) : artdaq_Fragment_(f) { }
+	explicit ContainerFragment(Fragment const& f) : artdaq_Fragment_(f), index_ptr_(nullptr), index_alloc_(false),metadata_(nullptr), metadata_alloc_(false) { }
+
+	virtual ~ContainerFragment()
+	{
+		if (index_alloc_)
+		{
+			delete[] index_ptr_;
+		}
+		if (metadata_alloc_)
+		{
+			delete metadata_;
+		}
+	}
 
 	/**
 	 * \brief const getter function for the Metadata
 	 * \return const pointer to the Metadata
 	 */
-	Metadata const* metadata() const { return artdaq_Fragment_.metadata<Metadata>(); }
+	Metadata const* metadata() const 
+	{ 
+		if (metadata_alloc_) return metadata_;
+
+		if (artdaq_Fragment_.sizeBytes() - artdaq_Fragment_.dataSizeBytes() - sizeof(detail::RawFragmentHeader) == sizeof(MetadataV0))
+		{
+			return UpgradeMetadata(artdaq_Fragment_.metadata<MetadataV0>());
+		}
+
+		return artdaq_Fragment_.metadata<Metadata>();
+	}
 	
 	/**
 	 * \brief Gets the number of fragments stored in the ContainerFragment
@@ -129,9 +186,9 @@ public:
 		{
 			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragSize was asked for a non-existent Fragment!";
 		}
-		auto end = metadata()->index[index];
+		auto end = get_index_()[index];
 		if (index == 0) return end;
-		return end - metadata()->index[index - 1];
+		return end - get_index_()[index - 1];
 	}
 
 	/**
@@ -158,7 +215,7 @@ public:
 			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragmentIndex was asked for a non-existent Fragment!";
 		}
 		if (index == 0) { return 0; }
-		return metadata()->index[index - 1];
+		return get_index_()[index - 1];
 	}
 
 	/**
@@ -181,9 +238,56 @@ protected:
 		return sizeof(Fragment::value_type) / sizeof(Metadata::data_t);
 	}
 
-private:
+	const size_t* create_index_() const
+	{
+		auto tmp = new size_t[metadata()->block_count];
 
+		auto current = reinterpret_cast<uint8_t const*>(artdaq_Fragment_.dataBegin());
+		size_t offset = 0;
+		for (int ii = 0; ii < metadata()->block_count; ++ii)
+		{
+			auto this_size = reinterpret_cast<const detail::RawFragmentHeader*>(current)->word_count * sizeof(RawDataType);
+			offset += this_size;
+			tmp[ii] = offset;
+			current += this_size;
+		}
+		return tmp;
+	}
+
+	void reset_index_ptr_() const
+	{
+		if (metadata()->has_index)
+		{
+			index_ptr_ = reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset);
+		}
+		else
+		{
+			if (index_alloc_)
+			{
+				delete[] index_ptr_;
+			}
+
+			index_alloc_ = true;
+			index_ptr_ = create_index_();
+		}
+	}
+
+	const size_t* get_index_() const
+	{
+		if (index_ptr_ != nullptr) return index_ptr_;
+
+		reset_index_ptr_();
+
+		return index_ptr_;
+	}
+
+private:
 	Fragment const& artdaq_Fragment_;
+
+	mutable const size_t* index_ptr_;
+	mutable bool index_alloc_;
+	mutable const Metadata* metadata_;
+	mutable bool metadata_alloc_;
 };
 
 #endif /* artdaq_core_Data_ContainerFragment_hh */
