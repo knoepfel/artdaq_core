@@ -154,9 +154,9 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 	}
 
 	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addFragment: Payload Size is " << artdaq_Fragment_.dataSizeBytes() << ", lastFragmentIndex is " << lastFragmentIndex() << ", and frag.size is " << frag.sizeBytes();
-	if (artdaq_Fragment_.dataSizeBytes() < (lastFragmentIndex() + frag.sizeBytes() + sizeof(size_t) * (metadata()->block_count + 1)))
+	if (artdaq_Fragment_.dataSizeBytes() < (lastFragmentIndex() + frag.sizeBytes() + sizeof(size_t) * (metadata()->block_count + 2)))
 	{
-		addSpace_((lastFragmentIndex() + frag.sizeBytes() + sizeof(size_t) * (metadata()->block_count + 1)) - artdaq_Fragment_.dataSizeBytes());
+		addSpace_((lastFragmentIndex() + frag.sizeBytes() + sizeof(size_t) * (metadata()->block_count + 2)) - artdaq_Fragment_.dataSizeBytes());
 	}
 	frag.setSequenceID(artdaq_Fragment_.sequenceID());
 	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addFragment, copying " << frag.sizeBytes() << " bytes from " << (void*)frag.headerAddress() << " to " << (void*)dataEnd_();
@@ -167,7 +167,7 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 
 	auto index = create_index_();
 	metadata()->index_offset = index[metadata()->block_count - 1];
-	memcpy(dataBegin_() + metadata()->index_offset, index, sizeof(size_t) * metadata()->block_count);
+	memcpy(dataBegin_() + metadata()->index_offset, index, sizeof(size_t) * (metadata()->block_count + 1));
 	metadata()->has_index = 1;
 	reset_index_ptr_();
 }

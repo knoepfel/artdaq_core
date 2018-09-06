@@ -22,6 +22,7 @@ class artdaq::ContainerFragment
 public:
 
 	static constexpr uint8_t CURRENT_VERSION = 1;
+	static constexpr size_t CONTAINER_MAGIC = 0x00BADDEED5B1BEE5;
 
 	/**
 	 * \brief Contains the information necessary for retrieving Fragment objects from the ContainerFragment
@@ -74,7 +75,7 @@ public:
 
 	Metadata const* UpgradeMetadata(MetadataV0 const* in) const
 	{
-		TLOG(TLVL_INFO) << "Upgrading ContainerFragment::MetadataV0 into new ContainerFragment::Metadata";
+		TLOG(TLVL_INFO, "ContainerFragment") << "Upgrading ContainerFragment::MetadataV0 into new ContainerFragment::Metadata";
 		assert(in->block_count < std::numeric_limits<Metadata::count_t>::max());
 		metadata_alloc_ = true;
 		Metadata md;
@@ -241,8 +242,8 @@ protected:
 
 	const size_t* create_index_() const
 	{
-		TLOG(TLVL_DEBUG) << "Creating new index for ContainerFragment";
-		auto tmp = new size_t[metadata()->block_count];
+		TLOG(TLVL_DEBUG, "ContainerFragment") << "Creating new index for ContainerFragment";
+		auto tmp = new size_t[metadata()->block_count + 1];
 
 		auto current = reinterpret_cast<uint8_t const*>(artdaq_Fragment_.dataBegin());
 		size_t offset = 0;
@@ -253,18 +254,21 @@ protected:
 			tmp[ii] = offset;
 			current += this_size;
 		}
+		tmp[metadata()->block_count] = CONTAINER_MAGIC;
 		return tmp;
 	}
 
 	void reset_index_ptr_() const
 	{
-		TLOG(TLVL_DEBUG) << "Request to reset index_ptr recieved.";
-		if (metadata()->has_index)
+		TLOG(TLVL_DEBUG, "ContainerFragment") << "Request to reset index_ptr recieved. has_index=" << metadata()->has_index << ", Check word = " << std::hex << *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count);
+		if (metadata()->has_index && *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count) == CONTAINER_MAGIC)
 		{
+			TLOG(TLVL_DEBUG, "ContainerFragment") << "Setting index_ptr to found valid index";
 			index_ptr_ = reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset);
 		}
 		else
 		{
+			TLOG(TLVL_DEBUG, "ContainerFragment") << "Index invalid or not found, allocating new index";
 			if (index_alloc_)
 			{
 				delete[] index_ptr_;
