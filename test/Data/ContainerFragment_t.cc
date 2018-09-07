@@ -3,6 +3,8 @@
 #define BOOST_TEST_MODULE(ContainerFragment_t)
 #include "cetlib/quiet_unit_test.hpp"
 
+constexpr size_t artdaq::ContainerFragment::CONTAINER_MAGIC;
+
 BOOST_AUTO_TEST_SUITE(ContainerFragment_test)
 
 BOOST_AUTO_TEST_CASE(Construct)
@@ -11,10 +13,11 @@ BOOST_AUTO_TEST_CASE(Construct)
 	artdaq::ContainerFragmentLoader cfl(f);
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 
-	BOOST_REQUIRE_EQUAL(f.dataSize(), 0);
+	BOOST_REQUIRE_EQUAL(f.dataSize(), 1);
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 0);
 	auto type = artdaq::Fragment::EmptyFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
+	BOOST_REQUIRE_EQUAL(*reinterpret_cast<const size_t*>(cf->dataBegin()), artdaq::ContainerFragment::CONTAINER_MAGIC);
 }
 
 BOOST_AUTO_TEST_CASE(AddEmptyFragment)

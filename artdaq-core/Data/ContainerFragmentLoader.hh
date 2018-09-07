@@ -115,6 +115,7 @@ inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment
 	m.missing_data = false;
 	m.has_index = true;
 	m.version = ContainerFragment::CURRENT_VERSION;
+	m.index_offset = 0;
 	artdaq_Fragment_.setMetadata<Metadata>(m);
 
 	if (artdaq_Fragment_.size() !=
@@ -126,6 +127,9 @@ inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment
 
 		throw cet::exception("InvalidFragment") << "ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object";
 	}
+
+	artdaq_Fragment_.resize(1);
+	*artdaq_Fragment_.dataBegin() = CONTAINER_MAGIC;
 }
 
 inline size_t artdaq::ContainerFragmentLoader::words_to_frag_words_(size_t nWords)
@@ -140,6 +144,7 @@ inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 {
 	auto currSize = sizeof(artdaq::Fragment::value_type) * artdaq_Fragment_.dataSize(); // Resize takes into account header and metadata size
 	artdaq_Fragment_.resizeBytes(bytes + currSize);
+	reset_index_ptr_(); // Must reset index_ptr after resize operation!
 	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << (void*)dataEnd_();
 }
 
