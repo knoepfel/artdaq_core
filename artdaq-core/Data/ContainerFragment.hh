@@ -75,7 +75,7 @@ public:
 
 	Metadata const* UpgradeMetadata(MetadataV0 const* in) const
 	{
-		TLOG(TLVL_INFO, "ContainerFragment") << "Upgrading ContainerFragment::MetadataV0 into new ContainerFragment::Metadata";
+		TLOG(TLVL_DEBUG, "ContainerFragment") << "Upgrading ContainerFragment::MetadataV0 into new ContainerFragment::Metadata";
 		assert(in->block_count < std::numeric_limits<Metadata::count_t>::max());
 		metadata_alloc_ = true;
 		Metadata md;
@@ -188,9 +188,9 @@ public:
 		{
 			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragSize was asked for a non-existent Fragment!";
 		}
-		auto end = get_index_()[index];
+		auto end = fragmentIndex(index + 1);
 		if (index == 0) return end;
-		return end - get_index_()[index - 1];
+		return end - fragmentIndex(index);
 	}
 
 	/**
@@ -217,7 +217,10 @@ public:
 			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragmentIndex was asked for a non-existent Fragment!";
 		}
 		if (index == 0) { return 0; }
-		return get_index_()[index - 1];
+
+		auto index_ptr = get_index_();
+
+		return index_ptr[index - 1];
 	}
 
 	/**
@@ -260,7 +263,8 @@ protected:
 
 	void reset_index_ptr_() const
 	{
-		TLOG(TLVL_DEBUG, "ContainerFragment") << "Request to reset index_ptr recieved. has_index=" << metadata()->has_index << ", Check word = " << std::hex << *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count);
+		TLOG(TLVL_DEBUG, "ContainerFragment") << "Request to reset index_ptr recieved. has_index=" << metadata()->has_index << ", Check word = " << std::hex
+			<< *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count);
 		if (metadata()->has_index && *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count) == CONTAINER_MAGIC)
 		{
 			TLOG(TLVL_DEBUG, "ContainerFragment") << "Setting index_ptr to found valid index";
