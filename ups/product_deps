@@ -19,6 +19,7 @@ perllib  product_dir
 
 #
 product		version		optional
+canvas_root_io  v1_01_08        s70
 canvas_root_io  v1_01_07        s69
 canvas_root_io  v1_01_06        s68
 canvas_root_io  v1_01_05        s67
