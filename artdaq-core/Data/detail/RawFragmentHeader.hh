@@ -1,4 +1,4 @@
-#ifndef artdaq_core_Data_detail_RawFragmentHeader_hh
+ifndef artdaq_core_Data_detail_RawFragmentHeader_hh
 #define artdaq_core_Data_detail_RawFragmentHeader_hh
 // detail::RawFragmentHeader is an overlay that provides the user's view
 // of the data contained within a Fragment. It is intended to be hidden
@@ -71,6 +71,8 @@ struct artdaq::detail::RawFragmentHeader
 		return std::map<type_t, std::string>{
 			{ type_t(DataFragmentType), "Data"},
 			{ type_t(EmptyFragmentType), "Empty" },
+			{ type_t(ErrorFragmentType), "Error" },
+			{ type_t(InvalidFragmentType), "Invalid"},
 			{ 232, "Container" }
 		};
 	}
