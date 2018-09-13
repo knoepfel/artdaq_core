@@ -3,6 +3,7 @@
 
 namespace artdaq
 {
+	constexpr uint8_t detail::RawEventHeader::CURRENT_VERSION;
 	void RawEvent::print(std::ostream& os) const
 	{
 		os << "Run " << runID()

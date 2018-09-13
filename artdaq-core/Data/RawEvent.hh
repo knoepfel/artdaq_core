@@ -29,6 +29,7 @@ namespace artdaq
 	 */
 	struct detail::RawEventHeader
 	{
+		static constexpr uint8_t CURRENT_VERSION = 0;
 		typedef uint32_t run_id_t; ///< Run numbers are 32 bits
 		typedef uint32_t subrun_id_t; ///< Subrun numbers are 32 bits
 		typedef uint32_t event_id_t; ///< Event numbers are 32 bits
@@ -39,11 +40,12 @@ namespace artdaq
 		event_id_t event_id; ///< Event number should be either sequence ID or Timestamp of component Fragments
 		sequence_id_t sequence_id; ///< RawEvent sequence_id should be the same as its component Fragment sequence_ids.
 		bool is_complete; ///< Does the event contain the expected number of Fragment objects?
+		uint8_t version; ///< Version number of the RawFragmentHeader
 
 		/**
 		 * \brief Default constructor. Provided for ROOT compatibility
 		 */
-		RawEventHeader() : run_id(0), subrun_id(0), event_id(0), sequence_id(0), is_complete(false) {}
+		RawEventHeader() : run_id(0), subrun_id(0), event_id(0), sequence_id(0), is_complete(false), version(CURRENT_VERSION) {}
 
 		/**
 		 * \brief Constructs the RawEventHeader struct with the given parameters
@@ -60,7 +62,9 @@ namespace artdaq
 		                                    , subrun_id(subrun)
 											, event_id(event)
 		                                    , sequence_id(seq)
-		                                    , is_complete(false) { }
+		                                    , is_complete(false)
+		, version(CURRENT_VERSION)
+		{ }
 	};
 
 
