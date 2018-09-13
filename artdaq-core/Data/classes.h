@@ -1,5 +1,6 @@
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Core/QuickVec.hh"
+#include "artdaq-core/Data/RawEvent.hh"
 #include "artdaq-core/Data/detail/ParentageMap.hh"
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "artdaq-core/Data/PackageBuildInfo.hh"
@@ -8,5 +9,6 @@
 template class std::vector<artdaq::Fragment>;
 template struct artdaq::QuickVec<artdaq::RawDataType>;
 template class art::Wrapper<std::vector<artdaq::Fragment>>;
+template class art::Wrapper<artdaq::detail::RawEventHeader>;
 template class art::Wrapper<std::vector<artdaq::PackageBuildInfo>>;
 template class art::Wrapper<artdaq::PackageBuildInfo>;
