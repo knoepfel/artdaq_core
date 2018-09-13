@@ -1,4 +1,4 @@
-ifndef artdaq_core_Data_detail_RawFragmentHeader_hh
+#ifndef artdaq_core_Data_detail_RawFragmentHeader_hh
 #define artdaq_core_Data_detail_RawFragmentHeader_hh
 // detail::RawFragmentHeader is an overlay that provides the user's view
 // of the data contained within a Fragment. It is intended to be hidden
