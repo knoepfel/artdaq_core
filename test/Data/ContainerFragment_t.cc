@@ -3,6 +3,8 @@
 #define BOOST_TEST_MODULE(ContainerFragment_t)
 #include "cetlib/quiet_unit_test.hpp"
 
+constexpr size_t artdaq::ContainerFragment::CONTAINER_MAGIC;
+
 BOOST_AUTO_TEST_SUITE(ContainerFragment_test)
 
 BOOST_AUTO_TEST_CASE(Construct)
@@ -11,10 +13,11 @@ BOOST_AUTO_TEST_CASE(Construct)
 	artdaq::ContainerFragmentLoader cfl(f);
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 
-	BOOST_REQUIRE_EQUAL(f.dataSize(), 0);
+	BOOST_REQUIRE_EQUAL(f.dataSize(), 1);
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 0);
 	auto type = artdaq::Fragment::EmptyFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
+	BOOST_REQUIRE_EQUAL(*reinterpret_cast<const size_t*>(cf->dataBegin()), artdaq::ContainerFragment::CONTAINER_MAGIC);
 }
 
 BOOST_AUTO_TEST_CASE(AddEmptyFragment)
@@ -28,7 +31,7 @@ BOOST_AUTO_TEST_CASE(AddEmptyFragment)
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 	cfl.addFragment(*frag);
 
-	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader));
+	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + (2 * sizeof(size_t)));
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 1);
 	auto type = artdaq::Fragment::EmptyFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
@@ -41,9 +44,9 @@ BOOST_AUTO_TEST_CASE(AddFragment_Ptr)
 	std::vector<artdaq::Fragment::value_type> fakeData{ 1, 2, 3, 4 };
 	artdaq::FragmentPtr
 		tmpFrag(artdaq::Fragment::dataFrag(1,
-										   0,
-										   fakeData.begin(),
-										   fakeData.end()));
+			0,
+			fakeData.begin(),
+			fakeData.end()));
 	tmpFrag->setUserType(artdaq::Fragment::FirstUserFragmentType);
 
 	artdaq::Fragment f(0);
@@ -52,8 +55,8 @@ BOOST_AUTO_TEST_CASE(AddFragment_Ptr)
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 	cfl.addFragment(tmpFrag);
 
-	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type));
-	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(artdaq::ContainerFragment::Metadata));
+	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + (2 * sizeof(size_t)));
+	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + (2 * sizeof(size_t)) + sizeof(artdaq::ContainerFragment::Metadata));
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 1);
 	auto type = artdaq::Fragment::FirstUserFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
@@ -72,9 +75,9 @@ BOOST_AUTO_TEST_CASE(AddFragment_Ref)
 	std::vector<artdaq::Fragment::value_type> fakeData{ 1, 2, 3, 4 };
 	artdaq::FragmentPtr
 		tmpFrag(artdaq::Fragment::dataFrag(1,
-										   0,
-										   fakeData.begin(),
-										   fakeData.end()));
+			0,
+			fakeData.begin(),
+			fakeData.end()));
 	tmpFrag->setUserType(artdaq::Fragment::FirstUserFragmentType);
 	auto frag = *tmpFrag.get();
 
@@ -84,8 +87,8 @@ BOOST_AUTO_TEST_CASE(AddFragment_Ref)
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 	cfl.addFragment(frag);
 
-	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type));
-	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(artdaq::ContainerFragment::Metadata));
+	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + (2*sizeof(size_t)));
+	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + (2*sizeof(size_t)) + sizeof(artdaq::ContainerFragment::Metadata));
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 1);
 	auto type = artdaq::Fragment::FirstUserFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
@@ -106,15 +109,15 @@ BOOST_AUTO_TEST_CASE(AddFragments)
 	std::vector<artdaq::Fragment::value_type> fakeData2{ 5, 6, 7, 8 };
 	artdaq::FragmentPtr
 		tmpFrag1(artdaq::Fragment::dataFrag(1,
-											0,
-											fakeData1.begin(),
-											fakeData1.end()));
+			0,
+			fakeData1.begin(),
+			fakeData1.end()));
 	tmpFrag1->setUserType(artdaq::Fragment::FirstUserFragmentType);
 	artdaq::FragmentPtr
 		tmpFrag2(artdaq::Fragment::dataFrag(1,
-											1,
-											fakeData2.begin(),
-											fakeData2.end()));
+			1,
+			fakeData2.begin(),
+			fakeData2.end()));
 	tmpFrag2->setUserType(artdaq::Fragment::FirstUserFragmentType);
 	artdaq::FragmentPtrs frags;
 	frags.push_back(std::move(tmpFrag1));
@@ -126,8 +129,8 @@ BOOST_AUTO_TEST_CASE(AddFragments)
 	auto cf = reinterpret_cast<artdaq::ContainerFragment*>(&cfl);
 	cfl.addFragments(frags);
 
-	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), 2 * (sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type)));
-	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * (sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type)) + sizeof(artdaq::detail::RawFragmentHeader) + sizeof(artdaq::ContainerFragment::Metadata));
+	BOOST_REQUIRE_EQUAL(f.dataSizeBytes(), 2 * (sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(size_t)) + sizeof(size_t));
+	BOOST_REQUIRE_EQUAL(f.sizeBytes(), 2 * (sizeof(artdaq::detail::RawFragmentHeader) + 4 * sizeof(artdaq::Fragment::value_type) + sizeof(size_t))  + sizeof(size_t) + sizeof(artdaq::detail::RawFragmentHeader) + sizeof(artdaq::ContainerFragment::Metadata));
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 2);
 	auto type = artdaq::Fragment::FirstUserFragmentType;
 	BOOST_REQUIRE_EQUAL(cf->fragment_type(), type);
@@ -165,12 +168,12 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 	f2.setUserType(artdaq::Fragment::FirstUserFragmentType);
 	BOOST_REQUIRE_EXCEPTION(artdaq::ContainerFragmentLoader cfl2(f2), cet::exception, [&](cet::exception e) { return e.category() == "InvalidFragment"; });
 
-	// Adding a Fragment to a full Container is an exception
-	for (int ii = 0; ii < artdaq::CONTAINER_FRAGMENT_COUNT_MAX; ++ii)
-	{
-		cfl.addFragment(f2);
-	}
-	BOOST_REQUIRE_EXCEPTION(cfl.addFragment(f2), cet::exception, [&](cet::exception e) { return e.category() == "ContainerFull"; });
+	//// Adding a Fragment to a full Container is an exception
+	//for (int ii = 0; ii < artdaq::CONTAINER_FRAGMENT_COUNT_MAX; ++ii)
+	//{
+	//	cfl.addFragment(f2);
+	//}
+	//BOOST_REQUIRE_EXCEPTION(cfl.addFragment(f2), cet::exception, [&](cet::exception e) { return e.category() == "ContainerFull"; });
 
 	// Adding a Fragment of different type to a Container is an exception
 	artdaq::Fragment f3(0);
@@ -179,7 +182,7 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 	cfl3.addFragment(f2);
 	f2.setSystemType(artdaq::Fragment::EmptyFragmentType);
 	BOOST_REQUIRE_EXCEPTION(cfl3.addFragment(f2), cet::exception, [&](cet::exception e) { return e.category() == "WrongFragmentType"; });
-	
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()

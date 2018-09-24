@@ -26,7 +26,9 @@ namespace artdaq
 	{
 		// stop and clean up the thread
 		requestStop();
-		calculation_thread_->join();
+
+		// Having issues where ~StatisticsCollection is being called from within thread due to signal handlers
+		if(calculation_thread_ && calculation_thread_->joinable() && calculation_thread_->get_id() != boost::this_thread::get_id()) calculation_thread_->join();
 	}
 
 	void StatisticsCollection::
