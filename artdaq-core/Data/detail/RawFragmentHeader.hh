@@ -60,6 +60,7 @@ struct artdaq::detail::RawFragmentHeader
 	static constexpr type_t ShutdownFragmentType = FIRST_SYSTEM_TYPE + 5; ///< This Fragment indicates a system shutdown to _art_
 	static constexpr type_t EmptyFragmentType = FIRST_SYSTEM_TYPE + 6; ///< This Fragment contains no data and serves as a placeholder for when no data from a FragmentGenerator is expected
 	static constexpr type_t ContainerFragmentType = FIRST_SYSTEM_TYPE + 7; ///< This Fragment is a ContainerFragment and analysis code should unpack it
+	static constexpr type_t ErrorFragmentType = FIRST_SYSTEM_TYPE + 8; ///< This Fragment has experienced some error, and no attempt should be made to read it
 
 	/**
 	 * \brief Returns a map of the most-commonly used system types
@@ -70,6 +71,8 @@ struct artdaq::detail::RawFragmentHeader
 		return std::map<type_t, std::string>{
 			{ type_t(DataFragmentType), "Data"},
 			{ type_t(EmptyFragmentType), "Empty" },
+			{ type_t(ErrorFragmentType), "Error" },
+			{ type_t(InvalidFragmentType), "Invalid"},
 			{ 232, "Container" }
 		};
 	}
