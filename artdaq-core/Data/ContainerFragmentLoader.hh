@@ -113,10 +113,9 @@ inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment
 	m.block_count = 0;
 	m.fragment_type = expectedFragmentType;
 	m.missing_data = false;
-	for (int ii = 0; ii < CONTAINER_FRAGMENT_COUNT_MAX; ++ii)
-	{
-		m.index[ii] = 0;
-	}
+	m.has_index = true;
+	m.version = ContainerFragment::CURRENT_VERSION;
+	m.index_offset = 0;
 	artdaq_Fragment_.setMetadata<Metadata>(m);
 
 	if (artdaq_Fragment_.size() !=
@@ -128,6 +127,9 @@ inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment
 
 		throw cet::exception("InvalidFragment") << "ContainerFragmentLoader: Raw artdaq::Fragment object size suggests it does not consist of its own header + the ContainerFragment::Metadata object";
 	}
+
+	artdaq_Fragment_.resize(1);
+	*artdaq_Fragment_.dataBegin() = CONTAINER_MAGIC;
 }
 
 inline size_t artdaq::ContainerFragmentLoader::words_to_frag_words_(size_t nWords)
@@ -142,17 +144,12 @@ inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 {
 	auto currSize = sizeof(artdaq::Fragment::value_type) * artdaq_Fragment_.dataSize(); // Resize takes into account header and metadata size
 	artdaq_Fragment_.resizeBytes(bytes + currSize);
+	reset_index_ptr_(); // Must reset index_ptr after resize operation!
 	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << (void*)dataEnd_();
 }
 
 inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 {
-	if (metadata()->block_count >= CONTAINER_FRAGMENT_COUNT_MAX)
-	{
-		TLOG(TLVL_ERROR,"ContainerFragmentLoader") << "addFragment: Fragment is full, cannot add more fragments!" ;
-		throw cet::exception("ContainerFull") << "ContainerFragmentLoader::addFragment: Fragment is full, cannot add more fragments!";
-	}
-
 	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addFragment: Adding Fragment with payload size " << frag.dataSizeBytes() << " to Container";
 	if (metadata()->fragment_type == Fragment::EmptyFragmentType) metadata()->fragment_type = frag.type();
 	else if (frag.type() != metadata()->fragment_type)
@@ -160,16 +157,24 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 		TLOG(TLVL_ERROR,"ContainerFragmentLoader") << "addFragment: Trying to add a fragment of different type than what's already been added!" ;
 		throw cet::exception("WrongFragmentType") << "ContainerFragmentLoader::addFragment: Trying to add a fragment of different type than what's already been added!";
 	}
+
 	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addFragment: Payload Size is " << artdaq_Fragment_.dataSizeBytes() << ", lastFragmentIndex is " << lastFragmentIndex() << ", and frag.size is " << frag.sizeBytes();
-	if (artdaq_Fragment_.dataSizeBytes() < lastFragmentIndex() + frag.sizeBytes())
+	if (artdaq_Fragment_.dataSizeBytes() < (lastFragmentIndex() + frag.sizeBytes() + sizeof(size_t) * (metadata()->block_count + 2)))
 	{
-		addSpace_(frag.sizeBytes());
+		addSpace_((lastFragmentIndex() + frag.sizeBytes() + sizeof(size_t) * (metadata()->block_count + 2)) - artdaq_Fragment_.dataSizeBytes());
 	}
 	frag.setSequenceID(artdaq_Fragment_.sequenceID());
 	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addFragment, copying " << frag.sizeBytes() << " bytes from " << (void*)frag.headerAddress() << " to " << (void*)dataEnd_();
 	memcpy(dataEnd_(), frag.headerAddress(), frag.sizeBytes());
-	metadata()->index[block_count()] = lastFragmentIndex() + frag.sizeBytes();
+	metadata()->has_index = 0;
+
 	metadata()->block_count++;
+
+	auto index = create_index_();
+	metadata()->index_offset = index[metadata()->block_count - 1];
+	memcpy(dataBegin_() + metadata()->index_offset, index, sizeof(size_t) * (metadata()->block_count + 1));
+	metadata()->has_index = 1;
+	reset_index_ptr_();
 }
 
 inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::FragmentPtr& frag)
