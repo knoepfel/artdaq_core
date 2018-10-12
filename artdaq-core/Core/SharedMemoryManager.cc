@@ -213,7 +213,7 @@ void artdaq::SharedMemoryManager::Attach()
 	else
 	{
 		TLOG(TLVL_ERROR) << "Failed to connect to shared memory segment with key 0x" << std::hex << shm_key_
-			<< ", errno = " << strerror(errno) << ".  Please check "
+			<< ", errno=" << errno << " (" << strerror(errno) << ")" << ".  Please check "
 			<< "if a stale shared memory segment needs to "
 			<< "be cleaned up. (ipcs, ipcrm -m <segId>)";
 	}
@@ -229,9 +229,8 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 	auto rp = shm_ptr_->reader_pos.load();
 
 	TLOG(13) << "GetBufferForReading lock acquired, scanning " << shm_ptr_->buffer_count << " buffers";
-	bool retry = true;
 	int buffer_num = -1;
-	while (retry)
+	for(int retry = 0; retry < 5; retry++)
 	{
 		ShmBuffer* buffer_ptr = nullptr;
 		uint64_t seqID = -1;
@@ -291,7 +290,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 			TLOG(13) << "GetBufferForReading returning " << buffer_num;
 			return buffer_num;
 		}
-		retry = false;
+		retry = 5;
 	}
 
 	if(buffer_num==-1) TLOG(13) << "GetBufferForReading returning -1 because no buffers are ready";
