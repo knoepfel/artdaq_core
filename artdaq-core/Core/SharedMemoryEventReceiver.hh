@@ -74,6 +74,12 @@ namespace artdaq
 		int GetRank() { return data_.GetRank(); }
 
 		/**
+		 * \brief Returns the ID of the reading process
+		 * \return The ID of the reading process
+		 */
+		int GetMyId() { return data_.GetMyId(); }
+
+		/**
 		 * \brief Get the count of available buffers, both broadcasts and data
 		 * \return The sum of the available data buffer count and the available broadcast buffer count
 		 */
