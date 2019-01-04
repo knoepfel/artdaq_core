@@ -245,7 +245,7 @@ protected:
 
 	const size_t* create_index_() const
 	{
-		TLOG(TLVL_DEBUG, "ContainerFragment") << "Creating new index for ContainerFragment";
+		TLOG(TLVL_TRACE, "ContainerFragment") << "Creating new index for ContainerFragment";
 		auto tmp = new size_t[metadata()->block_count + 1];
 
 		auto current = reinterpret_cast<uint8_t const*>(artdaq_Fragment_.dataBegin());
@@ -263,16 +263,16 @@ protected:
 
 	void reset_index_ptr_() const
 	{
-		TLOG(TLVL_DEBUG, "ContainerFragment") << "Request to reset index_ptr recieved. has_index=" << metadata()->has_index << ", Check word = " << std::hex
+		TLOG(TLVL_TRACE, "ContainerFragment") << "Request to reset index_ptr recieved. has_index=" << metadata()->has_index << ", Check word = " << std::hex
 			<< *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count);
 		if (metadata()->has_index && *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count) == CONTAINER_MAGIC)
 		{
-			TLOG(TLVL_DEBUG, "ContainerFragment") << "Setting index_ptr to found valid index";
+			TLOG(TLVL_TRACE, "ContainerFragment") << "Setting index_ptr to found valid index";
 			index_ptr_ = reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset);
 		}
 		else
 		{
-			TLOG(TLVL_DEBUG, "ContainerFragment") << "Index invalid or not found, allocating new index";
+			TLOG(TLVL_TRACE, "ContainerFragment") << "Index invalid or not found, allocating new index";
 			if (index_alloc_)
 			{
 				delete[] index_ptr_;
