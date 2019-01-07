@@ -153,6 +153,7 @@ public:
 	static constexpr type_t FirstUserFragmentType = detail::RawFragmentHeader::FIRST_USER_TYPE; ///< Copy FIRST_USER_TYPE from RawFragmentHeader
 	static constexpr type_t EmptyFragmentType = detail::RawFragmentHeader::EmptyFragmentType; ///< Copy EmptyFragmentType from RawFragmentHeader
 	static constexpr type_t ContainerFragmentType = detail::RawFragmentHeader::ContainerFragmentType; ///< Copy ContainerFragmentType from RawFragmentHeader
+	static constexpr type_t ErrorFragmentType = detail::RawFragmentHeader::ErrorFragmentType; ///< Copy ErrorFragmentType from RawFragmentHeader
 
 	/**
 	 * \brief Returns whether the given type is in the range of user types
