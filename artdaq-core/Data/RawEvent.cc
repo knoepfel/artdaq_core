@@ -3,6 +3,17 @@
 
 namespace artdaq
 {
+	void detail::RawEventHeader::print(std::ostream& os) const
+	{
+		os << "Run " << run_id
+			<< ", Subrun " << subrun_id
+			<< ", Event " << event_id
+			<< ", SeqID " << sequence_id
+			<< ", Complete? " << is_complete
+			<< ", Version " << static_cast<unsigned int>(version)
+			<< '\n';
+	}
+
 	constexpr uint8_t detail::RawEventHeader::CURRENT_VERSION;
 	void RawEvent::print(std::ostream& os) const
 	{

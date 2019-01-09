@@ -65,7 +65,24 @@ namespace artdaq
 		                                    , is_complete(false)
 		, version(CURRENT_VERSION)
 		{ }
+
+		void print(std::ostream& os) const;
 	};
+
+#if HIDE_FROM_ROOT
+	/**
+	 * \brief Prints the RawEventHeader to the given stream
+	 * \param os Stream to print RawEventHeader to
+	 * \param evh RawEventHeader to print
+	 * \return Stream reference
+	 */
+	inline
+	std::ostream& operator<<(std::ostream& os, detail::RawEventHeader const& evh)
+	{
+		evh.print(os);
+		return os;
+	}
+#endif
 
 
 	/**
