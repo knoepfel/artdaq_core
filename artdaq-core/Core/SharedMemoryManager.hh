@@ -339,6 +339,11 @@ namespace artdaq
 		 * \return A list of manager_id, semaphore pairs
 		 */
 		std::list<std::pair<int, BufferSemaphoreFlags>> GetBufferReport();
+
+		/**
+		 * \brief Touch the given buffer (update its last_touch_time)
+		 */
+		void TouchBuffer(int buffer) { return touchBuffer_(getBufferInfo_(buffer)); }
 	private:
 		struct ShmBuffer
 		{
