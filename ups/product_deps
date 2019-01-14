@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_core  v3_04_05
+parent artdaq_core  v3_04_06
 defaultqual	e15:s64
 
 # These optional lines define the installed directories where
@@ -19,6 +19,7 @@ perllib  product_dir
 
 #
 product		version		optional
+canvas_root_io  v1_02_00	s71
 canvas_root_io  v1_01_09        s73
 canvas_root_io  v1_01_08        s72
 canvas_root_io  v1_01_08        s70
@@ -45,6 +46,10 @@ c2:s72:debug            -               c2:debug        -nq-    -std=c++17
 c2:s72:prof             -               c2:prof         -nq-    -std=c++17
 e17:s72:debug		-		e17:debug	-nq-	-std=c++17
 e17:s72:prof		-		e17:prof	-nq-	-std=c++17
+c2:s71:debug            -               c2:debug        -nq-    -std=c++17
+c2:s71:prof             -               c2:prof         -nq-    -std=c++17
+e17:s71:debug		-		e17:debug	-nq-	-std=c++17
+e17:s71:prof		-		e17:prof	-nq-	-std=c++17
 c2:s70:debug            -               c2:debug        -nq-    -std=c++17
 c2:s70:prof             -               c2:prof         -nq-    -std=c++17
 e17:s70:debug		-		e17:debug	-nq-	-std=c++17
