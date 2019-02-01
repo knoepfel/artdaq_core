@@ -143,9 +143,9 @@ inline size_t artdaq::ContainerFragmentLoader::words_to_frag_words_(size_t nWord
 inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 {
 	auto currSize = sizeof(artdaq::Fragment::value_type) * artdaq_Fragment_.dataSize(); // Resize takes into account header and metadata size
-	artdaq_Fragment_.resizeBytes(bytes + currSize);
+	artdaq_Fragment_.resizeBytesWithCushion(bytes + currSize, 1.3);
 	reset_index_ptr_(); // Must reset index_ptr after resize operation!
-	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << (void*)dataEnd_();
+	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << (void*)dataEnd_() << " (oldSizeBytes/deltaBytes: " << currSize << "/" << bytes << ")";
 }
 
 inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
@@ -173,6 +173,7 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 	auto index = create_index_();
 	metadata()->index_offset = index[metadata()->block_count - 1];
 	memcpy(dataBegin_() + metadata()->index_offset, index, sizeof(size_t) * (metadata()->block_count + 1));
+    delete[] index;
 	metadata()->has_index = 1;
 	reset_index_ptr_();
 }

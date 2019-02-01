@@ -266,6 +266,18 @@ struct QuickVec
 	void resize(size_t size);
 
 	/**
+	 * \brief Resizes the QuickVec and requests additional capacity
+	 * \param size New size of the QuickVec
+	 * \param growthFactor Factor to use when allocating additional capacity
+	 * 
+	 * This method updates the size of the QuickVec.  If the new size is within the current
+	 * capacity, no realloction takes place.  If not, then the reallocation reserves
+	 * additional capacity as a cushion against future needs to reallocate, based
+	 * on the specified growth factor.
+	 */
+	void resizeWithCushion(size_t size, double growthFactor = 1.3);
+
+	/**
 	 * \brief Resizes the QuickVec, initializes new elements with val
 	 * \param size New size of the QuickVec
 	 * \param val Value with which to initialize elements
@@ -404,8 +416,8 @@ inline void QUICKVEC::reserve(size_t size)
 		//data_ = new TT_[size];
 		data_ = (TT_*)QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_));
 		memcpy(data_, old, size_ * sizeof(TT_));
-		TRACEN("QuickVec", 13, "QUICKVEC::reserve after memcpy this=%p old=%p data_=%p"
-			  , (void*)this, (void*)old, (void*)data_);
+		TRACEN("QuickVec", 13, "QUICKVEC::reserve after memcpy this=%p old=%p data_=%p capacity=%d"
+                       , (void*)this, (void*)old, (void*)data_, (int)size);
 		free(old);
 		capacity_ = size;
 	}
@@ -421,11 +433,27 @@ inline void QUICKVEC::resize(size_t size)
 		TT_* old = data_;
 		data_ = (TT_*)QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_));
 		memcpy(data_, old, size_ * sizeof(TT_));
-		TRACEN("QuickVec", 13, "QUICKVEC::resize after memcpy this=%p old=%p data_=%p"
-			  , (void*)this, (void*)old, (void*)data_);
+		TRACEN("QuickVec", 13, "QUICKVEC::resize after memcpy this=%p old=%p data_=%p size=%d"
+                       , (void*)this, (void*)old, (void*)data_, (int)size);
 		free(old);
 		size_ = capacity_ = size;
 	}
+}
+
+QUICKVEC_TEMPLATE
+inline void QUICKVEC::resizeWithCushion(size_t size, double growthFactor)
+{
+	if (size > capacity_)
+	{
+		size_t new_size = std::round(capacity_ * growthFactor);
+		if (new_size < size) {new_size = size;}
+		if (new_size < 512) {new_size = 512;}
+		else if (new_size < 2048) {new_size = 2048;}
+		else if (new_size < 4096) {new_size = 4096;}
+		else if (new_size < 8192) {new_size = 8192;}
+		reserve(new_size);
+	}
+	resize(size);
 }
 
 QUICKVEC_TEMPLATE
