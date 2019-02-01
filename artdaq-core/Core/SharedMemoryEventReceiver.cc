@@ -21,7 +21,7 @@ artdaq::SharedMemoryEventReceiver::SharedMemoryEventReceiver(uint32_t shm_key, u
 
 bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t timeout_us)
 {
-	TLOG(TLVL_TRACE) << "ReadyForRead BEGIN" ;
+	TLOG(TLVL_TRACE) << "ReadyForRead BEGIN timeout_us=" << timeout_us ;
 	if (current_read_buffer_ != -1 && current_data_source_ && current_header_)
 	{
 		TLOG(TLVL_TRACE) << "ReadyForRead Returning true because already reading buffer" ;
@@ -201,7 +201,7 @@ void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()
 	TLOG(TLVL_TRACE) << "ReleaseBuffer BEGIN" ;
 	try
 	{
-		current_data_source_->MarkBufferEmpty(current_read_buffer_);
+		if(current_data_source_) current_data_source_->MarkBufferEmpty(current_read_buffer_);
 	}
 	catch (cet::exception e)
 	{
