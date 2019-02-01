@@ -427,6 +427,16 @@ public:
 	void resizeBytes(std::size_t szbytes);
 
 	/**
+	 * \brief Resize the data payload to hold szbytes bytes (padded by the
+	 * 8-byte RawDataTypes, so, e.g., requesting 14 bytes will actually
+	 * get you 16) and request additional capacity in the underlying storage
+	 * (to help avoid extra reallocations)
+	 * \param szbytes The new size of the payload portion of the Fragment, in bytes
+	 * \param growthFactor The requested growth factor in the capacity of storage
+	 */
+	void resizeBytesWithCushion(std::size_t szbytes, double growthFactor=1.3);
+
+	/**
 	* \brief Resize the data payload to hold sz bytes (padded by the
 	 * 8-byte RawDataTypes, so, e.g., requesting 14 bytes will actually
 	 * get you 16). Initialize new elements (if any) with val.
@@ -992,6 +1002,15 @@ artdaq::Fragment::resizeBytes(std::size_t szbytes)
 {
 	RawDataType nwords = ceil(szbytes / static_cast<double>(sizeof(RawDataType)));
 	resize(nwords);
+}
+
+inline void
+artdaq::Fragment::resizeBytesWithCushion(std::size_t szbytes, double growthFactor)
+{
+	RawDataType nwords = ceil(szbytes / static_cast<double>(sizeof(RawDataType)));
+	vals_.resizeWithCushion(nwords + fragmentHeader()->metadata_word_count +
+	                        fragmentHeader()->num_words(), growthFactor);
+	updateFragmentHeaderWC_();
 }
 
 inline

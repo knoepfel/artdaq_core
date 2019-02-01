@@ -143,9 +143,9 @@ inline size_t artdaq::ContainerFragmentLoader::words_to_frag_words_(size_t nWord
 inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 {
 	auto currSize = sizeof(artdaq::Fragment::value_type) * artdaq_Fragment_.dataSize(); // Resize takes into account header and metadata size
-	artdaq_Fragment_.resizeBytes(bytes + currSize);
+	artdaq_Fragment_.resizeBytesWithCushion(bytes + currSize, 1.3);
 	reset_index_ptr_(); // Must reset index_ptr after resize operation!
-	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << (void*)dataEnd_();
+	TLOG(TLVL_TRACE,"ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << (void*)dataEnd_() << " (oldSizeBytes/deltaBytes: " << currSize << "/" << bytes << ")";
 }
 
 inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
