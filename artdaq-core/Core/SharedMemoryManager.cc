@@ -1013,7 +1013,7 @@ bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphor
 
 void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 {
-	if (buffer->sem_id != -1 && buffer->sem_id != manager_id_) return;
+	if (!buffer || (buffer->sem_id != -1 && buffer->sem_id != manager_id_)) return;
 	TLOG(TLVL_TRACE) << "touchBuffer_: Touching buffer at " << (void*)buffer << " with sequence_id " << buffer->sequence_id;
 	buffer->last_touch_time = TimeUtils::gettimeofday_us();
 }
