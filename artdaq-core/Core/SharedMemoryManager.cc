@@ -891,7 +891,9 @@ bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 	}
 
 	auto pos = GetReadPos(buffer);
+	TLOG(TLVL_TRACE) << "Before memcpy in Read(), size is " << size;
 	memcpy(data, pos, size);
+	TLOG(TLVL_TRACE) << "After memcpy in Read()";
 	auto sts = checkBuffer_(shmBuf, BufferSemaphoreFlags::Reading, false);
 	if (sts)
 	{
