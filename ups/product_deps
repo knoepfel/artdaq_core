@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_core  v3_04_09
+parent artdaq_core  v3_04_04
 defaultqual	e15:s64
 
 # These optional lines define the installed directories where
@@ -31,7 +31,7 @@ canvas_root_io  v1_01_05        s67
 canvas_root_io  v1_01_03        s66
 canvas_root_io  v1_01_02        s65
 canvas_root_io  v1_01_02        s64
-TRACE           v3_13_11
+TRACE           v3_13_07
 cetbuildtools	v7_02_01	-	only_for_build
 end_product_list
 
