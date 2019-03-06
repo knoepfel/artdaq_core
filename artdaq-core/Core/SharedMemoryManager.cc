@@ -77,7 +77,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	if (!sighandler_init)//&& manager_id_ == 0) // ELF 3/22/18: Taking out manager_id_==0 requirement as I think kill(getpid()) is enough protection
 	{
 		sighandler_init = true;
-		std::vector<int> signals = { SIGINT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2 }; // SIGQUIT is used by art in normal operation
+		std::vector<int> signals = { SIGINT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2, SIGHUP }; // SIGQUIT is used by art in normal operation
 		for (auto signal : signals)
 		{
 			struct sigaction old_action;
@@ -891,7 +891,9 @@ bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 	}
 
 	auto pos = GetReadPos(buffer);
+	TLOG(TLVL_TRACE) << "Before memcpy in Read(), size is " << size;
 	memcpy(data, pos, size);
+	TLOG(TLVL_TRACE) << "After memcpy in Read()";
 	auto sts = checkBuffer_(shmBuf, BufferSemaphoreFlags::Reading, false);
 	if (sts)
 	{
