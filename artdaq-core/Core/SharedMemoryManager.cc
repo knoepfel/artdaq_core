@@ -425,14 +425,21 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount()
 	size_t count = 0;
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
-//		TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Checking if buffer " << ii << " is stale.";
-//		ResetBuffer(ii);
+#ifndef __OPTIMIZE__
+		TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Checking if buffer " << ii << " is stale.";
+		ResetBuffer(ii);
+#endif
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
-//		TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
+
+#ifndef __OPTIMIZE__
+		TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
+#endif
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
-//			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << " is either unowned or owned by this manager, and is marked full.";
+#ifndef __OPTIMIZE__
+			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << " is either unowned or owned by this manager, and is marked full.";
+#endif
 			touchBuffer_(buf);
 			++count;
 		}
@@ -451,14 +458,18 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite)
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
         // ELF, 3/19/2019: This TRACE call is a major performance hit with many buffers
-//		TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Checking if buffer " << ii << " is stale.";
-//		ResetBuffer(ii);
+#ifndef __OPTIMIZE__
+          		TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Checking if buffer " << ii << " is stale.";
+		ResetBuffer(ii);
+#endif
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
 		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
-			|| (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
+			|| (overwrite && buf->sem != BufferSemaphoreFlags::Writing)) 
 		{
-//			TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Buffer " << ii << " is either empty or is available for overwrite.";
+#ifndef __OPTIMIZE__
+			TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Buffer " << ii << " is either empty or is available for overwrite.";
+#endif
 			++count;
 		}
 	}
@@ -479,11 +490,18 @@ bool artdaq::SharedMemoryManager::ReadyForRead()
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
 		auto buffer = (rp + ii) % shm_ptr_->buffer_count;
-		//TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Checking if buffer " << buffer << " is stale.";
+
+#ifndef __OPTIMIZE__
+		TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Checking if buffer " << buffer << " is stale.";
+#endif
 		ResetBuffer(buffer);
 		auto buf = getBufferInfo_(buffer);
 		if (!buf) continue;
-		//TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Buffer " << buffer << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )" << " seq_id=" << buf->sequence_id << " >? " << last_seen_id_;
+
+#ifndef __OPTIMIZE__
+		TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Buffer " << buffer << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )" << " seq_id=" << buf->sequence_id << " >? " << last_seen_id_;
+#endif
+
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
 			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Buffer " << buffer << " is either unowned or owned by this manager, and is marked full.";
