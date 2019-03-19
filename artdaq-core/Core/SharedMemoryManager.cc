@@ -425,14 +425,14 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount()
 	size_t count = 0;
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
-		TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Checking if buffer " << ii << " is stale.";
-		ResetBuffer(ii);
+//		TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Checking if buffer " << ii << " is stale.";
+//		ResetBuffer(ii);
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
-		TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
+//		TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
-			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << " is either unowned or owned by this manager, and is marked full.";
+//			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << " is either unowned or owned by this manager, and is marked full.";
 			touchBuffer_(buf);
 			++count;
 		}
@@ -452,13 +452,13 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite)
 	{
         // ELF, 3/19/2019: This TRACE call is a major performance hit with many buffers
 //		TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Checking if buffer " << ii << " is stale.";
-		ResetBuffer(ii);
+//		ResetBuffer(ii);
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
 		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1)
 			|| (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
 		{
-			TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Buffer " << ii << " is either empty or is available for overwrite.";
+//			TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Buffer " << ii << " is either empty or is available for overwrite.";
 			++count;
 		}
 	}
