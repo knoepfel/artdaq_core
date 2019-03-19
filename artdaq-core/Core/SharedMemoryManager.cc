@@ -450,7 +450,8 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite)
 	size_t count = 0;
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
-		TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Checking if buffer " << ii << " is stale.";
+        // ELF, 3/19/2019: This TRACE call is a major performance hit with many buffers
+//		TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Checking if buffer " << ii << " is stale.";
 		ResetBuffer(ii);
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
@@ -750,9 +751,10 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 {
 	if (buffer >= shm_ptr_->buffer_count)  Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
-	TLOG(TLVL_BUFLCK) << "ResetBuffer: obtaining buffer_mutex lock for buffer " << buffer;
+    // ELF, 3/19/2019: These TRACE calls are a major performance hit with many buffers.
+	//TLOG(TLVL_BUFLCK) << "ResetBuffer: obtaining buffer_mutex lock for buffer " << buffer;
 	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
-	TLOG(TLVL_BUFLCK) << "ResetBuffer: obtained buffer_mutex lock for buffer " << buffer;
+	//TLOG(TLVL_BUFLCK) << "ResetBuffer: obtained buffer_mutex lock for buffer " << buffer;
 
 	//TraceLock lk(buffer_mutexes_[buffer], 25, "ResetBuffer" + std::to_string(buffer));
 	auto shmBuf = getBufferInfo_(buffer);
