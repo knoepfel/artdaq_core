@@ -59,7 +59,8 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	: shm_segment_id_(-1)
 	, shm_ptr_(NULL)
 	, shm_key_(shm_key)
-	, manager_id_(-1)
+	, manager_id_(-1),
+      buffer_ptrs_()
 	, buffer_mutexes_()
 	, last_seen_id_(0)
 {
@@ -195,8 +196,16 @@ void artdaq::SharedMemoryManager::Attach()
 				shm_ptr_->lowest_seq_id_read = 0;
 				TLOG(TLVL_DEBUG) << "Getting Shared Memory Size parameters";
 			}
+
 			//last_seen_id_ = shm_ptr_->next_sequence_id;
+            requested_shm_parameters_.buffer_count = shm_ptr_->buffer_count;
+            buffer_ptrs_ = std::vector<ShmBuffer*>(shm_ptr_->buffer_count);
+			for (size_t ii = 0; ii < shm_ptr_->buffer_count; ++ii)
+			{
+              buffer_ptrs_[ii] = reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + ii * sizeof(ShmBuffer));
+			}
 			buffer_mutexes_ = std::vector<std::mutex>(shm_ptr_->buffer_count);
+
 			TLOG(TLVL_DEBUG) << "Initialization Complete: "
 				<< "key: 0x" << std::hex << shm_key_
 				<< ", manager ID: " << std::dec << manager_id_
@@ -999,8 +1008,10 @@ uint8_t* artdaq::SharedMemoryManager::bufferStart_(int buffer)
 artdaq::SharedMemoryManager::ShmBuffer* artdaq::SharedMemoryManager::getBufferInfo_(int buffer)
 {
 	if (shm_ptr_ == nullptr) return nullptr;
-	if (buffer >= shm_ptr_->buffer_count)  Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
-	return reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + buffer * sizeof(ShmBuffer));
+	// Check local variable first, but re-check shared memory
+  if (buffer >= requested_shm_parameters_.buffer_count && buffer >= shm_ptr_->buffer_count)
+	  Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
+	return buffer_ptrs_[buffer];
 }
 
 bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphoreFlags flags, bool exceptions)

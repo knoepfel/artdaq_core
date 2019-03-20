@@ -383,6 +383,7 @@ namespace artdaq
 		ShmStruct* shm_ptr_;
 		uint32_t shm_key_;
 		int manager_id_;
+                std::vector<ShmBuffer*> buffer_ptrs_;
 		mutable std::vector<std::mutex> buffer_mutexes_;
 		mutable std::mutex search_mutex_;
 
