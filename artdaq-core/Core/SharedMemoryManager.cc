@@ -175,8 +175,11 @@ void artdaq::SharedMemoryManager::Attach()
 				shm_ptr_->buffer_timeout_us = requested_shm_parameters_.buffer_timeout_us;
 				shm_ptr_->destructive_read_mode = requested_shm_parameters_.destructive_read_mode;
 
-				for (int ii = 0; ii < static_cast<int>(requested_shm_parameters_.buffer_count); ++ii)
+                buffer_ptrs_ = std::vector<ShmBuffer*>(shm_ptr_->buffer_count);
+				for (int ii = 0; ii < static_cast<int>(requested_shm_parameters_.buffer_count); ++ii) 
 				{
+                    buffer_ptrs_[ii] = reinterpret_cast<ShmBuffer*>(
+                                      reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + ii * sizeof(ShmBuffer));
 					if (!getBufferInfo_(ii)) return;
 					getBufferInfo_(ii)->writePos = 0;
 					getBufferInfo_(ii)->readPos = 0;
@@ -194,16 +197,17 @@ void artdaq::SharedMemoryManager::Attach()
 				TLOG(TLVL_DEBUG) << "Getting ID from Shared Memory";
 				GetNewId();
 				shm_ptr_->lowest_seq_id_read = 0;
-				TLOG(TLVL_DEBUG) << "Getting Shared Memory Size parameters";
+                TLOG(TLVL_DEBUG) << "Getting Shared Memory Size parameters";
+
+                requested_shm_parameters_.buffer_count = shm_ptr_->buffer_count;
+                buffer_ptrs_ = std::vector<ShmBuffer*>(shm_ptr_->buffer_count);
+                for (int ii = 0; ii < shm_ptr_->buffer_count; ++ii) 
+				{
+					buffer_ptrs_[ii] = reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + ii * sizeof(ShmBuffer));
+				}
 			}
 
 			//last_seen_id_ = shm_ptr_->next_sequence_id;
-            requested_shm_parameters_.buffer_count = shm_ptr_->buffer_count;
-            buffer_ptrs_ = std::vector<ShmBuffer*>(shm_ptr_->buffer_count);
-			for (size_t ii = 0; ii < shm_ptr_->buffer_count; ++ii)
-			{
-              buffer_ptrs_[ii] = reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + ii * sizeof(ShmBuffer));
-			}
 			buffer_mutexes_ = std::vector<std::mutex>(shm_ptr_->buffer_count);
 
 			TLOG(TLVL_DEBUG) << "Initialization Complete: "
