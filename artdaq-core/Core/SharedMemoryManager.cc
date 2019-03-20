@@ -996,28 +996,6 @@ std::list<std::pair<int, artdaq::SharedMemoryManager::BufferSemaphoreFlags>> art
 	return output;
 }
 
-uint8_t* artdaq::SharedMemoryManager::dataStart_() const
-{
-	if (shm_ptr_ == nullptr) return nullptr;
-	return reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + shm_ptr_->buffer_count * sizeof(ShmBuffer);
-}
-
-uint8_t* artdaq::SharedMemoryManager::bufferStart_(int buffer)
-{
-	if (shm_ptr_ == nullptr) return nullptr;
-	if (buffer >= shm_ptr_->buffer_count)  Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
-	return dataStart_() + buffer * shm_ptr_->buffer_size;
-}
-
-artdaq::SharedMemoryManager::ShmBuffer* artdaq::SharedMemoryManager::getBufferInfo_(int buffer)
-{
-	if (shm_ptr_ == nullptr) return nullptr;
-	// Check local variable first, but re-check shared memory
-  if (buffer >= requested_shm_parameters_.buffer_count && buffer >= shm_ptr_->buffer_count)
-	  Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
-	return buffer_ptrs_[buffer];
-}
-
 bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphoreFlags flags, bool exceptions)
 {
 	if (!buffer)
