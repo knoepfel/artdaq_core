@@ -94,6 +94,32 @@ if(BTYPE_UC STREQUAL DEBUG)
 			cet_add_compiler_flags(-fsanitize=thread -ltsan -Wno-unused-command-line-argument)
 		endif()
 	endif()
+	if(DEFINED ENV{USE_GCOV})
+		cet_add_compiler_flags(-fprofile-arcs -ftest-coverage --coverage)
+
+		set(CMAKE_MODULE_PATH
+			${CMAKE_CURRENT_SOURCE_DIR}/Modules
+			${CMAKE_MODULE_PATH}
+			)
+	set(COVERAGE_LCOV_EXCLUDES boost/* */products/*)
+    include(CodeCoverage)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME SharedMemoryManager_t_coverage EXECUTABLE SharedMemoryManager_t DEPENDENCIES SharedMemoryManager_t)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME SharedMemoryFragmentManager_t_coverage EXECUTABLE SharedMemoryFragmentManager_t DEPENDENCIES SharedMemoryFragmentManager_t)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME RawEvent_t_coverage EXECUTABLE RawEvent_t DEPENDENCIES RawEvent_t)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME ContainerFragment_t_coverage EXECUTABLE ContainerFragment_t DEPENDENCIES ContainerFragment_t)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME Fragment_t_coverage EXECUTABLE Fragment_t DEPENDENCIES Fragment_t)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME FragmentGenerator_t_coverage EXECUTABLE FragmentGenerator_t DEPENDENCIES FragmentGenerator_t)
+
+	add_custom_target(Coverage
+		DEPENDS
+		SharedMemoryManager_t_coverage
+		SharedMemoryFragmentManager_t_coverage
+		RawEvent_t_coverage
+		ContainerFragment_t_coverage
+		Fragment_t_coverage
+		FragmentGenerator_t_coverage)
+
+	endif()
 endif()
 
 cet_report_compiler_flags()
