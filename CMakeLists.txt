@@ -110,7 +110,7 @@ if(BTYPE_UC STREQUAL DEBUG)
     SETUP_TARGET_FOR_COVERAGE_LCOV(NAME Fragment_t_coverage EXECUTABLE Fragment_t DEPENDENCIES Fragment_t)
     SETUP_TARGET_FOR_COVERAGE_LCOV(NAME FragmentGenerator_t_coverage EXECUTABLE FragmentGenerator_t DEPENDENCIES FragmentGenerator_t)
 
-	add_custom_target(Coverage
+	add_custom_target(artdaq_core_Coverage
 		DEPENDS
 		SharedMemoryManager_t_coverage
 		SharedMemoryFragmentManager_t_coverage
