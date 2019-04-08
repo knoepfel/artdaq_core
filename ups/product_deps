@@ -20,20 +20,16 @@ perllib  product_dir
 #
 product		version		optional
 canvas_root_io  v1_03_03	s81
+canvas_root_io  v1_01_10        s79
 canvas_root_io  v1_02_02	s78
 canvas_root_io  v1_02_01	s75
-canvas_root_io  v1_02_00	s71
-canvas_root_io  v1_01_10        s79
 canvas_root_io  v1_01_10        s74
 canvas_root_io  v1_01_09        s73
 canvas_root_io  v1_01_08        s72
-canvas_root_io  v1_02_00        s71
 canvas_root_io  v1_01_08        s70
 canvas_root_io  v1_01_07        s69
 canvas_root_io  v1_01_06        s68
 canvas_root_io  v1_01_05        s67
-canvas_root_io  v1_01_03        s66
-canvas_root_io  v1_01_02        s65
 TRACE           v3_13_12
 cetbuildtools	v7_12_01	-	only_for_build
 end_product_list
@@ -89,10 +85,6 @@ c2:s72:debug            -               c2:debug        -nq-    -std=c++17
 c2:s72:prof             -               c2:prof         -nq-    -std=c++17
 e17:s72:debug		-		e17:debug	-nq-	-std=c++17
 e17:s72:prof		-		e17:prof	-nq-	-std=c++17
-c2:s71:debug            -               c2:debug        -nq-    -std=c++17
-c2:s71:prof             -               c2:prof         -nq-    -std=c++17
-e17:s71:debug		-		e17:debug	-nq-	-std=c++17
-e17:s71:prof		-		e17:prof	-nq-	-std=c++17
 c2:s70:debug            -               c2:debug        -nq-    -std=c++17
 c2:s70:prof             -               c2:prof         -nq-    -std=c++17
 e17:s70:debug		-		e17:debug	-nq-	-std=c++17
@@ -117,14 +109,6 @@ e17:s67:debug		-		e17:debug	-nq-	-std=c++17
 e17:s67:prof		-		e17:prof	-nq-	-std=c++17
 e15:s67:debug		-		e15:debug	-nq-	-std=c++14
 e15:s67:prof		-		e15:prof	-nq-	-std=c++14
-c2:s66:debug            -               c2:debug        -nq-    -std=c++17
-c2:s66:prof             -               c2:prof         -nq-    -std=c++17
-e15:s66:debug		-		e15:debug	-nq-	-std=c++14
-e15:s66:prof		-		e15:prof	-nq-	-std=c++14
-c2:s65:debug            -               c2:debug        -nq-    -std=c++17
-c2:s65:prof             -               c2:prof         -nq-    -std=c++17
-e15:s65:debug		-		e15:debug	-nq-	-std=c++14
-e15:s65:prof		-		e15:prof	-nq-	-std=c++14
 end_qualifier_list
 
 
