@@ -117,7 +117,7 @@ add_subdirectory(ups)
 # doc - Documentation
 if ( NOT DEFINED ENV{DISABLE_DOXYGEN} )
 add_subdirectory(doc)
-
+endif()
 
 # packaging utility
 include(UseCPack)
