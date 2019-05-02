@@ -114,9 +114,10 @@ add_subdirectory(artdaq-core)
 # ups - table and config files
 add_subdirectory(ups)
 
-# JCF: at Alessandro Thea's request, disable Doxygen in builds
-# # doc - Documentation
-# add_subdirectory(doc)
+# doc - Documentation
+if ( NOT DEFINED ENV{DISABLE_DOXYGEN} )
+add_subdirectory(doc)
+
 
 # packaging utility
 include(UseCPack)
