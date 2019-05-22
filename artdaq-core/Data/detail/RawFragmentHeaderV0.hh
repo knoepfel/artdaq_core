@@ -10,6 +10,7 @@
 #include "cetlib_except/exception.h"
 #include <map>
 #include "artdaq-core/Data/detail/RawFragmentHeader.hh"
+#include "artdaq-core/Utilities/TimeUtils.hh"
 
 extern "C"
 {
@@ -211,6 +212,10 @@ artdaq::detail::RawFragmentHeaderV0::upgrade() const
 
 	output.valid = true;
 	output.complete = true;
+	
+	auto time = artdaq::TimeUtils::get_realtime_clock();
+	output.atime_ns = time.second;
+	output.atime_s = time.first;
 
 	return output;
 }

@@ -244,6 +244,10 @@ artdaq::detail::RawFragmentHeaderV1::upgrade() const
 	output.valid = true;
 	output.complete = true;
 
+	auto time = artdaq::TimeUtils::get_realtime_clock();
+	output.atime_ns = time.second;
+	output.atime_s = time.first;
+
 	return output;
 }
 #endif
