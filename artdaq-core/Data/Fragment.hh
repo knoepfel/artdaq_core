@@ -1165,6 +1165,7 @@ artdaq::Fragment::fragmentHeader()
 			auto szDiff = hdr->num_words() - old_hdr->num_words();
 			if (szDiff > 0) vals_.insert(vals_.begin(), szDiff, 0);
 			memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+			break;
 		}
 		case 1:
 		{
@@ -1175,8 +1176,8 @@ artdaq::Fragment::fragmentHeader()
 			auto szDiff = hdr->num_words() - old_hdr->num_words();
 			if (szDiff > 0) vals_.insert(vals_.begin(), szDiff, 0);
 			memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+			break;
 		}
-		break;
 		default:
 			throw cet::exception("Fragment") << "A Fragment with an unknown version (" << std::to_string(hdr->version) << ") was received!";
 			break;
@@ -1207,6 +1208,7 @@ artdaq::Fragment::fragmentHeader() const
 			auto vals_nc = const_cast<DATAVEC_T*>(&vals_);
 			if (szDiff > 0) vals_nc->insert(vals_nc->begin(), szDiff, 0);
 			memcpy(&(*vals_nc)[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+			break;
 		}
 		case 1:
 		{
@@ -1218,8 +1220,8 @@ artdaq::Fragment::fragmentHeader() const
 			auto vals_nc = const_cast<DATAVEC_T*>(&vals_);
 			if (szDiff > 0) vals_nc->insert(vals_nc->begin(), szDiff, 0);
 			memcpy(&(*vals_nc)[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+			break;
 		}
-		break;
 		default:
 			throw cet::exception("Fragment") << "A Fragment with an unknown version (" << std::to_string(hdr->version) << ") was received!";
 			break;

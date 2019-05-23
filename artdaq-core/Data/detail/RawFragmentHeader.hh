@@ -9,6 +9,7 @@
 #include <map>
 #include "artdaq-core/Data/dictionarycontrol.hh"
 #include "cetlib_except/exception.h"
+#include "artdaq-core/Utilities/TimeUtils.hh"
 
 extern "C" {
 #include <stdint.h>

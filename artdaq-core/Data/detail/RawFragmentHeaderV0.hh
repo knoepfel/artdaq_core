@@ -214,8 +214,8 @@ artdaq::detail::RawFragmentHeaderV0::upgrade() const
 	output.complete = true;
 	
 	auto time = artdaq::TimeUtils::get_realtime_clock();
-	output.atime_ns = time.second;
-	output.atime_s = time.first;
+	output.atime_ns = time.tv_nsec;
+	output.atime_s = time.tv_sec;
 
 	return output;
 }
