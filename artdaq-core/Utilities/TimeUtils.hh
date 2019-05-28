@@ -65,6 +65,14 @@ inline constexpr size_t GetElapsedTimeMilliseconds(std::chrono::steady_clock::ti
 	return static_cast<size_t>(GetElapsedTime(then, now) * 1000);
 }
 
+/// <summary>
+/// Get the elapsed time between two struct timespec instances. 
+/// 
+/// Note that struct timespec instances from get_realtime_clock are subject to clock adjustments and should not be relied on as precision timers!
+/// </summary>
+/// <param name="then">Timespec representing beginning of interval</param>
+/// <param name="now">Timespec representing end of interval. Defaults to get_realtime_clock()</param>
+/// <returns>Elapseed time between then and now as double, in seconds</returns>
 inline constexpr double GetElapsedTime(struct timespec const& then, struct timespec now = get_realtime_clock())
 {
 	return now.tv_sec - then.tv_sec + ((now.tv_nsec - then.tv_nsec) / 1000000000.0);
