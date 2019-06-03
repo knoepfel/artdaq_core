@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_core  v3_04_16
+parent artdaq_core  v3_04_17
 defaultqual	e15:s67
 
 # These optional lines define the installed directories where
@@ -19,6 +19,7 @@ perllib  product_dir
 
 #
 product		version		optional
+canvas_root_io  v1_03_04	s84
 canvas_root_io  v1_03_03	s83
 canvas_root_io  v1_03_03	s82
 canvas_root_io  v1_03_03	s81
@@ -39,6 +40,22 @@ end_product_list
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
 qualifier		canvas		canvas_root_io	TRACE	notes
+c7:s84:py3:debug        -               c7:py3:debug    -nq-    -std=c++17
+c7:s84:py3:prof         -               c7:py3:prof     -nq-    -std=c++17
+c7:s84:debug            -               c7:debug        -nq-    -std=c++17
+c7:s84:prof             -               c7:prof         -nq-    -std=c++17
+c2:s84:py3:debug        -               c2:py3:debug    -nq-    -std=c++17
+c2:s84:py3:prof         -               c2:py3:prof     -nq-    -std=c++17
+c2:s84:debug            -               c2:debug        -nq-    -std=c++17
+c2:s84:prof             -               c2:prof         -nq-    -std=c++17
+e19:s84:py3:debug	-		e19:py3:debug	-nq-	-std=c++17
+e19:s84:py3:prof	-		e19:py3:prof	-nq-	-std=c++17
+e19:s84:debug		-		e19:debug	-nq-	-std=c++17
+e19:s84:prof		-		e19:prof	-nq-	-std=c++17
+e17:s84:py3:debug	-		e17:py3:debug	-nq-	-std=c++17
+e17:s84:py3:prof	-		e17:py3:prof	-nq-	-std=c++17
+e17:s84:debug		-		e17:debug	-nq-	-std=c++17
+e17:s84:prof		-		e17:prof	-nq-	-std=c++17
 c7:s83:py3:debug        -               c7:py3:debug    -nq-    -std=c++17
 c7:s83:py3:prof         -               c7:py3:prof     -nq-    -std=c++17
 c7:s83:debug            -               c7:debug        -nq-    -std=c++17
