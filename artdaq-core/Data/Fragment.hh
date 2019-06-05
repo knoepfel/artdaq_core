@@ -336,6 +336,24 @@ public:
 	void setTimestamp(timestamp_t timestamp);
 
 	/**
+	 * \brief Update the access time of the Fragment
+	 */
+	void touch();
+
+	/**
+	 * \brief Get the last access time of the Fragment
+	 * \return struct timespec with last access time of the Fragment
+	 */
+	 struct timespec atime();
+
+	 /**
+	  * \brief Get the difference between the current time and the last access time of the Fragment.
+	  * \param touch Whether to also perform a touch operation
+	  * \return struct timespec representing the difference between current time and the last access time
+	  */
+	 struct timespec getLatency(bool touch);
+
+	/**
 	 * \brief Size of vals_ vector ( header + (optional) metadata + payload) in bytes.
 	 * \return The size of the Fragment in bytes, including header, metadata, and payload
 	 */
@@ -798,6 +816,8 @@ Fragment(std::size_t payload_size, sequence_id_t sequence_id,
 	fragmentHeader()->timestamp = timestamp;
 	fragmentHeader()->type = type;
 
+	fragmentHeader()->touch();
+
 	fragmentHeader()->metadata_word_count =
 		vals_.size() -
 		(fragmentHeader()->num_words() + payload_size);
@@ -888,6 +908,21 @@ void
 artdaq::Fragment::setTimestamp(timestamp_t timestamp)
 {
 	fragmentHeader()->timestamp = timestamp;
+}
+
+
+inline void artdaq::Fragment::touch()
+{
+	fragmentHeader()->touch();
+}
+
+inline struct timespec artdaq::Fragment::atime()
+{
+	return fragmentHeader()->atime();
+}
+
+inline struct timespec artdaq::Fragment::getLatency(bool touch) {
+	return fragmentHeader()->getLatency(touch);
 }
 
 inline
