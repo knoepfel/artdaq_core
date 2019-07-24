@@ -479,8 +479,8 @@ BOOST_AUTO_TEST_CASE(Bytes)
 	// header == 3 RawDataTypes, metadata is 3 bytes (rounds up to 1 RawDataType)
 	BOOST_REQUIRE(f3_factory->dataBeginBytes() -
 	                  reinterpret_cast<artdaq::Fragment::byte_t*>(
-	                      &*f3_factory->headerBegin()) ==
-	              4 * sizeof(artdaq::RawDataType));
+				&*f3_factory->headerBegin())
+			== (1 + artdaq::detail::RawFragmentHeader::num_words()) * sizeof(artdaq::RawDataType));
 
 	// Sanity check for the payload size
 	BOOST_REQUIRE(static_cast<std::size_t>(f3_factory->dataEndBytes() - f3_factory->dataBeginBytes()) == f3_factory->dataSizeBytes());
