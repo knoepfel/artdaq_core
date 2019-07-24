@@ -106,6 +106,12 @@ std::string convertUnixTimeToString(struct timespec const& inputUnixTime);
 uint64_t gettimeofday_us();
 
 /**
+		 * \brief Get the current time of day as a pair of seconds and nanoseconds (from clock_gettime(CLOCK_REALTIME, ...) system call)
+		 * \return Pair of seconds, nanoseconds wallclock time
+		 */
+		struct timespec get_realtime_clock();
+
+		/**
 		* \brief Converts a Unix time to double
 		* \param inputUnixTime A time_t Unix time variable
 		* \return double representation of Unix time (seconds since epoch)
