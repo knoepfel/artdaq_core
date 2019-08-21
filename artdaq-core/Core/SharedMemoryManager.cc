@@ -2,7 +2,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <cstring>
-#include <set>
+#include <list>
 #include <unordered_map>
 #ifndef SHM_DEST // Lynn reports that this is missing on Mac OS X?!?
 #define SHM_DEST 01000
@@ -17,7 +17,7 @@
 #define TLVL_BUFFER 40
 #define TLVL_BUFLCK 41
 
-static std::set<artdaq::SharedMemoryManager const*> instances = std::set<artdaq::SharedMemoryManager const*>();
+static std::list<artdaq::SharedMemoryManager const*> instances = std::list<artdaq::SharedMemoryManager const*>();
 
 static std::unordered_map<int, struct sigaction> old_actions = std::unordered_map<int, struct sigaction>();
 static bool sighandler_init = false;
@@ -67,7 +67,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	requested_shm_parameters_.buffer_timeout_us = buffer_timeout_us;
 	requested_shm_parameters_.destructive_read_mode = destructive_read_mode;
 
-	instances.insert(this);
+	instances.push_back(this);
 	Attach();
 
 	static std::mutex sighandler_mutex;
@@ -105,7 +105,17 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 
 artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept
 {
-	instances.erase(this);
+	{
+		static std::mutex destructor_mutex;
+		std::lock_guard<std::mutex> lk(destructor_mutex);
+		for (auto it = instances.begin(); it != instances.end(); ++it) {
+			if (*it == this)
+			{
+				it = instances.erase(it);
+				break;
+			}
+		}
+	}
 	TLOG(TLVL_DEBUG) << "~SharedMemoryManager called";
 	Detach();
 	TLOG(TLVL_DEBUG) << "~SharedMemoryManager done";
