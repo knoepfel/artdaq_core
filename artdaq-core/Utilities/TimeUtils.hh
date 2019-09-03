@@ -21,17 +21,6 @@ namespace TimeUtils {
 		*/
 typedef std::chrono::duration<double, std::ratio<1>> seconds;
 
-/**
-		 * \brief Get the current time of day as a pair of seconds and nanoseconds (from clock_gettime(CLOCK_REALTIME, ...) system call)
-		 * \return Pair of seconds, nanoseconds wallclock time
-		 */
-inline struct timespec get_realtime_clock()
-{
-	struct timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
-	return ts;
-}
-
 /// <summary>
 /// Get the number of seconds in the given interval
 /// </summary>
@@ -66,8 +55,8 @@ inline constexpr size_t GetElapsedTimeMilliseconds(std::chrono::steady_clock::ti
 }
 
 /// <summary>
-/// Get the elapsed time between two struct timespec instances. 
-/// 
+/// Get the elapsed time between two struct timespec instances.
+///
 /// Note that struct timespec instances from get_realtime_clock are subject to clock adjustments and should not be relied on as precision timers!
 /// </summary>
 /// <param name="then">Timespec representing beginning of interval</param>
@@ -109,9 +98,9 @@ uint64_t gettimeofday_us();
 		 * \brief Get the current time of day as a pair of seconds and nanoseconds (from clock_gettime(CLOCK_REALTIME, ...) system call)
 		 * \return Pair of seconds, nanoseconds wallclock time
 		 */
-		struct timespec get_realtime_clock();
+struct timespec get_realtime_clock();
 
-		/**
+/**
 		* \brief Converts a Unix time to double
 		* \param inputUnixTime A time_t Unix time variable
 		* \return double representation of Unix time (seconds since epoch)
