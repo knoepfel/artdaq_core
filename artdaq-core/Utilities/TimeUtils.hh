@@ -54,6 +54,12 @@ inline constexpr size_t GetElapsedTimeMilliseconds(std::chrono::steady_clock::ti
 	return static_cast<size_t>(GetElapsedTime(then, now) * 1000);
 }
 
+/**
+		 * \brief Get the current time of day as a pair of seconds and nanoseconds (from clock_gettime(CLOCK_REALTIME, ...) system call)
+		 * \return Pair of seconds, nanoseconds wallclock time
+		 */
+struct timespec get_realtime_clock();
+
 /// <summary>
 /// Get the elapsed time between two struct timespec instances.
 ///
@@ -93,12 +99,6 @@ std::string convertUnixTimeToString(struct timespec const& inputUnixTime);
 		* \return The current time of day in microseconds
 		*/
 uint64_t gettimeofday_us();
-
-/**
-		 * \brief Get the current time of day as a pair of seconds and nanoseconds (from clock_gettime(CLOCK_REALTIME, ...) system call)
-		 * \return Pair of seconds, nanoseconds wallclock time
-		 */
-struct timespec get_realtime_clock();
 
 /**
 		* \brief Converts a Unix time to double
