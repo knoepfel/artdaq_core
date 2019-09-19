@@ -1201,6 +1201,7 @@ artdaq::Fragment::fragmentHeader()
 			auto szDiff = hdr->num_words() - old_hdr->num_words();
 			if (szDiff > 0) vals_.insert(vals_.begin(), szDiff, 0);
 			memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+			hdr = reinterpret_cast_checked<detail::RawFragmentHeader*>(&vals_[0]); // Update hdr in case vals_->insert call invalidated pointers
 			break;
 		}
 		case 1:
@@ -1213,6 +1214,7 @@ artdaq::Fragment::fragmentHeader()
 			auto szDiff = hdr->num_words() - old_hdr->num_words();
 			if (szDiff > 0) vals_.insert(vals_.begin(), szDiff, 0);
 			memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+			hdr = reinterpret_cast_checked<detail::RawFragmentHeader*>(&vals_[0]); // Update hdr in case vals_->insert call invalidated pointers
 			break;
 		}
 		default:
@@ -1246,6 +1248,7 @@ artdaq::Fragment::fragmentHeader() const
 			auto vals_nc = const_cast<DATAVEC_T*>(&vals_);
 			if (szDiff > 0) vals_nc->insert(vals_nc->begin(), szDiff, 0);
 			memcpy(&(*vals_nc)[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+			hdr = reinterpret_cast_checked<detail::RawFragmentHeader const*>(&vals_[0]); // Update hdr in case vals_nc->insert call invalidated pointers
 			break;
 		}
 		case 1:
@@ -1259,6 +1262,7 @@ artdaq::Fragment::fragmentHeader() const
 			auto vals_nc = const_cast<DATAVEC_T*>(&vals_);
 			if (szDiff > 0) vals_nc->insert(vals_nc->begin(), szDiff, 0);
 			memcpy(&(*vals_nc)[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
+			hdr = reinterpret_cast_checked<detail::RawFragmentHeader const*>(&vals_[0]); // Update hdr in case vals_nc->insert call invalidated pointers
 			break;
 		}
 		default:
