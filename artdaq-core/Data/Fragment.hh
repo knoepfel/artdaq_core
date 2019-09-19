@@ -1193,7 +1193,8 @@ artdaq::Fragment::fragmentHeader()
 			break;
 		case 0:
 		{
-			std::cout << "Upgrading RawFragmentHeaderV0 (non const)" << std::endl;
+			//std::cout << "Upgrading RawFragmentHeaderV0 (non const)" << std::endl;
+			TRACEN("Fragment", 4, "Upgrading RawFragmentHeaderV0 (non const)");
 			auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 *>(&vals_[0]);
 			auto new_hdr = old_hdr->upgrade();
 
@@ -1204,7 +1205,8 @@ artdaq::Fragment::fragmentHeader()
 		}
 		case 1:
 		{
-			std::cout << "Upgrading RawFragmentHeaderV1 (non const)" << std::endl;
+			//std::cout << "Upgrading RawFragmentHeaderV1 (non const)" << std::endl;
+			TRACEN("Fragment", 4, "Upgrading RawFragmentHeaderV1 (non const)");
 			auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1 *>(&vals_[0]);
 			auto new_hdr = old_hdr->upgrade();
 
@@ -1235,7 +1237,8 @@ artdaq::Fragment::fragmentHeader() const
 			break;
 		case 0:
 		{
-			std::cout << "Upgrading RawFragmentHeaderV0 (const)" << std::endl;
+			//std::cout << "Upgrading RawFragmentHeaderV0 (const)" << std::endl;
+			TRACEN("Fragment", 4, "Upgrading RawFragmentHeaderV0 (const)");
 			auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 const*>(&vals_[0]);
 			auto new_hdr = old_hdr->upgrade();
 
@@ -1247,7 +1250,8 @@ artdaq::Fragment::fragmentHeader() const
 		}
 		case 1:
 		{
-			std::cout << "Upgrading RawFragmentHeaderV1 (const)" << std::endl;
+			//std::cout << "Upgrading RawFragmentHeaderV1 (const)" << std::endl;
+			TRACEN("Fragment", 4, "Upgrading RawFragmentHeaderV1 (const)");
 			auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1 const*>(&vals_[0]);
 			auto new_hdr = old_hdr->upgrade();
 
