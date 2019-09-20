@@ -4,8 +4,8 @@
 #include "tracemf.h"
 
 artdaq::SharedMemoryFragmentManager::SharedMemoryFragmentManager(uint32_t shm_key, size_t buffer_count, size_t max_buffer_size, size_t buffer_timeout_us)
-	: SharedMemoryManager(shm_key, buffer_count, max_buffer_size, buffer_timeout_us)
-	, active_buffer_(-1)
+    : SharedMemoryManager(shm_key, buffer_count, max_buffer_size, buffer_timeout_us)
+    , active_buffer_(-1)
 {
 }
 
@@ -39,7 +39,7 @@ int artdaq::SharedMemoryFragmentManager::WriteFragment(Fragment&& fragment, bool
 	if (!ReadyForWrite(overwrite))
 	{
 		int64_t loopCount = 0;
-		size_t sleepTime = 1000; // microseconds
+		size_t sleepTime = 1000;  // microseconds
 		int64_t nloops = (timeout_us - 1000) / sleepTime;
 
 		while (!ReadyForWrite(overwrite) && (!overwrite || timeout_us == 0 || loopCount < nloops))
@@ -83,7 +83,7 @@ int artdaq::SharedMemoryFragmentManager::ReadFragment(Fragment& fragment)
 	if (sts != 0) return sts;
 	fragment.resize(tmpHdr.word_count - tmpHdr.num_words());
 	memcpy(fragment.headerAddress(), &tmpHdr, tmpHdr.num_words() * sizeof(artdaq::RawDataType));
-	TLOG(14) << "Reading Fragment Body - of frag w/ seqID="<<tmpHdr.sequence_id;
+	TLOG(14) << "Reading Fragment Body - of frag w/ seqID=" << tmpHdr.sequence_id;
 	return ReadFragmentData(fragment.headerAddress() + tmpHdr.num_words(), tmpHdr.word_count - tmpHdr.num_words());
 }
 
@@ -113,7 +113,7 @@ int artdaq::SharedMemoryFragmentManager::ReadFragmentHeader(detail::RawFragmentH
 		return -2;
 	}
 
-	TLOG(22) << "ReadFragmentHeader: read active_buffer_="<<active_buffer_<<" sequence_id="<<header.sequence_id;
+	TLOG(22) << "ReadFragmentHeader: read active_buffer_=" << active_buffer_ << " sequence_id=" << header.sequence_id;
 	return 0;
 }
 

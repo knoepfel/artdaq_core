@@ -868,9 +868,9 @@ BOOST_AUTO_TEST_CASE(Upgrade_V0)
 	BOOST_REQUIRE_EQUAL(f.fragmentID(), 0xBEE7);
 	BOOST_REQUIRE_EQUAL(f.timestamp(), 0xCAFEFECA);
 
-	for (size_t jj = 0;jj < f.dataSize(); ++jj)
+	for (size_t jj = 0; jj < f.dataSize(); ++jj)
 	{
-		BOOST_REQUIRE_EQUAL(*(f.dataBegin() + jj), jj+1);
+		BOOST_REQUIRE_EQUAL(*(f.dataBegin() + jj), jj + 1);
 	}
 }
 
