@@ -2,15 +2,14 @@
 #define artdaq_core_Core_SharedMemoryManager_hh 1
 
 #include <atomic>
-#include <string>
 #include <deque>
-#include "artdaq-core/Utilities/TimeUtils.hh"
-#include <mutex>
-#include <vector>
 #include <list>
+#include <mutex>
+#include <string>
+#include <vector>
+#include "artdaq-core/Utilities/TimeUtils.hh"
 
-namespace artdaq
-{
+namespace artdaq {
 	/**
 	 * \brief The SharedMemoryManager creates a Shared Memory area which is divided into a number of fixed-size buffers.
 	 * It provides for multiple readers and multiple writers through a dual semaphore system.
@@ -18,7 +17,6 @@ namespace artdaq
 	class SharedMemoryManager
 	{
 	public:
-
 		/**
 		 * \brief The BufferSemaphoreFlags enumeration represents the different possible "states" of a given shared memory buffer
 		 */
@@ -67,11 +65,10 @@ namespace artdaq
 		 */
 		virtual ~SharedMemoryManager() noexcept;
 
-
 		/**
 		 * \brief Reconnect to the shared memory segment
 		 */
-		void Attach();
+	bool Attach(size_t timeout_usec = 0);
 
 		/**
 		 * \brief Finds a buffer that is ready to be read, and reserves it for the calling manager.
@@ -197,7 +194,10 @@ namespace artdaq
 		/**
 		 * \brief Assign a new ID to the current SharedMemoryManager, if one has not yet been assigned
 		 */
-		void GetNewId() { if (manager_id_ < 0 && IsValid()) manager_id_ = shm_ptr_->next_id.fetch_add(1); }
+	void GetNewId()
+	{
+		if (manager_id_ < 0 && IsValid()) manager_id_ = shm_ptr_->next_id.fetch_add(1);
+	}
 
 		/**
 		 * \brief Get the number of attached SharedMemoryManagers
@@ -208,7 +208,10 @@ namespace artdaq
 		/**
 		 * \brief Reset the attached manager count to 0
 		 */
-		void ResetAttachedCount() const { if (manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1; }
+	void ResetAttachedCount() const
+	{
+		if (manager_id_ == 0 && IsValid()) shm_ptr_->next_id = 1;
+	}
 
 		/**
 		 * \brief Get the ID number of the current SharedMemoryManager
@@ -226,7 +229,10 @@ namespace artdaq
 		 * \brief Set the rank stored in the Shared Memory, if the current instance is the owner of the shared memory
 		 * \param rank Rank to set
 		 */
-		void SetRank(int rank) { if (manager_id_ == 0 && IsValid()) shm_ptr_->rank = rank; }
+	void SetRank(int rank)
+	{
+		if (manager_id_ == 0 && IsValid()) shm_ptr_->rank = rank;
+	}
 
 		/**
 		 * \brief Is the shared memory pointer valid?
@@ -344,6 +350,7 @@ namespace artdaq
 		 * \brief Touch the given buffer (update its last_touch_time)
 		 */
 		void TouchBuffer(int buffer) { return touchBuffer_(getBufferInfo_(buffer)); }
+
 	private:
 		struct ShmBuffer
 		{
@@ -409,6 +416,6 @@ namespace artdaq
 		size_t min_write_size_;
 	};
 
-}
+}  // namespace artdaq
 
 #endif // artdaq_core_Core_SharedMemoryManager_hh
