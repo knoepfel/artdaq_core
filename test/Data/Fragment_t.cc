@@ -479,8 +479,8 @@ BOOST_AUTO_TEST_CASE(Bytes)
 	// header == 3 RawDataTypes, metadata is 3 bytes (rounds up to 1 RawDataType)
 	BOOST_REQUIRE(f3_factory->dataBeginBytes() -
 	                  reinterpret_cast<artdaq::Fragment::byte_t*>(
-				&*f3_factory->headerBegin())
-			== (1 + artdaq::detail::RawFragmentHeader::num_words()) * sizeof(artdaq::RawDataType));
+	                      &*f3_factory->headerBegin()) ==
+	              (1 + artdaq::detail::RawFragmentHeader::num_words()) * sizeof(artdaq::RawDataType));
 
 	// Sanity check for the payload size
 	BOOST_REQUIRE(static_cast<std::size_t>(f3_factory->dataEndBytes() - f3_factory->dataBeginBytes()) == f3_factory->dataSizeBytes());
@@ -549,6 +549,81 @@ BOOST_AUTO_TEST_CASE(Bytes)
 	BOOST_REQUIRE_EQUAL(f5.dataSizeBytes(), (payload_size * sizeof(artdaq::RawDataType)));
 	BOOST_REQUIRE_EQUAL(f5.size(), (payload_size + 1 + artdaq::detail::RawFragmentHeader::num_words()));
 	BOOST_REQUIRE_EQUAL(f5.sizeBytes(), ((payload_size + 1 + artdaq::detail::RawFragmentHeader::num_words()) * sizeof(artdaq::RawDataType)));
+}
+
+BOOST_AUTO_TEST_CASE(Upgrade_V0)
+{
+	artdaq::Fragment f(7);
+	artdaq::detail::RawFragmentHeaderV0 hdr0;
+
+	hdr0.word_count = artdaq::detail::RawFragmentHeader::num_words() + 7;
+	hdr0.version = 0;
+	hdr0.type = artdaq::detail::RawFragmentHeaderV0::DataFragmentType;
+	hdr0.metadata_word_count = 0;
+
+	hdr0.sequence_id = 0xFEEDDEADBEEF;
+	hdr0.fragment_id = 0xBEE7;
+	hdr0.timestamp = 0xCAFEFECA;
+
+	hdr0.unused1 = 0xF0F0;
+	hdr0.unused2 = 0xC5C5;
+
+	memcpy(f.headerBeginBytes(), &hdr0, sizeof(hdr0));
+
+	artdaq::detail::RawFragmentHeader::RawDataType counter = 0;
+	for (size_t ii = artdaq::detail::RawFragmentHeaderV0::num_words(); ii < artdaq::detail::RawFragmentHeader::num_words() + 7; ++ii)
+	{
+		memcpy(f.headerBegin() + ii, &(++counter), sizeof(counter));
+	}
+
+	BOOST_REQUIRE_EQUAL(f.version(), 2);
+	BOOST_REQUIRE_EQUAL(f.type(), artdaq::detail::RawFragmentHeader::DataFragmentType);
+	BOOST_REQUIRE_EQUAL(f.hasMetadata(), false);
+
+	BOOST_REQUIRE_EQUAL(f.sequenceID(), 0xFEEDDEADBEEF);
+	BOOST_REQUIRE_EQUAL(f.fragmentID(), 0xBEE7);
+	BOOST_REQUIRE_EQUAL(f.timestamp(), 0xCAFEFECA);
+
+	for (size_t jj = 0; jj < f.dataSize(); ++jj)
+	{
+		BOOST_REQUIRE_EQUAL(*(f.dataBegin() + jj), jj + 1);
+	}
+}
+
+BOOST_AUTO_TEST_CASE(Upgrade_V1)
+{
+	artdaq::Fragment f(7);
+	artdaq::detail::RawFragmentHeaderV1 hdr1;
+
+	hdr1.word_count = artdaq::detail::RawFragmentHeader::num_words() + 7;
+	hdr1.version = 1;
+	hdr1.type = artdaq::detail::RawFragmentHeaderV1::DataFragmentType;
+	hdr1.metadata_word_count = 0;
+
+	hdr1.sequence_id = 0xFEEDDEADBEEF;
+	hdr1.fragment_id = 0xBEE7;
+	hdr1.timestamp = 0xCAFEFECAAAAABBBB;
+
+	memcpy(f.headerBeginBytes(), &hdr1, sizeof(hdr1));
+
+	artdaq::detail::RawFragmentHeader::RawDataType counter = 0;
+	for (size_t ii = artdaq::detail::RawFragmentHeaderV1::num_words(); ii < artdaq::detail::RawFragmentHeader::num_words() + 7; ++ii)
+	{
+		memcpy(f.headerBegin() + ii, &(++counter), sizeof(counter));
+	}
+
+	BOOST_REQUIRE_EQUAL(f.version(), 2);
+	BOOST_REQUIRE_EQUAL(f.type(), artdaq::detail::RawFragmentHeader::DataFragmentType);
+	BOOST_REQUIRE_EQUAL(f.hasMetadata(), false);
+
+	BOOST_REQUIRE_EQUAL(f.sequenceID(), 0xFEEDDEADBEEF);
+	BOOST_REQUIRE_EQUAL(f.fragmentID(), 0xBEE7);
+	BOOST_REQUIRE_EQUAL(f.timestamp(), 0xCAFEFECAAAAABBBB);
+
+	for (size_t jj = 0; jj < f.dataSize(); ++jj)
+	{
+		BOOST_REQUIRE_EQUAL(*(f.dataBegin() + jj), jj + 1);
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()
