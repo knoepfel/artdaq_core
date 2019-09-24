@@ -1,9 +1,7 @@
 
-find_library(LIBRT NAMES rt) 
-if(LIBRT)
-  set(FOUND_RT ${LIBRT})
+if (NOT APPLE)
+  set(LIBRT -lrt)
 endif()
-
 
 
 cet_make(
@@ -15,7 +13,7 @@ cet_make(
   ${Boost_DATE_TIME_LIBRARY}
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
-  ${FOUND_RT}
+  ${LIBRT}
 )
 
 basic_plugin( "GenFile" "mfPlugin"
