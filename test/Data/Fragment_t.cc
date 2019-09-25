@@ -860,7 +860,7 @@ BOOST_AUTO_TEST_CASE(Upgrade_V0)
 		memcpy(f.headerBegin() + ii, &(++counter), sizeof(counter));
 	}
 
-	BOOST_REQUIRE_EQUAL(f.version(), 2);
+	BOOST_REQUIRE_EQUAL(f.version(), 0);
 	BOOST_REQUIRE_EQUAL(f.type(), 0xFE);
 	BOOST_REQUIRE_EQUAL(f.hasMetadata(), false);
 
@@ -896,7 +896,7 @@ BOOST_AUTO_TEST_CASE(Upgrade_V1)
 		memcpy(f.headerBegin() + ii, &(++counter), sizeof(counter));
 	}
 
-	BOOST_REQUIRE_EQUAL(f.version(), 2);
+	BOOST_REQUIRE_EQUAL(f.version(), 1);
 	BOOST_REQUIRE_EQUAL(f.type(), 0xFE);
 	BOOST_REQUIRE_EQUAL(f.hasMetadata(), false);
 
