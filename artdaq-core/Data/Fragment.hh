@@ -627,7 +627,8 @@ public:
 		return reinterpret_cast_checked<const byte_t*>(&*headerBegin());
 	}
 
-	size_t headerSizeBytes() const;
+	size_t headerSizeWords() const;
+	size_t headerSizeBytes() const { return sizeof(RawDataType) * headerSizeWords(); }
 
 	/**
 	 * \brief Removes all elements from the payload section of the Fragment
@@ -816,7 +817,7 @@ artdaq::Fragment::
 
 	fragmentHeaderPtr()->metadata_word_count =
 	    vals_.size() -
-	    (headerSizeBytes() + payload_size);
+	    (headerSizeWords() + payload_size);
 
 	memcpy(metadataAddress(), &metadata, sizeof(T));
 }
@@ -923,7 +924,7 @@ artdaq::Fragment::updateFragmentHeaderWC_()
 inline std::size_t
 artdaq::Fragment::dataSize() const
 {
-	return vals_.size() - headerSizeBytes() -
+	return vals_.size() - headerSizeWords() -
 	       fragmentHeader().metadata_word_count;
 }
 
@@ -942,7 +943,7 @@ T* artdaq::Fragment::metadata()
 		    << "No metadata has been stored in this Fragment.";
 	}
 
-	return reinterpret_cast_checked<T*>(&vals_[headerSizeBytes()]);
+	return reinterpret_cast_checked<T*>(&vals_[headerSizeWords()]);
 }
 
 template<class T>
@@ -954,7 +955,7 @@ artdaq::Fragment::metadata() const
 		throw cet::exception("InvalidRequest")
 		    << "No metadata has been stored in this Fragment.";
 	}
-	return reinterpret_cast_checked<T const*>(&vals_[headerSizeBytes()]);
+	return reinterpret_cast_checked<T const*>(&vals_[headerSizeWords()]);
 }
 
 template<class T>
@@ -997,7 +998,7 @@ inline void
 artdaq::Fragment::resize(std::size_t sz)
 {
 	vals_.resize(sz + fragmentHeaderPtr()->metadata_word_count +
-	             headerSizeBytes());
+	             headerSizeWords());
 	updateFragmentHeaderWC_();
 }
 
@@ -1005,7 +1006,7 @@ inline void
 artdaq::Fragment::resize(std::size_t sz, RawDataType v)
 {
 	vals_.resize(sz + fragmentHeaderPtr()->metadata_word_count +
-	                 headerSizeBytes(),
+	                 headerSizeWords(),
 	             v);
 	updateFragmentHeaderWC_();
 }
@@ -1022,7 +1023,7 @@ artdaq::Fragment::resizeBytesWithCushion(std::size_t szbytes, double growthFacto
 {
 	RawDataType nwords = ceil(szbytes / static_cast<double>(sizeof(RawDataType)));
 	vals_.resizeWithCushion(nwords + fragmentHeaderPtr()->metadata_word_count +
-	                            headerSizeBytes(),
+	                            headerSizeWords(),
 	                        growthFactor);
 	updateFragmentHeaderWC_();
 }
@@ -1054,7 +1055,7 @@ artdaq::Fragment::autoResize()
 inline artdaq::Fragment::iterator
 artdaq::Fragment::dataBegin()
 {
-	return vals_.begin() + headerSizeBytes() +
+	return vals_.begin() + headerSizeWords() +
 	       fragmentHeader().metadata_word_count;
 }
 
@@ -1073,7 +1074,7 @@ artdaq::Fragment::headerBegin()
 inline artdaq::Fragment::const_iterator
 artdaq::Fragment::dataBegin() const
 {
-	return vals_.begin() + headerSizeBytes() +
+	return vals_.begin() + headerSizeWords() +
 	       fragmentHeader().metadata_word_count;
 }
 
@@ -1099,14 +1100,14 @@ artdaq::Fragment::clear()
 inline bool
 artdaq::Fragment::empty()
 {
-	return (vals_.size() - headerSizeBytes() -
+	return (vals_.size() - headerSizeWords() -
 	        fragmentHeader().metadata_word_count) == 0;
 }
 
 inline void
 artdaq::Fragment::reserve(std::size_t cap)
 {
-	vals_.reserve(cap + headerSizeBytes() +
+	vals_.reserve(cap + headerSizeWords() +
 	              fragmentHeader().metadata_word_count);
 }
 
@@ -1119,7 +1120,7 @@ artdaq::Fragment::swap(Fragment& other) noexcept
 inline artdaq::RawDataType*
 artdaq::Fragment::dataAddress()
 {
-	return &vals_[0] + headerSizeBytes() +
+	return &vals_[0] + headerSizeWords() +
 	       fragmentHeader().metadata_word_count;
 }
 
@@ -1131,7 +1132,7 @@ artdaq::Fragment::metadataAddress()
 		throw cet::exception("InvalidRequest")
 		    << "No metadata has been stored in this Fragment.";
 	}
-	return &vals_[0] + headerSizeBytes();
+	return &vals_[0] + headerSizeWords();
 }
 
 inline artdaq::RawDataType*
@@ -1141,7 +1142,7 @@ artdaq::Fragment::headerAddress()
 }
 
 inline size_t
-artdaq::Fragment::headerSizeBytes() const
+artdaq::Fragment::headerSizeWords() const
 {
 	auto hdr = reinterpret_cast_checked<detail::RawFragmentHeader const*>(&vals_[0]);
 	if (hdr->version != detail::RawFragmentHeader::CurrentVersion)
