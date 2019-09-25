@@ -21,6 +21,7 @@ perllib  product_dir
 product		version		optional
 canvas_root_io  v1_04_00        s89
 canvas_root_io  v1_04_00        s87
+canvas_root_io  v1_03_06	s91
 canvas_root_io  v1_03_05	s90
 canvas_root_io  v1_03_04	s86
 canvas_root_io  v1_01_11        s85
@@ -77,6 +78,22 @@ e17:s87:py3:debug	-		e17:py3:debug	-nq-	-std=c++17
 e17:s87:py3:prof	-		e17:py3:prof	-nq-	-std=c++17
 e17:s87:debug		-		e17:debug	-nq-	-std=c++17
 e17:s87:prof		-		e17:prof	-nq-	-std=c++17
+c7:s91:py3:debug        -               c7:py3:debug    -nq-    -std=c++17
+c7:s91:py3:prof         -               c7:py3:prof     -nq-    -std=c++17
+c7:s91:debug            -               c7:debug        -nq-    -std=c++17
+c7:s91:prof             -               c7:prof         -nq-    -std=c++17
+c2:s91:py3:debug        -               c2:py3:debug    -nq-    -std=c++17
+c2:s91:py3:prof         -               c2:py3:prof     -nq-    -std=c++17
+c2:s91:debug            -               c2:debug        -nq-    -std=c++17
+c2:s91:prof             -               c2:prof         -nq-    -std=c++17
+e19:s91:py3:debug	-		e19:py3:debug	-nq-	-std=c++17
+e19:s91:py3:prof	-		e19:py3:prof	-nq-	-std=c++17
+e19:s91:debug		-		e19:debug	-nq-	-std=c++17
+e19:s91:prof		-		e19:prof	-nq-	-std=c++17
+e17:s91:py3:debug	-		e17:py3:debug	-nq-	-std=c++17
+e17:s91:py3:prof	-		e17:py3:prof	-nq-	-std=c++17
+e17:s91:debug		-		e17:debug	-nq-	-std=c++17
+e17:s91:prof		-		e17:prof	-nq-	-std=c++17
 c7:s90:py3:debug        -               c7:py3:debug    -nq-    -std=c++17
 c7:s90:py3:prof         -               c7:py3:prof     -nq-    -std=c++17
 c7:s90:debug            -               c7:debug        -nq-    -std=c++17
