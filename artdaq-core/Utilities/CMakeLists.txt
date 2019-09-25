@@ -4,8 +4,6 @@ if(LIBRT)
   set(FOUND_RT ${LIBRT})
 endif()
 
-
-
 cet_make(
 	EXCLUDE GenFile_mfPlugin.cc
   LIBRARIES 
