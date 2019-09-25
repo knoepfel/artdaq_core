@@ -1193,7 +1193,11 @@ artdaq::Fragment::fragmentHeaderPtr()
 				auto new_hdr = old_hdr->upgrade();
 
 				auto szDiff = hdr->num_words() - old_hdr->num_words();
-				if (szDiff > 0) vals_.insert(vals_.begin(), szDiff, 0);
+				if (szDiff > 0)
+				{
+					vals_.insert(vals_.begin(), szDiff, 0);
+					new_hdr.word_count = vals_.size();
+				}
 				memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
 				hdr = reinterpret_cast_checked<detail::RawFragmentHeader*>(&vals_[0]);  // Update hdr in case vals_->insert call invalidated pointers
 				break;
@@ -1206,7 +1210,11 @@ artdaq::Fragment::fragmentHeaderPtr()
 				auto new_hdr = old_hdr->upgrade();
 
 				auto szDiff = hdr->num_words() - old_hdr->num_words();
-				if (szDiff > 0) vals_.insert(vals_.begin(), szDiff, 0);
+				if (szDiff > 0)
+				{
+					vals_.insert(vals_.begin(), szDiff, 0);
+					new_hdr.word_count = vals_.size();
+				}
 				memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
 				hdr = reinterpret_cast_checked<detail::RawFragmentHeader*>(&vals_[0]);  // Update hdr in case vals_->insert call invalidated pointers
 				break;
