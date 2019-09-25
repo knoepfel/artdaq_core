@@ -177,7 +177,7 @@ public:
 		{
 			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::at was asked for a non-existent Fragment!";
 		}
-		FragmentPtr frag(new Fragment(fragSize(index) / sizeof(RawDataType) - artdaq_Fragment_.headerSizeBytes()));
+		FragmentPtr frag(new Fragment((fragSize(index) - artdaq_Fragment_.headerSizeBytes()) / sizeof(RawDataType)));
 		memcpy(frag->headerAddress(), reinterpret_cast<uint8_t const*>(dataBegin()) + fragmentIndex(index), fragSize(index));
 		return frag;
 	}
