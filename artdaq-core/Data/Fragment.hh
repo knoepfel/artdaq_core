@@ -1150,7 +1150,7 @@ artdaq::Fragment::headerSizeWords() const
 		switch (hdr->version)
 		{
 			case 0xFFFF:
-				TLOG(TLVL_WARNING, "Fragment" << "Cannot get header size of InvalidVersion Fragment";
+				TLOG(TLVL_WARNING, "Fragment") << "Cannot get header size of InvalidVersion Fragment";
 				break;
 			case 0:
 			{
