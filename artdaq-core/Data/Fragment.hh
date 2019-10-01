@@ -1150,18 +1150,18 @@ artdaq::Fragment::headerSizeWords() const
 		switch (hdr->version)
 		{
 			case 0xFFFF:
-				//std::cout << "Not upgrading InvalidVersion Fragment" << std::endl;
+				TLOG(TLVL_WARNING, "Fragment" << "Cannot get header size of InvalidVersion Fragment";
 				break;
 			case 0:
 			{
-				TLOG(52) << "Getting size of RawFragmentHeaderV0";
+				TLOG(52,"Fragment") << "Getting size of RawFragmentHeaderV0";
                 auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 const*>(&vals_[0]);
 				return old_hdr->num_words();
 				break;
 			}
 			case 1:
 			{
-				TLOG(52) << "Getting size of RawFragmentHeaderV1";
+				TLOG(52,"Fragment") << "Getting size of RawFragmentHeaderV1";
 				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1 const*>(&vals_[0]);
 				return old_hdr->num_words();
 				break;
@@ -1183,12 +1183,11 @@ artdaq::Fragment::fragmentHeaderPtr()
 		switch (hdr->version)
 		{
 			case 0xFFFF:
-				//std::cout << "Not upgrading InvalidVersion Fragment" << std::endl;
+				TLOG(TLVL_WARNING,"Fragment") << "Not upgrading InvalidVersion Fragment";
 				break;
 			case 0:
 			{
-				//std::cout << "Upgrading RawFragmentHeaderV0 (non const)" << std::endl;
-				TLOG(52) << "Upgrading RawFragmentHeaderV0 (non const)";
+				TLOG(52,"Fragment") << "Upgrading RawFragmentHeaderV0 (non const)";
 				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0*>(&vals_[0]);
 				auto new_hdr = old_hdr->upgrade();
 
@@ -1204,8 +1203,7 @@ artdaq::Fragment::fragmentHeaderPtr()
 			}
 			case 1:
 			{
-				//std::cout << "Upgrading RawFragmentHeaderV1 (non const)" << std::endl;
-				TLOG(52) << "Upgrading RawFragmentHeaderV1 (non const)";
+				TLOG(52,"Fragment") << "Upgrading RawFragmentHeaderV1 (non const)";
 				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1*>(&vals_[0]);
 				auto new_hdr = old_hdr->upgrade();
 
@@ -1236,12 +1234,11 @@ artdaq::Fragment::fragmentHeader() const
 		switch (hdr.version)
 		{
 			case 0xFFFF:
-				//std::cout << "Not upgrading InvalidVersion Fragment" << std::endl;
+				TLOG(TLVL_WARNING, "Fragment") << "Not upgrading InvalidVersion Fragment";
 				break;
 			case 0:
 			{
-				//std::cout << "Upgrading RawFragmentHeaderV0 (const)" << std::endl;
-				TLOG(52) << "Upgrading RawFragmentHeaderV0 (const)";
+				TLOG(52,"Fragment") << "Upgrading RawFragmentHeaderV0 (const)";
 				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 const*>(&vals_[0]);
 				hdr = old_hdr->upgrade();
 
@@ -1249,8 +1246,7 @@ artdaq::Fragment::fragmentHeader() const
 			}
 			case 1:
 			{
-				//std::cout << "Upgrading RawFragmentHeaderV1 (const)" << std::endl;
-				TLOG(52) << "Upgrading RawFragmentHeaderV1 (const)";
+				TLOG(52,"Fragment") << "Upgrading RawFragmentHeaderV1 (const)";
 				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1 const*>(&vals_[0]);
 				hdr = old_hdr->upgrade();
 
