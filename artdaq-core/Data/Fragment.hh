@@ -1150,7 +1150,7 @@ artdaq::Fragment::headerSizeWords() const
 		switch (hdr->version)
 		{
 			case 0xFFFF:
-				TLOG(TLVL_WARNING, "Fragment") << "Cannot get header size of InvalidVersion Fragment";
+				TLOG(51, "Fragment") << "Cannot get header size of InvalidVersion Fragment";
 				break;
 			case 0:
 			{
@@ -1183,7 +1183,7 @@ artdaq::Fragment::fragmentHeaderPtr()
 		switch (hdr->version)
 		{
 			case 0xFFFF:
-				TLOG(TLVL_WARNING,"Fragment") << "Not upgrading InvalidVersion Fragment";
+				TLOG(51,"Fragment") << "Not upgrading InvalidVersion Fragment";
 				break;
 			case 0:
 			{
@@ -1234,7 +1234,7 @@ artdaq::Fragment::fragmentHeader() const
 		switch (hdr.version)
 		{
 			case 0xFFFF:
-				TLOG(TLVL_WARNING, "Fragment") << "Not upgrading InvalidVersion Fragment";
+				TLOG(51, "Fragment") << "Not upgrading InvalidVersion Fragment";
 				break;
 			case 0:
 			{
