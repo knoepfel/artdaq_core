@@ -387,7 +387,7 @@ private:
 	inline uint8_t* bufferStart_(int buffer)
 	{
 		if (shm_ptr_ == nullptr) return nullptr;
-		if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
+		if (buffer >= requested_shm_parameters_.buffer_count && buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 		return dataStart_() + buffer * shm_ptr_->buffer_size;
 	}
 
