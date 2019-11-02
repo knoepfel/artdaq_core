@@ -87,6 +87,21 @@ public:
 	 */
 	void addFragments(artdaq::FragmentPtrs& frags);
 
+	/**
+	 * \brief Create a Fragment at the end of the ContainerFragment with the given size
+	 * \prarm nwords Size (in RawDataType words) of the new Fragment
+	 * \return Pointer to created Fragment's header (payload starts at ptr + 1)
+	 */
+	detail::RawFragmentHeader* appendFragment(size_t nwords);
+
+	/**
+	 * \brief Resize the last Fragment in the container
+	 * \param nwords New size (in RawDataType words) of last Fragment in container
+	 */
+	void resizeLastFragment(size_t nwords);
+
+	detail::RawFragmentHeader* lastFragmentHeader() { return reinterpret_cast<detail::RawFragmentHeader*>(dataBegin_() + fragmentIndex(block_count() - 1)); }
+
 private:
 	// Note that this non-const reference hides the const reference in the base class
 	artdaq::Fragment& artdaq_Fragment_;
@@ -97,6 +112,8 @@ private:
 
 	uint8_t* dataBegin_() { return reinterpret_cast<uint8_t*>(&*artdaq_Fragment_.dataBegin()); }
 	void* dataEnd_() { return reinterpret_cast<void*>(dataBegin_() + lastFragmentIndex()); }
+
+	void update_index_();
 };
 
 inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment& f, artdaq::Fragment::type_t expectedFragmentType = Fragment::EmptyFragmentType)
@@ -160,16 +177,9 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 	frag.setSequenceID(artdaq_Fragment_.sequenceID());
 	TLOG(TLVL_TRACE, "ContainerFragmentLoader") << "addFragment, copying " << frag.sizeBytes() << " bytes from " << (void*)frag.headerAddress() << " to " << (void*)dataEnd_();
 	memcpy(dataEnd_(), frag.headerAddress(), frag.sizeBytes());
-	metadata()->has_index = 0;
 
 	metadata()->block_count++;
-
-	auto index = create_index_();
-	metadata()->index_offset = index[metadata()->block_count - 1];
-	memcpy(dataBegin_() + metadata()->index_offset, index, sizeof(size_t) * (metadata()->block_count + 1));
-	delete[] index;
-	metadata()->has_index = 1;
-	reset_index_ptr_();
+	update_index_();
 }
 
 inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::FragmentPtr& frag)
@@ -185,4 +195,57 @@ inline void artdaq::ContainerFragmentLoader::addFragments(artdaq::FragmentPtrs& 
 	}
 }
 
+inline artdaq::detail::RawFragmentHeader* artdaq::ContainerFragmentLoader::appendFragment(size_t nwords)
+{
+	TLOG(TLVL_TRACE, "ContainerFragmentLoader") << "addFragment: Allocating Fragment with payload size " << nwords << " in Container";
+
+	auto fragSizeBytes = (nwords + detail::RawFragmentHeader::num_words()) * sizeof(RawDataType);
+	TLOG(TLVL_TRACE, "ContainerFragmentLoader") << "addFragment: Payload Size is " << artdaq_Fragment_.dataSizeBytes() << ", lastFragmentIndex is " << lastFragmentIndex() << ", and frag.size is "
+	                                            << fragSizeBytes;
+	if (artdaq_Fragment_.dataSizeBytes() < (lastFragmentIndex() + fragSizeBytes + sizeof(size_t) * (metadata()->block_count + 2)))
+	{
+		addSpace_((lastFragmentIndex() + fragSizeBytes + sizeof(size_t) * (metadata()->block_count + 2)) - artdaq_Fragment_.dataSizeBytes());
+	}
+
+	detail::RawFragmentHeader hdr;
+	hdr.sequence_id = artdaq_Fragment_.sequenceID();
+	hdr.type = metadata()->fragment_type;
+	hdr.word_count = nwords + detail::RawFragmentHeader::num_words();
+	hdr.fragment_id = artdaq_Fragment_.fragmentID();
+	hdr.version = detail::RawFragmentHeader::CurrentVersion;
+
+	auto ptr = dataEnd_();
+	memcpy(ptr, &hdr, sizeof(detail::RawFragmentHeader));
+
+	metadata()->block_count++;
+	update_index_();
+
+	return lastFragmentHeader();
+}
+
+inline void artdaq::ContainerFragmentLoader::resizeLastFragment(size_t nwords)
+{
+	auto hdr = lastFragmentHeader();
+	auto curFragSize = hdr->word_count - detail::RawFragmentHeader::num_words();
+
+	hdr->word_count = nwords + detail::RawFragmentHeader::num_words();
+	// New size is larger than current
+	if (curFragSize < nwords)
+	{
+		addSpace_((nwords - curFragSize) * sizeof(artdaq::RawDataType));
+	}
+	update_index_();
+}
+
+inline void artdaq::ContainerFragmentLoader::update_index_()
+{
+	metadata()->has_index = 0;
+
+	auto index = create_index_();
+	metadata()->index_offset = index[metadata()->block_count - 1];
+	memcpy(dataBegin_() + metadata()->index_offset, index, sizeof(size_t) * (metadata()->block_count + 1));
+	delete[] index;
+	metadata()->has_index = 1;
+	reset_index_ptr_();
+}
 #endif /* artdaq_core_Data_ContainerFragmentLoader_hh */
