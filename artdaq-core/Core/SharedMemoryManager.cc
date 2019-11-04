@@ -21,6 +21,8 @@ static std::list<artdaq::SharedMemoryManager const*> instances = std::list<artda
 
 static std::unordered_map<int, struct sigaction> old_actions = std::unordered_map<int, struct sigaction>();
 static bool sighandler_init = false;
+static std::mutex sighandler_mutex;
+
 static void signal_handler(int signum)
 {
 	// Messagefacility may already be gone at this point, TRACE ONLY!
@@ -70,7 +72,6 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	instances.push_back(this);
 	Attach();
 
-	static std::mutex sighandler_mutex;
 	std::unique_lock<std::mutex> lk(sighandler_mutex);
 
 	if (!sighandler_init)  //&& manager_id_ == 0) // ELF 3/22/18: Taking out manager_id_==0 requirement as I think kill(getpid()) is enough protection
@@ -97,14 +98,15 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 
 				//Replace the signal handler of SIGINT with the one described by new_action
 				sigaction(signal, &action, NULL);
-				old_actions[signal] = old_action;
 			}
+			old_actions[signal] = old_action;
 		}
 	}
 }
 
 artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept
 {
+	TLOG(TLVL_DEBUG) << "~SharedMemoryManager called";
 	{
 		static std::mutex destructor_mutex;
 		std::lock_guard<std::mutex> lk(destructor_mutex);
@@ -117,8 +119,22 @@ artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept
 			}
 		}
 	}
-	TLOG(TLVL_DEBUG) << "~SharedMemoryManager called";
 	Detach();
+	{
+		std::unique_lock<std::mutex> lk(sighandler_mutex);
+
+		// Restore signal handlers
+		if (sighandler_init)
+		{
+			sighandler_init = false;
+			std::vector<int> signals = {SIGINT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2, SIGHUP};  // SIGQUIT is used by art in normal operation
+			for (auto signal : signals)
+			{
+				sigaction(signal, &old_actions[signal], NULL);
+				old_actions.erase(signal);
+			}
+		}
+	}
 	TLOG(TLVL_DEBUG) << "~SharedMemoryManager done";
 }
 
