@@ -61,6 +61,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
     , shm_ptr_(NULL)
     , shm_key_(shm_key)
     , manager_id_(-1)
+    , buffer_ptrs_()
     , buffer_mutexes_()
     , last_seen_id_(0)
 {
@@ -72,7 +73,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 	instances.push_back(this);
 	Attach();
 
-	std::unique_lock<std::mutex> lk(sighandler_mutex);
+	std::lock_guard<std::mutex> lk(sighandler_mutex);
 
 	if (!sighandler_init)  //&& manager_id_ == 0) // ELF 3/22/18: Taking out manager_id_==0 requirement as I think kill(getpid()) is enough protection
 	{
@@ -121,7 +122,7 @@ artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept
 	}
 	Detach();
 	{
-		std::unique_lock<std::mutex> lk(sighandler_mutex);
+		std::lock_guard<std::mutex> lk(sighandler_mutex);
 
 		// Restore signal handlers
 		if (sighandler_init)
@@ -213,8 +214,11 @@ bool artdaq::SharedMemoryManager::Attach(size_t timeout_usec)
 				shm_ptr_->buffer_timeout_us = requested_shm_parameters_.buffer_timeout_us;
 				shm_ptr_->destructive_read_mode = requested_shm_parameters_.destructive_read_mode;
 
+				buffer_ptrs_ = std::vector<ShmBuffer*>(shm_ptr_->buffer_count);
 				for (int ii = 0; ii < static_cast<int>(requested_shm_parameters_.buffer_count); ++ii)
 				{
+					buffer_ptrs_[ii] = reinterpret_cast<ShmBuffer*>(
+					    reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + ii * sizeof(ShmBuffer));
 					if (!getBufferInfo_(ii)) return false;
 					getBufferInfo_(ii)->writePos = 0;
 					getBufferInfo_(ii)->readPos = 0;
@@ -233,9 +237,18 @@ bool artdaq::SharedMemoryManager::Attach(size_t timeout_usec)
 				GetNewId();
 				shm_ptr_->lowest_seq_id_read = 0;
 				TLOG(TLVL_DEBUG) << "Getting Shared Memory Size parameters";
+
+				requested_shm_parameters_.buffer_count = shm_ptr_->buffer_count;
+				buffer_ptrs_ = std::vector<ShmBuffer*>(shm_ptr_->buffer_count);
+				for (int ii = 0; ii < shm_ptr_->buffer_count; ++ii)
+				{
+					buffer_ptrs_[ii] = reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + ii * sizeof(ShmBuffer));
+				}
 			}
+
 			//last_seen_id_ = shm_ptr_->next_sequence_id;
 			buffer_mutexes_ = std::vector<std::mutex>(shm_ptr_->buffer_count);
+
 			TLOG(TLVL_DEBUG) << "Initialization Complete: "
 			                 << "key: 0x" << std::hex << shm_key_
 			                 << ", manager ID: " << std::dec << manager_id_
@@ -268,7 +281,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 {
 	TLOG(13) << "GetBufferForReading BEGIN";
 
-	std::unique_lock<std::mutex> lk(search_mutex_);
+	std::lock_guard<std::mutex> lk(search_mutex_);
 	//TraceLock lk(search_mutex_, 11, "GetBufferForReadingSearch");
 	auto rp = shm_ptr_->reader_pos.load();
 
@@ -360,7 +373,7 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 {
 	TLOG(14) << "GetBufferForWriting BEGIN, overwrite=" << (overwrite ? "true" : "false");
 
-	std::unique_lock<std::mutex> lk(search_mutex_);
+	std::lock_guard<std::mutex> lk(search_mutex_);
 	//TraceLock lk(search_mutex_, 12, "GetBufferForWritingSearch");
 	auto wp = shm_ptr_->writer_pos.load();
 
@@ -469,14 +482,21 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount()
 	size_t count = 0;
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
+#ifndef __OPTIMIZE__
 		TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Checking if buffer " << ii << " is stale.";
 		ResetBuffer(ii);
+#endif
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
+
+#ifndef __OPTIMIZE__
 		TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )";
+#endif
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
+#ifndef __OPTIMIZE__
 			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Buffer " << ii << " is either unowned or owned by this manager, and is marked full.";
+#endif
 			touchBuffer_(buf);
 			++count;
 		}
@@ -494,13 +514,18 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite)
 	size_t count = 0;
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
+		// ELF, 3/19/2019: This TRACE call is a major performance hit with many buffers
+#ifndef __OPTIMIZE__
 		TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Checking if buffer " << ii << " is stale.";
 		ResetBuffer(ii);
+#endif
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
 		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1) || (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
 		{
+#ifndef __OPTIMIZE__
 			TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Buffer " << ii << " is either empty or is available for overwrite.";
+#endif
 			++count;
 		}
 	}
@@ -521,12 +546,19 @@ bool artdaq::SharedMemoryManager::ReadyForRead()
 	for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 	{
 		auto buffer = (rp + ii) % shm_ptr_->buffer_count;
+
+#ifndef __OPTIMIZE__
 		TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Checking if buffer " << buffer << " is stale.";
+#endif
 		ResetBuffer(buffer);
 		auto buf = getBufferInfo_(buffer);
 		if (!buf) continue;
+
+#ifndef __OPTIMIZE__
 		TLOG(25) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Buffer " << buffer << ": sem=" << FlagToString(buf->sem) << " (expected " << FlagToString(BufferSemaphoreFlags::Full) << "), sem_id=" << buf->sem_id << " )"
 		         << " seq_id=" << buf->sequence_id << " >? " << last_seen_id_;
+#endif
+
 		if (buf->sem == BufferSemaphoreFlags::Full && (buf->sem_id == -1 || buf->sem_id == manager_id_) && (shm_ptr_->destructive_read_mode || buf->sequence_id > last_seen_id_))
 		{
 			TLOG(26) << "0x" << std::hex << shm_key_ << std::dec << " ReadyForRead: Buffer " << buffer << " is either unowned or owned by this manager, and is marked full.";
@@ -542,7 +574,7 @@ bool artdaq::SharedMemoryManager::ReadyForWrite(bool overwrite)
 	if (!IsValid()) return false;
 	TLOG(28) << "0x" << std::hex << shm_key_ << " ReadyForWrite BEGIN" << std::dec;
 
-	std::unique_lock<std::mutex> lk(search_mutex_);
+	std::lock_guard<std::mutex> lk(search_mutex_);
 	//TraceLock lk(search_mutex_, 15, "ReadyForWriteSearch");
 
 	auto wp = shm_ptr_->writer_pos.load();
@@ -575,7 +607,7 @@ std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager(bool locke
 	if (locked)
 	{
 		TLOG(TLVL_BUFLCK) << "GetBuffersOwnedByManager obtaining search_mutex";
-		std::unique_lock<std::mutex> lk(search_mutex_);
+		std::lock_guard<std::mutex> lk(search_mutex_);
 		TLOG(TLVL_BUFLCK) << "GetBuffersOwnedByManager obtained search_mutex";
 		//TraceLock lk(search_mutex_, 16, "GetOwnedSearch");
 		for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
@@ -612,7 +644,7 @@ size_t artdaq::SharedMemoryManager::BufferDataSize(int buffer)
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
 	TLOG(TLVL_BUFLCK) << "BufferDataSize obtaining buffer_mutex for buffer " << buffer;
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	TLOG(TLVL_BUFLCK) << "BufferDataSize obtained buffer_mutex for buffer " << buffer;
 	//TraceLock lk(buffer_mutexes_[buffer], 17, "DataSizeBuffer" + std::to_string(buffer));
 
@@ -631,7 +663,7 @@ void artdaq::SharedMemoryManager::ResetReadPos(int buffer)
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
 	TLOG(TLVL_BUFLCK) << "ResetReadPos obtaining buffer_mutex for buffer " << buffer;
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	TLOG(TLVL_BUFLCK) << "ResetReadPos obtained buffer_mutex for buffer " << buffer;
 
 	//TraceLock lk(buffer_mutexes_[buffer], 18, "ResetReadPosBuffer" + std::to_string(buffer));
@@ -650,7 +682,7 @@ void artdaq::SharedMemoryManager::ResetWritePos(int buffer)
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
 	TLOG(TLVL_BUFLCK) << "ResetWritePos obtaining buffer_mutex for buffer " << buffer;
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	TLOG(TLVL_BUFLCK) << "ResetWritePos obtained buffer_mutex for buffer " << buffer;
 
 	//TraceLock lk(buffer_mutexes_[buffer], 18, "ResetWritePosBuffer" + std::to_string(buffer));
@@ -670,7 +702,7 @@ void artdaq::SharedMemoryManager::IncrementReadPos(int buffer, size_t read)
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
 	TLOG(TLVL_BUFLCK) << "IncrementReadPos obtaining buffer_mutex for buffer " << buffer;
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	TLOG(TLVL_BUFLCK) << "IncrementReadPos obtained buffer_mutex for buffer " << buffer;
 	//TraceLock lk(buffer_mutexes_[buffer], 19, "IncReadPosBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
@@ -689,7 +721,7 @@ bool artdaq::SharedMemoryManager::IncrementWritePos(int buffer, size_t written)
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
 	TLOG(TLVL_BUFLCK) << "IncrementWritePos obtaining buffer_mutex for buffer " << buffer;
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	TLOG(TLVL_BUFLCK) << "IncrementWritePos obtained buffer_mutex for buffer " << buffer;
 	//TraceLock lk(buffer_mutexes_[buffer], 20, "IncWritePosBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
@@ -716,7 +748,7 @@ bool artdaq::SharedMemoryManager::MoreDataInBuffer(int buffer)
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
 	TLOG(TLVL_BUFLCK) << "MoreDataInBuffer obtaining buffer_mutex for buffer " << buffer;
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	TLOG(TLVL_BUFLCK) << "MoreDataInBuffer obtained buffer_mutex for buffer " << buffer;
 	//TraceLock lk(buffer_mutexes_[buffer], 21, "MoreDataInBuffer" + std::to_string(buffer));
 	auto buf = getBufferInfo_(buffer);
@@ -730,7 +762,7 @@ bool artdaq::SharedMemoryManager::CheckBuffer(int buffer, BufferSemaphoreFlags f
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
 	TLOG(TLVL_BUFLCK) << "CheckBuffer obtaining buffer_mutex for buffer " << buffer;
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	TLOG(TLVL_BUFLCK) << "CheckBuffer obtained buffer_mutex for buffer " << buffer;
 	//TraceLock lk(buffer_mutexes_[buffer], 22, "CheckBuffer" + std::to_string(buffer));
 	return checkBuffer_(getBufferInfo_(buffer), flags, false);
@@ -741,7 +773,7 @@ void artdaq::SharedMemoryManager::MarkBufferFull(int buffer, int destination)
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
 	TLOG(TLVL_BUFLCK) << "MarkBufferFull obtaining buffer_mutex for buffer " << buffer;
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	TLOG(TLVL_BUFLCK) << "MarkBufferFull obtained buffer_mutex for buffer " << buffer;
 
 	//TraceLock lk(buffer_mutexes_[buffer], 23, "FillBuffer" + std::to_string(buffer));
@@ -761,7 +793,7 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer, bool force)
 {
 	TLOG(18) << "MarkBufferEmpty BEGIN, buffer=" << buffer << ", force=" << force << ", manager_id_=" << manager_id_;
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	//TraceLock lk(buffer_mutexes_[buffer], 24, "EmptyBuffer" + std::to_string(buffer));
 	auto shmBuf = getBufferInfo_(buffer);
 	if (!shmBuf) return;
@@ -794,9 +826,10 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 {
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
 
-	TLOG(TLVL_BUFLCK) << "ResetBuffer: obtaining buffer_mutex lock for buffer " << buffer;
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
-	TLOG(TLVL_BUFLCK) << "ResetBuffer: obtained buffer_mutex lock for buffer " << buffer;
+	// ELF, 3/19/2019: These TRACE calls are a major performance hit with many buffers.
+	//TLOG(TLVL_BUFLCK) << "ResetBuffer: obtaining buffer_mutex lock for buffer " << buffer;
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
+	//TLOG(TLVL_BUFLCK) << "ResetBuffer: obtained buffer_mutex lock for buffer " << buffer;
 
 	//TraceLock lk(buffer_mutexes_[buffer], 25, "ResetBuffer" + std::to_string(buffer));
 	auto shmBuf = getBufferInfo_(buffer);
@@ -892,7 +925,7 @@ size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 {
 	TLOG(19) << "Write BEGIN";
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	//TraceLock lk(buffer_mutexes_[buffer], 26, "WriteBuffer" + std::to_string(buffer));
 	auto shmBuf = getBufferInfo_(buffer);
 	if (!shmBuf) return -1;
@@ -921,7 +954,7 @@ size_t artdaq::SharedMemoryManager::Write(int buffer, void* data, size_t size)
 bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 {
 	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
-	std::unique_lock<std::mutex> lk(buffer_mutexes_[buffer]);
+	std::lock_guard<std::mutex> lk(buffer_mutexes_[buffer]);
 	//TraceLock lk(buffer_mutexes_[buffer], 27, "ReadBuffer" + std::to_string(buffer));
 	auto shmBuf = getBufferInfo_(buffer);
 	if (!shmBuf) return false;
@@ -1007,26 +1040,6 @@ std::list<std::pair<int, artdaq::SharedMemoryManager::BufferSemaphoreFlags>> art
 		output.emplace_back(std::make_pair(buf->sem_id.load(), buf->sem.load()));
 	}
 	return output;
-}
-
-uint8_t* artdaq::SharedMemoryManager::dataStart_() const
-{
-	if (shm_ptr_ == nullptr) return nullptr;
-	return reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + shm_ptr_->buffer_count * sizeof(ShmBuffer);
-}
-
-uint8_t* artdaq::SharedMemoryManager::bufferStart_(int buffer)
-{
-	if (shm_ptr_ == nullptr) return nullptr;
-	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
-	return dataStart_() + buffer * shm_ptr_->buffer_size;
-}
-
-artdaq::SharedMemoryManager::ShmBuffer* artdaq::SharedMemoryManager::getBufferInfo_(int buffer)
-{
-	if (shm_ptr_ == nullptr) return nullptr;
-	if (buffer >= shm_ptr_->buffer_count) Detach(true, "ArgumentOutOfRange", "The specified buffer does not exist!");
-	return reinterpret_cast<ShmBuffer*>(reinterpret_cast<uint8_t*>(shm_ptr_ + 1) + buffer * sizeof(ShmBuffer));
 }
 
 bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphoreFlags flags, bool exceptions)
