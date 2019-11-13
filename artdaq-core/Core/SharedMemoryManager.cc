@@ -125,15 +125,14 @@ artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept
 		std::lock_guard<std::mutex> lk(sighandler_mutex);
 
 		// Restore signal handlers
-		if (sighandler_init)
+		if (sighandler_init && instances.size() == 0)
 		{
 			sighandler_init = false;
-			std::vector<int> signals = {SIGINT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGPIPE, SIGALRM, SIGTERM, SIGUSR2, SIGHUP};  // SIGQUIT is used by art in normal operation
-			for (auto signal : signals)
+			for (auto signal : old_actions)
 			{
-				sigaction(signal, &old_actions[signal], NULL);
-				old_actions.erase(signal);
+				sigaction(signal.first, &signal.second, NULL);
 			}
+			old_actions.clear();
 		}
 	}
 	TLOG(TLVL_DEBUG) << "~SharedMemoryManager done";
