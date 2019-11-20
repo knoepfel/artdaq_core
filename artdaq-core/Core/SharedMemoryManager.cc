@@ -153,7 +153,7 @@ bool artdaq::SharedMemoryManager::Attach(size_t timeout_usec)
 
 	// 19-Feb-2019, KAB: separating out the determination of whether a given process owns the shared
 	// memory (indicated by manager_id_ == 0) and whether or not the shared memory already exists.
-	if (requested_shm_parameters_.buffer_count > 0 && manager_id_ <= 0)
+	if (requested_shm_parameters_.buffer_count > 0 && requested_shm_parameters_.buffer_size > 0 && manager_id_ <= 0)
 	{
 		manager_id_ = 0;
 	}
@@ -483,8 +483,8 @@ size_t artdaq::SharedMemoryManager::ReadReadyCount()
 	{
 #ifndef __OPTIMIZE__
 		TLOG(24) << "0x" << std::hex << shm_key_ << std::dec << " ReadReadyCount: Checking if buffer " << ii << " is stale.";
-		ResetBuffer(ii);
 #endif
+		ResetBuffer(ii);
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
 
@@ -516,8 +516,8 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite)
 		// ELF, 3/19/2019: This TRACE call is a major performance hit with many buffers
 #ifndef __OPTIMIZE__
 		TLOG(29) << "0x" << std::hex << shm_key_ << std::dec << " WriteReadyCount: Checking if buffer " << ii << " is stale.";
-		ResetBuffer(ii);
 #endif
+		ResetBuffer(ii);
 		auto buf = getBufferInfo_(ii);
 		if (!buf) continue;
 		if ((buf->sem == BufferSemaphoreFlags::Empty && buf->sem_id == -1) || (overwrite && buf->sem != BufferSemaphoreFlags::Writing))
