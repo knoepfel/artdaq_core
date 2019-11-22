@@ -284,7 +284,6 @@ BOOST_AUTO_TEST_CASE(ResizeLastFragment)
 	BOOST_REQUIRE_EQUAL(outfrag->dataSize(), 5);
 	BOOST_REQUIRE_EQUAL(*outfrag->dataBegin(), 1);
 	BOOST_REQUIRE_EQUAL(*(outfrag->dataBegin() + 1), 2);
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()
