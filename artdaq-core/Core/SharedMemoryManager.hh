@@ -119,12 +119,13 @@ public:
 	/**
 		 * \brief Get the current size of the buffer's data
 		 * \param buffer Buffer ID of buffer
-		 * \return Current size of data in the buffer
+		 * \return Current size of data in the buffer, in bytes
 		 */
 	size_t BufferDataSize(int buffer);
 
 	/**
 		 * \brief Get the size of of a single buffer
+		 * \return The configured size of a single buffer, in bytes
 		 */
 	size_t BufferSize() { return (shm_ptr_ != nullptr ? shm_ptr_->buffer_size : 0); }
 
