@@ -345,7 +345,7 @@ public:
 		 * \brief Get a report on the status of each buffer
 		 * \return A list of manager_id, semaphore pairs
 		 */
-	std::list<std::pair<int, BufferSemaphoreFlags>> GetBufferReport();
+	std::vector<std::pair<int, BufferSemaphoreFlags>> GetBufferReport();
 
 	/**
 		 * \brief Touch the given buffer (update its last_touch_time)
