@@ -734,6 +734,8 @@ public:
 	                            RawDataType const* dataPtr,
 	                            size_t dataSize,
 	                            timestamp_t timestamp = Fragment::InvalidTimestamp);
+
+	detail::RawFragmentHeader const fragmentHeader() const;
 #endif
 
 private:
@@ -748,7 +750,6 @@ private:
 
 	detail::RawFragmentHeader* fragmentHeaderPtr();
 
-	detail::RawFragmentHeader const fragmentHeader() const;
 #endif
 };
 
