@@ -735,7 +735,7 @@ public:
 	                            size_t dataSize,
 	                            timestamp_t timestamp = Fragment::InvalidTimestamp);
 
-    /**
+	/**
      * \brief Get a copy of the RawFragmentHeader from this Fragment
      * \return Copy of the RawFragmentHeader of this Fragment, upgraded to the latest version
      */
