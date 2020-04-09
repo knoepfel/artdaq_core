@@ -31,6 +31,7 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 	bool first = true;
 	auto start_time = TimeUtils::gettimeofday_us();
 	uint64_t time_diff = 0;
+	uint64_t max_sleep = 5000000;  // 5 seconds
 	int buf = -1;
 	while (first || time_diff < timeout_us)
 	{
@@ -73,7 +74,10 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 		first = false;
 
 		time_diff = TimeUtils::gettimeofday_us() - start_time;
-		usleep(time_diff < 10000 ? time_diff : 10000);
+		auto sleep_time = time_diff;
+		if (sleep_time < 10000) sleep_time = 10000;
+		if (sleep_time > max_sleep) sleep_time = max_sleep;
+		usleep(sleep_time);
 	}
 	TLOG(TLVL_TRACE) << "ReadyForRead returning false";
 	return false;
