@@ -1,5 +1,6 @@
 #include "artdaq-core/Core/StatisticsCollection.hh"
 #include <iostream>
+#include <utility>
 
 namespace artdaq {
 StatisticsCollection& StatisticsCollection::getInstance()
@@ -29,7 +30,8 @@ StatisticsCollection::~StatisticsCollection() noexcept
 	requestStop();
 
 	// Having issues where ~StatisticsCollection is being called from within thread due to signal handlers
-	if (calculation_thread_ && calculation_thread_->joinable() && calculation_thread_->get_id() != boost::this_thread::get_id()) calculation_thread_->join();
+	if (calculation_thread_ && calculation_thread_->joinable() && calculation_thread_->get_id() != boost::this_thread::get_id()) { calculation_thread_->join();
+}
 }
 
 void StatisticsCollection::
@@ -37,7 +39,7 @@ void StatisticsCollection::
                          MonitoredQuantityPtr mqPtr)
 {
 	std::lock_guard<std::mutex> scopedLock(map_mutex_);
-	monitoredQuantityMap_[name] = mqPtr;
+	monitoredQuantityMap_[name] = std::move(mqPtr);
 }
 
 MonitoredQuantityPtr

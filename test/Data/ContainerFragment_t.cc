@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE(ContainerFragment_t)
 #include "cetlib/quiet_unit_test.hpp"
 
-constexpr size_t artdaq::ContainerFragment::CONTAINER_MAGIC;
+
 
 BOOST_AUTO_TEST_SUITE(ContainerFragment_test)
 

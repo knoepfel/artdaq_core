@@ -1,7 +1,7 @@
 #include "artdaq-core/Core/MonitoredQuantity.hh"
 
-#include <math.h>
 #include <algorithm>
+#include <cmath>
 
 using namespace artdaq;
 
@@ -377,7 +377,7 @@ MonitoredQuantity::TIME_POINT_T MonitoredQuantity::getCurrentTime()
 {
 	TIME_POINT_T result = -1.0;
 	timeval now;
-	if (gettimeofday(&now, 0) == 0)
+	if (gettimeofday(&now, nullptr) == 0)
 	{
 		result = static_cast<TIME_POINT_T>(now.tv_sec);
 		result += static_cast<TIME_POINT_T>(now.tv_usec) / (1000 * 1000);

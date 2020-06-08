@@ -167,7 +167,7 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 	auto index = create_index_();
 	metadata()->index_offset = index[metadata()->block_count - 1];
 	memcpy(dataBegin_() + metadata()->index_offset, index, sizeof(size_t) * (metadata()->block_count + 1));
-	delete[] index;
+
 	metadata()->has_index = 1;
 	reset_index_ptr_();
 }

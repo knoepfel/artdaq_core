@@ -56,14 +56,14 @@ void SimpleQueueReader::run()
 			if (!rawEventPtr) { break; }
 			++eventsSeen;
 			// Otherwise, do our work ...
-			if (doPrint) { std::cout << *rawEventPtr << std::endl; }
+			if (doPrint != nullptr) { std::cout << *rawEventPtr << std::endl; }
 		}
 		else
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(250));
 		}
 	}
-	if (expectedEventCount_ && eventsSeen != expectedEventCount_)
+	if ((expectedEventCount_ != 0u) && eventsSeen != expectedEventCount_)
 	{
 		std::ostringstream os;
 		os << "Wrong number of events in SimpleQueueReader ("

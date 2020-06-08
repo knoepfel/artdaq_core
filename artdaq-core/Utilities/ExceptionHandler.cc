@@ -9,9 +9,9 @@
 #include <boost/exception/all.hpp>
 
 namespace artdaq {
-void ExceptionHandler(ExceptionHandlerRethrow decision, std::string optional_message)
+void ExceptionHandler(ExceptionHandlerRethrow decision, const std::string& optional_message)
 {
-	if (optional_message != "")
+	if (!optional_message.empty())
 	{
 		TLOG(TLVL_ERROR) << optional_message;
 	}

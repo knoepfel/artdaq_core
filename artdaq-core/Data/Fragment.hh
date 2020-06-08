@@ -64,7 +64,7 @@ typedef std::list<FragmentPtr> FragmentPtrs;
 	 * \param j Second Fragment to comapre
 	 * \return i.sequenceID() < j.sequenceID()
 	 */
-bool fragmentSequenceIDCompare(Fragment i, Fragment j);
+bool fragmentSequenceIDCompare(const Fragment& i, const Fragment& j);
 
 /**
 	 * \brief Prints the given Fragment to the stream

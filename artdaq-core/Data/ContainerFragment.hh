@@ -3,6 +3,7 @@
 
 #include "artdaq-core/Data/Fragment.hh"
 #include "cetlib_except/exception.h"
+#include <memory>
 
 //#include <ostream>
 //#include <vector>
@@ -82,7 +83,6 @@ public:
 	{
 		TLOG(TLVL_DEBUG, "ContainerFragment") << "Upgrading ContainerFragment::MetadataV0 into new ContainerFragment::Metadata";
 		assert(in->block_count < std::numeric_limits<Metadata::count_t>::max());
-		metadata_alloc_ = true;
 		Metadata md;
 		md.block_count = in->block_count;
 		md.fragment_type = in->fragment_type;
@@ -90,8 +90,8 @@ public:
 		md.missing_data = in->missing_data;
 		md.version = 0;
 		index_ptr_ = in->index;
-		metadata_ = new Metadata(md);
-		return metadata_;
+		metadata_ = std::make_unique<Metadata>(md);
+		return metadata_.get();
 	}
 
 	/**
@@ -101,18 +101,10 @@ public:
 	 * to refer to the artdaq::Fragment object
 	*/
 	explicit ContainerFragment(Fragment const& f)
-	    : artdaq_Fragment_(f), index_ptr_(nullptr), index_alloc_(false), metadata_(nullptr), metadata_alloc_(false) {}
+	    : artdaq_Fragment_(f), index_ptr_(nullptr), index_ptr_owner_(nullptr), metadata_(nullptr) {}
 
 	virtual ~ContainerFragment()
 	{
-		if (index_alloc_)
-		{
-			delete[] index_ptr_;
-		}
-		if (metadata_alloc_)
-		{
-			delete metadata_;
-		}
 	}
 
 	/**
@@ -121,7 +113,7 @@ public:
 	 */
 	Metadata const* metadata() const
 	{
-		if (metadata_alloc_) return metadata_;
+		if (metadata_) return metadata_.get();
 
 		if (artdaq_Fragment_.sizeBytes() - artdaq_Fragment_.dataSizeBytes() - artdaq_Fragment_.headerSizeBytes() == sizeof(MetadataV0))
 		{
@@ -267,7 +259,7 @@ protected:
 	const size_t* create_index_() const
 	{
 		TLOG(TLVL_TRACE, "ContainerFragment") << "Creating new index for ContainerFragment";
-		auto tmp = new size_t[metadata()->block_count + 1];
+		index_ptr_owner_.reset( new size_t[metadata()->block_count + 1]);
 
 		auto current = reinterpret_cast<uint8_t const*>(artdaq_Fragment_.dataBegin());
 		size_t offset = 0;
@@ -275,11 +267,11 @@ protected:
 		{
 			auto this_size = reinterpret_cast<const detail::RawFragmentHeader*>(current)->word_count * sizeof(RawDataType);
 			offset += this_size;
-			tmp[ii] = offset;
+			index_ptr_owner_.get()[ii] = offset;
 			current += this_size;
 		}
-		tmp[metadata()->block_count] = CONTAINER_MAGIC;
-		return tmp;
+		index_ptr_owner_.get()[metadata()->block_count] = CONTAINER_MAGIC;
+		return index_ptr_owner_.get();
 	}
 
 	/**
@@ -298,12 +290,7 @@ protected:
 		else
 		{
 			TLOG(TLVL_TRACE, "ContainerFragment") << "Index invalid or not found, allocating new index";
-			if (index_alloc_)
-			{
-				delete[] index_ptr_;
-			}
-
-			index_alloc_ = true;
+			index_ptr_owner_.reset(nullptr);
 			index_ptr_ = create_index_();
 		}
 	}
@@ -325,9 +312,8 @@ private:
 	Fragment const& artdaq_Fragment_;
 
 	mutable const size_t* index_ptr_;
-	mutable bool index_alloc_;
-	mutable const Metadata* metadata_;
-	mutable bool metadata_alloc_;
+	mutable std::unique_ptr<size_t> index_ptr_owner_;
+	mutable std::unique_ptr<Metadata> metadata_;
 };
 
 #endif /* artdaq_core_Data_ContainerFragment_hh */

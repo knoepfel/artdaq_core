@@ -1,5 +1,7 @@
 #define TRACE_NAME "SharedMemoryFragmentManager_t"
 
+#include <memory>
+
 #include "artdaq-core/Core/SharedMemoryFragmentManager.hh"
 #include "artdaq-core/Utilities/configureMessageFacility.hh"
 #include "tracemf.h"
@@ -63,7 +65,7 @@ BOOST_AUTO_TEST_CASE(Reattach)
 	BOOST_REQUIRE_EQUAL(man->IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man->GetAttachedCount(), 1);
 
-	man2.reset(new artdaq::SharedMemoryFragmentManager(key));
+	man2 = std::make_unique<artdaq::SharedMemoryFragmentManager>(key);
 	BOOST_REQUIRE_EQUAL(man->IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man->GetMyId(), 0);
 	BOOST_REQUIRE_EQUAL(man->size(), 10);
@@ -84,7 +86,7 @@ BOOST_AUTO_TEST_CASE(Reattach)
 	man2->Attach();
 	BOOST_REQUIRE_EQUAL(man2->IsValid(), false);
 
-	man.reset(new artdaq::SharedMemoryFragmentManager(key, 10, 0x1000));
+	man = std::make_unique<artdaq::SharedMemoryFragmentManager>(key, 10, 0x1000);
 	BOOST_REQUIRE_EQUAL(man->IsValid(), true);
 	BOOST_REQUIRE_EQUAL(man->GetMyId(), 0);
 	BOOST_REQUIRE_EQUAL(man->size(), 10);

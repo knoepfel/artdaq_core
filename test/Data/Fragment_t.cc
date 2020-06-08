@@ -562,7 +562,7 @@ BOOST_AUTO_TEST_CASE(Metadata)
 	}
 
 	f1.setMetadata(mdOneA);
-	MetadataTypeOne* mdOnePtr = f1.metadata<MetadataTypeOne>();
+	auto* mdOnePtr = f1.metadata<MetadataTypeOne>();
 	BOOST_REQUIRE_EQUAL(mdOnePtr->field1, (uint64_t)5);
 	BOOST_REQUIRE_EQUAL(mdOnePtr->field2, (uint32_t)10);
 	BOOST_REQUIRE_EQUAL(mdOnePtr->field3, (uint32_t)15);
@@ -602,7 +602,7 @@ BOOST_AUTO_TEST_CASE(Metadata)
 	}
 
 	artdaq::Fragment f2(10, 1, 2, 3, mdTwoA);
-	MetadataTypeTwo* mdTwoPtr = f2.metadata<MetadataTypeTwo>();
+	auto* mdTwoPtr = f2.metadata<MetadataTypeTwo>();
 	BOOST_REQUIRE_EQUAL(mdTwoPtr->field1, (uint64_t)10);
 	BOOST_REQUIRE_EQUAL(mdTwoPtr->field2, (uint32_t)20);
 	BOOST_REQUIRE_EQUAL(mdTwoPtr->field3, (uint32_t)30);
@@ -749,12 +749,12 @@ BOOST_AUTO_TEST_CASE(Bytes)
 	// (now-deprecated, but still in legacy code) dataAddress() point to
 	// the same region in memory, i.e., the start of the payload
 
-	artdaq::Fragment::byte_t* ptr1 = reinterpret_cast<artdaq::Fragment::byte_t*>(
+	auto* ptr1 = reinterpret_cast<artdaq::Fragment::byte_t*>(
 	    &*f3_factory->dataBegin());
 
 	artdaq::Fragment::byte_t* ptr2 = f3_factory->dataBeginBytes();
 
-	artdaq::Fragment::byte_t* ptr3 = reinterpret_cast<artdaq::Fragment::byte_t*>(f3_factory->dataAddress());
+	auto* ptr3 = reinterpret_cast<artdaq::Fragment::byte_t*>(f3_factory->dataAddress());
 
 	BOOST_REQUIRE_EQUAL(ptr1, ptr2);
 	BOOST_REQUIRE_EQUAL(ptr2, ptr3);

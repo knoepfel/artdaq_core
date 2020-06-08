@@ -12,7 +12,8 @@ artdaq::SharedMemoryFragmentManager::SharedMemoryFragmentManager(uint32_t shm_ke
 bool artdaq::SharedMemoryFragmentManager::ReadyForWrite(bool overwrite)
 {
 	TLOG(12) << "ReadyForWrite: active_buffer is " << active_buffer_;
-	if (active_buffer_ != -1) return true;
+	if (active_buffer_ != -1) { return true;
+}
 	active_buffer_ = GetBufferForWriting(overwrite);
 
 	return active_buffer_ != -1;
@@ -80,7 +81,8 @@ int artdaq::SharedMemoryFragmentManager::ReadFragment(Fragment& fragment)
 
 	TLOG(14) << "Reading Fragment Header";
 	auto sts = ReadFragmentHeader(tmpHdr);
-	if (sts != 0) return sts;
+	if (sts != 0) { return sts;
+}
 	fragment.resize(tmpHdr.word_count - tmpHdr.num_words());
 	memcpy(fragment.headerAddress(), &tmpHdr, tmpHdr.num_words() * sizeof(artdaq::RawDataType));
 	TLOG(14) << "Reading Fragment Body - of frag w/ seqID=" << tmpHdr.sequence_id;

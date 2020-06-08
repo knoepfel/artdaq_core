@@ -60,14 +60,17 @@ void SimpleMemoryReader::run()
 			}
 		}
 
-		if (!got_event) break;
+		if (!got_event) { break;
+}
 
 		auto errflag = false;
 		auto evtHeader = incoming_events_->ReadHeader(errflag);
-		if (errflag) break;  // Buffer was changed out from under reader!
+		if (errflag) { break;  // Buffer was changed out from under reader!
+}
 		auto fragmentTypes = incoming_events_->GetFragmentTypes(errflag);
-		if (errflag) break;  // Buffer was changed out from under reader!
-		if (fragmentTypes.size() == 0)
+		if (errflag) { break;  // Buffer was changed out from under reader!
+}
+		if (fragmentTypes.empty())
 		{
 			TLOG(TLVL_ERROR) << "Event has no Fragments! Aborting!";
 			incoming_events_->ReleaseBuffer();
@@ -89,10 +92,10 @@ void SimpleMemoryReader::run()
 
 		++eventsSeen;
 		RawEvent evt = RawEvent(*evtHeader);
-		if (doPrint) { std::cout << evt << std::endl; }
+		if (doPrint != nullptr) { std::cout << evt << std::endl; }
 		incoming_events_->ReleaseBuffer();
 	}
-	if (expectedEventCount_ && eventsSeen != expectedEventCount_)
+	if ((expectedEventCount_ != 0u) && eventsSeen != expectedEventCount_)
 	{
 		std::ostringstream os;
 		os << "Wrong number of events in SimpleMemoryReader ("

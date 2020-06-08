@@ -310,7 +310,7 @@ public:
 		 * \param message Message for the cet::exception
 		 * \param force Whether to mark shared memory for destruction even if not owner (i.e. from signal handler)
 		 */
-	void Detach(bool throwException = false, std::string category = "", std::string message = "", bool force = false);
+	void Detach(bool throwException = false, const std::string& category = "", const std::string& message = "", bool force = false);
 
 	/**
 		 * \brief Gets the configured timeout for buffers to be declared "stale"

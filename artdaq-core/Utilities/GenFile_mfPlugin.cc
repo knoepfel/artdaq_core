@@ -83,19 +83,19 @@ public:
 	ELGenFileOutput(Parameters const& pset);
 
 	/// Default virtual destructor
-	virtual ~ELGenFileOutput() {}
+	~ELGenFileOutput() override = default;
 
 	/**
 		 * \brief Serialize a MessageFacility message to the output stream
 		 * \param o Stringstream object containing message data
 		 * \param e MessageFacility object containing header information
 		 */
-	virtual void routePayload(const std::ostringstream& o, const ErrorObj& e) override;
+	void routePayload(const std::ostringstream& o, const ErrorObj& e) override;
 
 	/**
 		 * \brief Flush any text in the ostream buffer to disk
 		 */
-	virtual void flush() override;
+	void flush() override;
 
 private:
 	std::unique_ptr<cet::ostream_handle> output_;
@@ -119,10 +119,10 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 	std::string filePattern = pset().filePattern();
 
 	auto pid = getpid();
-	std::string exeString = "";
-	std::string hostString = "";
-	std::string timeBuffISO = "";  // Using boost::posix_time::to_iso_string (%T)
-	std::string timeBuff = "";     // Using timestamp_pattern (%t)
+	std::string exeString;
+	std::string hostString;
+	std::string timeBuffISO;  // Using boost::posix_time::to_iso_string (%T)
+	std::string timeBuff;     // Using timestamp_pattern (%t)
 
 	// Determine image name
 	if (filePattern.find("%N") != std::string::npos || filePattern.find("%?N") != std::string::npos)
@@ -131,7 +131,7 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 		std::string exe;
 		std::ostringstream pid_ostr;
 		pid_ostr << "/proc/" << pid << "/exe";
-		exe = std::string(realpath(pid_ostr.str().c_str(), NULL));
+		exe = std::string(realpath(pid_ostr.str().c_str(), nullptr));
 
 		size_t end = exe.find('\0');
 		size_t start = exe.find_last_of('/', end);
@@ -146,7 +146,7 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 		{
 			std::string tmpString(hostname);
 			hostString = tmpString;
-			size_t pos = hostString.find(".");
+			size_t pos = hostString.find('.');
 			if (pos != std::string::npos && pos > 2)
 			{
 				hostString = hostString.substr(0, pos);
@@ -170,9 +170,9 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 
 	size_t pos = 0;
 	TLOG(TLVL_DEBUG) << "filePattern is: " << filePattern;
-	while (filePattern.find("%", pos) != std::string::npos)
+	while (filePattern.find('%', pos) != std::string::npos)
 	{
-		pos = filePattern.find("%", pos) + 1;
+		pos = filePattern.find('%', pos) + 1;
 		TLOG(5, 1) << "Found % at " << (pos - 1) << ", next char: " << filePattern[pos] << ".";
 		switch (filePattern[pos])
 		{
@@ -180,8 +180,7 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 				filePattern = filePattern.replace(pos - 1, 2, "%");
 				pos--;
 				break;
-			case '?':
-			{
+			case '?': {
 				char next = filePattern[pos + 1];
 				switch (next)
 				{
@@ -253,7 +252,7 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 //======================================================================
 // Message router ( overriddes ELdestination::routePayload )
 //======================================================================
-void ELGenFileOutput::routePayload(const std::ostringstream& oss, const ErrorObj&)
+void ELGenFileOutput::routePayload(const std::ostringstream& oss, const ErrorObj& /*msg*/)
 {
 	*output_ << oss.str();
 	flush();
