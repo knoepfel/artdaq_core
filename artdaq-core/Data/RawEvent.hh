@@ -203,7 +203,7 @@ inline void RawEvent::insertFragment(FragmentPtr&& pfrag)
 {
 	if (pfrag == nullptr)
 	{
-		throw cet::exception("LogicError")
+		throw cet::exception("LogicError") // NOLINT(cert-err60-cpp)
 		    << "Attempt to insert a null FragmentPtr into a RawEvent detected.\n";
 	}
 	fragments_.emplace_back(std::move(pfrag));
@@ -266,7 +266,7 @@ inline std::unique_ptr<Fragments>
 RawEvent::releaseProduct(Fragment::type_t fragment_type)
 {
 	std::unique_ptr<Fragments> result(new Fragments);
-	FragmentPtrs::iterator iter = fragments_.begin();
+	auto iter = fragments_.begin();
 	do
 	{
 		if ((*iter)->type() == fragment_type)

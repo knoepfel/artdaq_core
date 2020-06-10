@@ -56,7 +56,7 @@ bool MonitoredQuantity::calculateStatistics(TIME_POINT_T currentTime)
 	// create local copies of the working values to minimize the
 	// time that we could block a thread trying to add a sample.
 	// Also, reset the working values.
-	long long latestSampleCount;
+	size_t latestSampleCount;
 	double latestValueSum;
 	double latestValueSumOfSquares;
 	double latestValueMin;
@@ -288,9 +288,7 @@ void MonitoredQuantity::setNewTimeWindowForRecentResults(DURATION_T interval)
 		// interval and rounding to the nearest integer.
 		// In case that the calculation interval is larger then the
 		// interval for recent stats, keep the last one.
-		_binCount = std::max(1U,
-		                     static_cast<unsigned int>(
-		                         (_intervalForRecentStats / _expectedCalculationInterval) + 0.5));
+		_binCount = std::max(1U, static_cast<unsigned int>(std::lround(_intervalForRecentStats / _expectedCalculationInterval)));
 		// create the vectors for the binned quantities
 		recentBinnedSampleCounts.reserve(_binCount);
 		recentBinnedValueSums.reserve(_binCount);
@@ -318,7 +316,7 @@ bool MonitoredQuantity::
 		boost::mutex::scoped_lock sl(_accumulationMutex);
 		if (_workingSampleCount == 0) { return true; }
 	}
-	auto sleepTime = static_cast<long>(timeout * 100000.0);
+	auto sleepTime = static_cast<int64_t>(timeout * 100000.0);
 	for (auto idx = 0; idx < 10; ++idx)
 	{
 		usleep(sleepTime);
@@ -409,7 +407,7 @@ double MonitoredQuantity::getRecentValueAverage() const
 	return recentValueAverage;
 }
 
-long long MonitoredQuantity::getFullSampleCount() const
+size_t MonitoredQuantity::getFullSampleCount() const
 {
 	boost::mutex::scoped_lock results(_resultsMutex);
 	return fullSampleCount;

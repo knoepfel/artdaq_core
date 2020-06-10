@@ -125,6 +125,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 	}
 
 	TLOG(TLVL_DEBUG) << "Writing Test Fragment to Shared Memory";
+	auto fragSize = frag.size();
 	man.WriteFragment(std::move(frag), false, 0);
 
 	TLOG(TLVL_DEBUG) << "Reading Test Fragment Header";
@@ -133,7 +134,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 
 	TLOG(TLVL_DEBUG) << "Checking Test Fragment Header Contents";
 	BOOST_REQUIRE_EQUAL(sts, 0);
-	BOOST_REQUIRE_EQUAL(header.word_count, frag.size());
+	BOOST_REQUIRE_EQUAL(header.word_count, fragSize);
 	BOOST_REQUIRE_EQUAL(header.sequence_id, 0x10);
 	BOOST_REQUIRE_EQUAL(header.fragment_id, 0x20);
 	BOOST_REQUIRE_EQUAL(header.type, type);
@@ -147,7 +148,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 	BOOST_REQUIRE_EQUAL(sts, 0);
 	for (size_t ii = 0; ii < fragSizeWords; ++ii)
 	{
-		BOOST_REQUIRE_EQUAL(*(frag.dataBegin() + ii), *(frag2.dataBegin() + ii));
+		BOOST_REQUIRE_EQUAL(ii, *(frag2.dataBegin() + ii));
 	}
 	TLOG(TLVL_DEBUG) << "SharedMemoryFragmentManager DataFlow test complete";
 	TLOG(TLVL_INFO) << "END TEST DataFlow";
@@ -176,6 +177,7 @@ BOOST_AUTO_TEST_CASE(WholeFragment)
 	}
 
 	TLOG(TLVL_DEBUG) << "Writing Test Fragment to Shared Memory";
+	auto fragSize = frag.size();
 	man.WriteFragment(std::move(frag), false, 0);
 
 	TLOG(TLVL_DEBUG) << "Reading Test Fragment Header";
@@ -184,7 +186,7 @@ BOOST_AUTO_TEST_CASE(WholeFragment)
 
 	TLOG(TLVL_DEBUG) << "Checking Test Fragment Header Contents";
 	BOOST_REQUIRE_EQUAL(sts, 0);
-	BOOST_REQUIRE_EQUAL(recvdFrag.size(), frag.size());
+	BOOST_REQUIRE_EQUAL(recvdFrag.size(), fragSize);
 	BOOST_REQUIRE_EQUAL(recvdFrag.sequenceID(), 0x10);
 	BOOST_REQUIRE_EQUAL(recvdFrag.fragmentID(), 0x20);
 	BOOST_REQUIRE_EQUAL(recvdFrag.type(), type);
@@ -194,7 +196,7 @@ BOOST_AUTO_TEST_CASE(WholeFragment)
 	for (size_t ii = 0; ii < fragSizeWords; ++ii)
 	{
 		//TLOG(TLVL_DEBUG) << *(frag.dataBegin() + ii) << " =?= " << *(recvdFrag.dataBegin() + ii) ;
-		BOOST_REQUIRE_EQUAL(*(frag.dataBegin() + ii), *(recvdFrag.dataBegin() + ii));
+		BOOST_REQUIRE_EQUAL(ii, *(recvdFrag.dataBegin() + ii));
 	}
 	TLOG(TLVL_DEBUG) << "SharedMemoryFragmentManager WholeFragment test complete";
 	TLOG(TLVL_INFO) << "END TEST WholeFragment";

@@ -10,7 +10,6 @@ StatisticsCollection& StatisticsCollection::getInstance()
 }
 
 StatisticsCollection::StatisticsCollection()
-    : calculationInterval_(1.0)
 {
 	thread_stop_requested_ = false;
 	try
@@ -27,11 +26,20 @@ StatisticsCollection::StatisticsCollection()
 StatisticsCollection::~StatisticsCollection() noexcept
 {
 	// stop and clean up the thread
-	requestStop();
+	thread_stop_requested_ = true;
 
-	// Having issues where ~StatisticsCollection is being called from within thread due to signal handlers
-	if (calculation_thread_ && calculation_thread_->joinable() && calculation_thread_->get_id() != boost::this_thread::get_id()) { calculation_thread_->join();
-}
+	try
+	{
+		// Having issues where ~StatisticsCollection is being called from within thread due to signal handlers
+		if (calculation_thread_ && calculation_thread_->joinable() && calculation_thread_->get_id() != boost::this_thread::get_id())
+		{
+			calculation_thread_->join();
+		}
+	}
+	catch (...)
+	{
+		// IGNORED
+	}
 }
 
 void StatisticsCollection::
@@ -74,7 +82,7 @@ void StatisticsCollection::run()
 {
 	while (!thread_stop_requested_)
 	{
-		long useconds = static_cast<long>(calculationInterval_ * 1000000);
+		auto useconds = static_cast<uint64_t>(calculationInterval_ * 1000000);
 		usleep(useconds);
 		{
 			std::lock_guard<std::mutex> scopedLock(map_mutex_);

@@ -86,7 +86,7 @@ int artdaq::SharedMemoryFragmentManager::ReadFragment(Fragment& fragment)
 	fragment.resize(tmpHdr.word_count - tmpHdr.num_words());
 	memcpy(fragment.headerAddress(), &tmpHdr, tmpHdr.num_words() * sizeof(artdaq::RawDataType));
 	TLOG(14) << "Reading Fragment Body - of frag w/ seqID=" << tmpHdr.sequence_id;
-	return ReadFragmentData(fragment.headerAddress() + tmpHdr.num_words(), tmpHdr.word_count - tmpHdr.num_words());
+	return ReadFragmentData(fragment.headerAddress() + tmpHdr.num_words(), tmpHdr.word_count - tmpHdr.num_words()); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 int artdaq::SharedMemoryFragmentManager::ReadFragmentHeader(detail::RawFragmentHeader& header)

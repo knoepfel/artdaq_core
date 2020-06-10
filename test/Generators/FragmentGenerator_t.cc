@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE (FragmentGenerator_t)
-#include "cetlib/quiet_unit_test.hpp"
+#include <cetlib/quiet_unit_test.hpp>
 
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Generators/FragmentGenerator.hh"

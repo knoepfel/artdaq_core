@@ -43,7 +43,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			logPathProblem = "Log file root directory ";
 			logPathProblem.append(logRootString);
 			logPathProblem.append(" does not exist!");
-			throw cet::exception("ConfigureMessageFacility") << logPathProblem;
+			throw cet::exception("ConfigureMessageFacility") << logPathProblem; // NOLINT(cert-err60-cpp)
 		}
 
 		logfileDir = logRootString;
@@ -168,7 +168,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		}
 		else
 		{
-			throw cet::exception("configureMessageFacility") << "Unable to open requested fhicl file \"" << logFhiclCode << "\".";
+			throw cet::exception("configureMessageFacility") << "Unable to open requested fhicl file \"" << logFhiclCode << "\".";  // NOLINT(cert-err60-cpp)
 		}
 	}
 
@@ -251,7 +251,7 @@ void artdaq::configureTRACE(fhicl::ParameterSet& trace_pset)
 					auto msks = lvls_pset.get<std::vector<uint64_t>>(tname);
 					for (auto msk : msks)
 					{
-						lvlsbldr << " 0x" << std::hex << (unsigned long long)msk;
+						lvlsbldr << " 0x" << std::hex << static_cast<unsigned long long>(msk); // NOLINT(google-runtime-int)
 					}
 					lvlsbldr << "\n";
 				}

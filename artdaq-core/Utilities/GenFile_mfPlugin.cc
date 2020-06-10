@@ -13,7 +13,6 @@
 #include "messagefacility/Utilities/exception.h"
 
 namespace mfplugins {
-using mf::ELseverityLevel;
 using mf::ErrorObj;
 using mf::service::ELdestination;
 
@@ -80,10 +79,7 @@ public:
 		 * \brief ELGenFileOutput Constructor
 		 * \param pset Validated ParameterSet used to configure GenFileOutput
 		 */
-	ELGenFileOutput(Parameters const& pset);
-
-	/// Default virtual destructor
-	~ELGenFileOutput() override = default;
+	explicit ELGenFileOutput(Parameters const& pset);
 
 	/**
 		 * \brief Serialize a MessageFacility message to the output stream
@@ -216,6 +212,9 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 							filePattern = filePattern.replace(pos - 1, 3, repString);
 							break;
 						}
+					default:
+						pos+=3;
+						break;
 				}
 				pos -= 3;
 			}
@@ -239,6 +238,8 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 			case 'T':
 				filePattern = filePattern.replace(pos - 1, 2, timeBuffISO);
 				pos -= 2;
+				break;
+			default:
 				break;
 		}
 		TLOG(6) << "filePattern is now: " << filePattern;

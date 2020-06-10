@@ -97,6 +97,11 @@ public:
 	size_t size() { return data_.size(); }
 
 private:
+	SharedMemoryEventReceiver(SharedMemoryEventReceiver const&) = delete;
+	SharedMemoryEventReceiver(SharedMemoryEventReceiver&&) = delete;
+	SharedMemoryEventReceiver& operator=(SharedMemoryEventReceiver const&) = delete;
+	SharedMemoryEventReceiver& operator=(SharedMemoryEventReceiver&&) = delete;
+
 	std::string printBuffers_(SharedMemoryManager* data_source);
 
 	int current_read_buffer_;

@@ -2,7 +2,7 @@
 #include "artdaq-core/Data/RawEvent.hh"
 
 #define BOOST_TEST_MODULE(RawEvent_t)
-#include "cetlib/quiet_unit_test.hpp"
+#include <cetlib/quiet_unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(RawEvent_test)
 

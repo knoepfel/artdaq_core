@@ -15,7 +15,7 @@ int SimpleMemoryReaderApp(int argc, char** argv)
 		size_t eec(0);
 		if (argc == 2)
 		{
-			std::istringstream ins(argv[1]);
+			std::istringstream ins(argv[1]);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			ins >> eec;
 		}
 		SimpleMemoryReader reader(0xA99, 0xB99, eec);
@@ -60,16 +60,22 @@ void SimpleMemoryReader::run()
 			}
 		}
 
-		if (!got_event) { break;
-}
+		if (!got_event)
+		{
+			break;
+		}
 
 		auto errflag = false;
 		auto evtHeader = incoming_events_->ReadHeader(errflag);
-		if (errflag) { break;  // Buffer was changed out from under reader!
-}
+		if (errflag)
+		{
+			break;  // Buffer was changed out from under reader!
+		}
 		auto fragmentTypes = incoming_events_->GetFragmentTypes(errflag);
-		if (errflag) { break;  // Buffer was changed out from under reader!
-}
+		if (errflag)
+		{
+			break;  // Buffer was changed out from under reader!
+		}
 		if (fragmentTypes.empty())
 		{
 			TLOG(TLVL_ERROR) << "Event has no Fragments! Aborting!";
@@ -97,10 +103,9 @@ void SimpleMemoryReader::run()
 	}
 	if ((expectedEventCount_ != 0u) && eventsSeen != expectedEventCount_)
 	{
-		std::ostringstream os;
-		os << "Wrong number of events in SimpleMemoryReader ("
-		   << eventsSeen << " != " << expectedEventCount_ << ").\n";
-		throw os.str();
+		throw cet::exception("SimpleMemoryReader") // NOLINT(cert-err60-cpp)
+		    << "Wrong number of events in SimpleMemoryReader ("
+		    << eventsSeen << " != " << expectedEventCount_ << ").";
 	}
 }
 }  // namespace artdaq
