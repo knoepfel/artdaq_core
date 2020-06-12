@@ -29,7 +29,7 @@
 #define UNDEF_TRACE_AT_END
 #endif
 
-#define QV_ALIGN 512
+#define QV_ALIGN 512			// 512 byte align to support _possible_ direct I/O - see artdaq/artdaq/ArtModules/BinaryFileOutput_module.cc and artdaq issue #24437
 
 /**
  * \brief Allocates aligned memory for the QuickVec
@@ -40,7 +40,7 @@
 static inline void* QV_MEMALIGN(size_t boundary, size_t size)
 {
 	void* retadr = 0;
-	posix_memalign(&retadr, boundary, size);
+	posix_memalign(&retadr, boundary, size); // allows calling with 512-byte align to support _possible_ direct I/O. Ref. issue #24437
 	return retadr;
 }
 
