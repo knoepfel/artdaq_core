@@ -8,6 +8,7 @@ void detail::RawEventHeader::print(std::ostream& os) const
 	   << ", Subrun " << subrun_id
 	   << ", Event " << event_id
 	   << ", SeqID " << sequence_id
+	   << ", TS " << timestamp
 	   << ", Complete? " << is_complete
 	   << ", Version " << static_cast<unsigned int>(version)
 	   << '\n';

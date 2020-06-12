@@ -59,7 +59,8 @@ struct detail::RawEventHeader
 	RawEventHeader(run_id_t run,
 	               subrun_id_t subrun,
 	               event_id_t event,
-	               sequence_id_t seq, timestamp_t ts)
+	               sequence_id_t seq,
+	               timestamp_t ts)
 	    : run_id(run)
 	    , subrun_id(subrun)
 	    , event_id(event)
