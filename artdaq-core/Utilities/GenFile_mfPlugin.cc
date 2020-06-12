@@ -210,8 +210,8 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 								repString += sep;
 							}
 							filePattern = filePattern.replace(pos - 1, 3, repString);
-							break;
 						}
+						break;
 					default:
 						pos+=3;
 						break;
