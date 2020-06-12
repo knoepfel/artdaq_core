@@ -20,6 +20,7 @@ void RawEvent::print(std::ostream& os) const
 	   << ", Subrun " << subrunID()
 	   << ", Event " << eventID()
 	   << ", SeqID " << sequenceID()
+	   << ", TS " << timestamp()
 	   << ", FragCount " << numFragments()
 	   << ", WordCount " << wordCount()
 	   << ", Complete? " << isComplete()

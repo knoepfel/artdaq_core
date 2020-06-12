@@ -32,11 +32,13 @@ struct detail::RawEventHeader
 	typedef uint32_t subrun_id_t;    ///< Subrun numbers are 32 bits
 	typedef uint32_t event_id_t;     ///< Event numbers are 32 bits
 	typedef uint64_t sequence_id_t;  ///< Field size should be the same as the Fragment::sequence_id field
+	typedef uint64_t timestamp_t;    ///< Field size should be the same as the Fragment::timestamp field
 
 	run_id_t run_id;            ///< Fragments don't know about runs
 	subrun_id_t subrun_id;      ///< Fragments don't know about subruns
 	event_id_t event_id;        ///< Event number should be either sequence ID or Timestamp of component Fragments
 	sequence_id_t sequence_id;  ///< RawEvent sequence_id should be the same as its component Fragment sequence_ids.
+	timestamp_t timestamp;      ///< The timestamp of the first Fragment received for this event
 	bool is_complete;           ///< Does the event contain the expected number of Fragment objects?
 	uint8_t version;            ///< Version number of the RawFragmentHeader
 
@@ -44,7 +46,7 @@ struct detail::RawEventHeader
 		 * \brief Default constructor. Provided for ROOT compatibility
 		 */
 	RawEventHeader()
-	    : run_id(0), subrun_id(0), event_id(0), sequence_id(0), is_complete(false), version(CURRENT_VERSION) {}
+	    : run_id(0), subrun_id(0), event_id(0), sequence_id(0), timestamp(0), is_complete(false), version(CURRENT_VERSION) {}
 
 	/**
 		 * \brief Constructs the RawEventHeader struct with the given parameters
@@ -52,15 +54,17 @@ struct detail::RawEventHeader
 		 * \param subrun The current Subrun number
 		 * \param event The current event number
 		 * \param seq The current Sequence ID
+		 * \param ts The current Timestamp
 		 */
 	RawEventHeader(run_id_t run,
 	               subrun_id_t subrun,
 	               event_id_t event,
-	               sequence_id_t seq)
+	               sequence_id_t seq, timestamp_t ts)
 	    : run_id(run)
 	    , subrun_id(subrun)
 	    , event_id(event)
 	    , sequence_id(seq)
+	    , timestamp(ts)
 	    , is_complete(false)
 	    , version(CURRENT_VERSION)
 	{}
@@ -96,6 +100,7 @@ public:
 	typedef detail::RawEventHeader::subrun_id_t subrun_id_t;      ///< Subrun numbers are 32 bits
 	typedef detail::RawEventHeader::event_id_t event_id_t;        ///< Event numbers are 32 bits
 	typedef detail::RawEventHeader::sequence_id_t sequence_id_t;  ///< Field size should be the same as the Fragment::sequence_id field
+	typedef detail::RawEventHeader::timestamp_t timestamp_t;      ///< Field size should be the same as the Fragment::timestamp field
 
 	/**
 		 * \brief Constructs a RawEvent with the given parameters
@@ -103,8 +108,9 @@ public:
 		 * \param subrun The current Subrun number
 		 * \param event The current Event number
 		 * \param seq The current sequence_id
+		 * \param ts The timestamp for the event
 		 */
-	RawEvent(run_id_t run, subrun_id_t subrun, event_id_t event, sequence_id_t seq);
+	RawEvent(run_id_t run, subrun_id_t subrun, event_id_t event, sequence_id_t seq, timestamp_t ts);
 
 	/**
 		 * \brief Constructs a RawEvent using the given RawEventHeader
@@ -166,6 +172,12 @@ public:
 	sequence_id_t sequenceID() const;
 
 	/**
+	 * @brief Retrieve the timestamp from the RawEventHeader
+	 * @return The timestamp stored in the RawEventHeader
+	*/
+	timestamp_t timestamp() const;
+
+	/**
 		 * \brief Retrieve the value of the complete flag from the RawEventHeader
 		 * \return The value of RawEventHeader::is_complete
 		 */
@@ -216,8 +228,8 @@ private:
 
 typedef std::shared_ptr<RawEvent> RawEvent_ptr;  ///< A shared_ptr to a RawEvent
 
-inline RawEvent::RawEvent(run_id_t run, subrun_id_t subrun, event_id_t event, sequence_id_t seq)
-    : header_(run, subrun, event, seq)
+inline RawEvent::RawEvent(run_id_t run, subrun_id_t subrun, event_id_t event, sequence_id_t seq, timestamp_t ts)
+    : header_(run, subrun, event, seq, ts)
     , fragments_() {}
 
 inline RawEvent::RawEvent(detail::RawEventHeader hdr)
@@ -253,6 +265,7 @@ inline RawEvent::run_id_t RawEvent::runID() const { return header_.run_id; }
 inline RawEvent::subrun_id_t RawEvent::subrunID() const { return header_.subrun_id; }
 inline RawEvent::event_id_t RawEvent::eventID() const { return header_.event_id; }
 inline RawEvent::sequence_id_t RawEvent::sequenceID() const { return header_.sequence_id; }
+inline RawEvent::timestamp_t RawEvent::timestamp() const { return header_.timestamp; }
 inline bool RawEvent::isComplete() const { return header_.is_complete; }
 
 inline std::unique_ptr<Fragments> RawEvent::releaseProduct()
