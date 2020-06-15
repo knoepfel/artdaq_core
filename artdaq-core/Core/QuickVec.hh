@@ -416,7 +416,7 @@ inline void QUICKVEC::reserve(size_t size)
 	{
 		TT_* old = data_;
 		//data_ = new TT_[size];
-		data_ = reinterpret_cast<TT_*>(QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		data_ = reinterpret_cast<TT_*>(QV_MEMALIGN(QV_ALIGN, size * sizeof(TT_)));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		memcpy(data_, old, size_ * sizeof(TT_));
 		TRACEN("QuickVec", 13, "QUICKVEC::reserve after memcpy this=%p old=%p data_=%p capacity=%d", (void*)this, (void*)old, (void*)data_, (int)size);  // NOLINT
 

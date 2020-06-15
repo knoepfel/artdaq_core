@@ -22,7 +22,7 @@ public:
 	    , description_(description)
 	    , level_(level)
 	{
-		TLOG_ARB(level_, "TraceLock") << "Acquired Lock " << description_ << ", mutex=" << (void*)&mutex << ", lock=" << (void*)&lock_; // NOLINT(google-readability-casting)
+		TLOG_ARB(level_, "TraceLock") << "Acquired Lock " << description_ << ", mutex=" << (void*)&mutex << ", lock=" << (void*)&lock_;  // NOLINT(google-readability-casting)
 	}
 
 	/**
@@ -30,7 +30,7 @@ public:
 		 */
 	virtual ~TraceLock()
 	{
-		TLOG_ARB(level_, "TraceLock") << "Releasing lock " << description_ << ", lock=" << (void*)&lock_;// NOLINT(google-readability-casting)
+		TLOG_ARB(level_, "TraceLock") << "Releasing lock " << description_ << ", lock=" << (void*)&lock_;  // NOLINT(google-readability-casting)
 	}
 
 private:

@@ -43,7 +43,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			logPathProblem = "Log file root directory ";
 			logPathProblem.append(logRootString);
 			logPathProblem.append(" does not exist!");
-			throw cet::exception("ConfigureMessageFacility") << logPathProblem; // NOLINT(cert-err60-cpp)
+			throw cet::exception("ConfigureMessageFacility") << logPathProblem;  // NOLINT(cert-err60-cpp)
 		}
 
 		logfileDir = logRootString;
@@ -251,7 +251,7 @@ void artdaq::configureTRACE(fhicl::ParameterSet& trace_pset)
 					auto msks = lvls_pset.get<std::vector<uint64_t>>(tname);
 					for (auto msk : msks)
 					{
-						lvlsbldr << " 0x" << std::hex << static_cast<unsigned long long>(msk); // NOLINT(google-runtime-int)
+						lvlsbldr << " 0x" << std::hex << static_cast<unsigned long long>(msk);  // NOLINT(google-runtime-int)
 					}
 					lvlsbldr << "\n";
 				}

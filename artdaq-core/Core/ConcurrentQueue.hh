@@ -95,7 +95,7 @@ public:
 		  * instantiate the ConcurrentQueue template has a method memoryUsed
 		  * returning the number of bytes occupied by the class itself.
 			 */
-	static const bool value = (sizeof(test<T>(nullptr)) == sizeof(TrueType)); // NOLINT(cert-err58-cpp)
+	static const bool value = (sizeof(test<T>(nullptr)) == sizeof(TrueType));  // NOLINT(cert-err58-cpp)
 };
 
 /**
@@ -601,7 +601,6 @@ public:
 	std::chrono::steady_clock::time_point getReadyTime() const { return readyTime_; }
 
 private:
-
 	typedef std::lock_guard<std::mutex> LockType;
 	typedef std::unique_lock<std::mutex> WaitLockType;
 

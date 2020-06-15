@@ -103,7 +103,7 @@ void SimpleMemoryReader::run()
 	}
 	if ((expectedEventCount_ != 0u) && eventsSeen != expectedEventCount_)
 	{
-		throw cet::exception("SimpleMemoryReader") // NOLINT(cert-err60-cpp)
+		throw cet::exception("SimpleMemoryReader")  // NOLINT(cert-err60-cpp)
 		    << "Wrong number of events in SimpleMemoryReader ("
 		    << eventsSeen << " != " << expectedEventCount_ << ").";
 	}

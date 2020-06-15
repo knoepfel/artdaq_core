@@ -47,10 +47,10 @@ struct MonitoredQuantityStats
 	double recentValueRate;          ///< The sum of the "recent" samples, divided by the length of the "recent" time window
 	DURATION_T recentDuration;       ///< The length of the "recent" time window
 
-	std::vector<size_t> recentBinnedSampleCounts;  ///< Sample counts for each instance of calculateStatistics in _intervalForRecentStats (rolling window)
-	std::vector<double> recentBinnedValueSums;        ///< Sums for each instance of calculateStatistics in _intervalForRecentStats (rolling window)
-	std::vector<DURATION_T> recentBinnedDurations;    ///< Duration between each instance of calcualteStatistics in _intervalForRecentStats (rolling window)
-	std::vector<TIME_POINT_T> recentBinnedEndTimes;   ///< Last sample time in each instance of calculateStatistics in _intervalForRecentStats (rolling window)
+	std::vector<size_t> recentBinnedSampleCounts;    ///< Sample counts for each instance of calculateStatistics in _intervalForRecentStats (rolling window)
+	std::vector<double> recentBinnedValueSums;       ///< Sums for each instance of calculateStatistics in _intervalForRecentStats (rolling window)
+	std::vector<DURATION_T> recentBinnedDurations;   ///< Duration between each instance of calcualteStatistics in _intervalForRecentStats (rolling window)
+	std::vector<TIME_POINT_T> recentBinnedEndTimes;  ///< Last sample time in each instance of calculateStatistics in _intervalForRecentStats (rolling window)
 
 	double lastSampleValue;            ///< Value of the most recent sample
 	double lastValueRate;              ///< Latest rate point (sum of values over calculateStatistics interval)

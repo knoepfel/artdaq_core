@@ -13,7 +13,7 @@
 #include "cetlib_except/exception.h"
 
 extern "C" {
-#include <stdint.h> // NOLINT(modernize-deprecated-headers)
+#include <stdint.h>  // NOLINT(modernize-deprecated-headers)
 }
 
 namespace artdaq {

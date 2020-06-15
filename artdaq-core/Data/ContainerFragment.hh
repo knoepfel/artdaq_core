@@ -196,7 +196,7 @@ public:
 	{
 		if (index >= block_count() || block_count() == 0)
 		{
-			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragSize was asked for a non-existent Fragment!"; // NOLINT(cert-err60-cpp)
+			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragSize was asked for a non-existent Fragment!";  // NOLINT(cert-err60-cpp)
 		}
 		auto end = fragmentIndex(index + 1);
 		if (index == 0) return end;
@@ -224,13 +224,13 @@ public:
 	{
 		if (index > block_count())
 		{
-			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragmentIndex was asked for a non-existent Fragment!";// NOLINT(cert-err60-cpp)
+			throw cet::exception("ArgumentOutOfRange") << "Buffer overrun detected! ContainerFragment::fragmentIndex was asked for a non-existent Fragment!";  // NOLINT(cert-err60-cpp)
 		}
 		if (index == 0) { return 0; }
 
 		auto index_ptr = get_index_();
 
-		return index_ptr[index - 1]; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		return index_ptr[index - 1];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	}
 
 	/**
@@ -261,14 +261,14 @@ protected:
 		TLOG(TLVL_TRACE, "ContainerFragment") << "Creating new index for ContainerFragment";
 		index_ptr_owner_ = std::make_unique<std::vector<size_t>>(metadata()->block_count + 1);
 
-		auto current = reinterpret_cast<uint8_t const*>(artdaq_Fragment_.dataBegin());// NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		auto current = reinterpret_cast<uint8_t const*>(artdaq_Fragment_.dataBegin());  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		size_t offset = 0;
 		for (int ii = 0; ii < metadata()->block_count; ++ii)
 		{
 			auto this_size = reinterpret_cast<const detail::RawFragmentHeader*>(current)->word_count * sizeof(RawDataType);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 			offset += this_size;
 			index_ptr_owner_->at(ii) = offset;
-			current += this_size; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			current += this_size;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		}
 		index_ptr_owner_->at(metadata()->block_count) = CONTAINER_MAGIC;
 		return &index_ptr_owner_->at(0);
@@ -281,7 +281,7 @@ protected:
 	void reset_index_ptr_() const
 	{
 		TLOG(TLVL_TRACE, "ContainerFragment") << "Request to reset index_ptr recieved. has_index=" << metadata()->has_index << ", Check word = " << std::hex
-		                                      << *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count);// NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		                                      << *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count);         // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		if (metadata()->has_index && *(reinterpret_cast<size_t const*>(artdaq_Fragment_.dataBeginBytes() + metadata()->index_offset) + metadata()->block_count) == CONTAINER_MAGIC)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		{
 			TLOG(TLVL_TRACE, "ContainerFragment") << "Setting index_ptr to found valid index";

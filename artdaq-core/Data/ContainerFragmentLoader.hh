@@ -96,7 +96,7 @@ private:
 	void addSpace_(size_t bytes);
 
 	uint8_t* dataBegin_() { return reinterpret_cast<uint8_t*>(&*artdaq_Fragment_.dataBegin()); }  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-	void* dataEnd_() { return reinterpret_cast<void*>(dataBegin_() + lastFragmentIndex()); }      // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	void* dataEnd_() { return static_cast<void*>(dataBegin_() + lastFragmentIndex()); }           // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 };
 
 inline artdaq::ContainerFragmentLoader::ContainerFragmentLoader(artdaq::Fragment& f, artdaq::Fragment::type_t expectedFragmentType = Fragment::EmptyFragmentType)
@@ -139,7 +139,7 @@ inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 	artdaq_Fragment_.resizeBytesWithCushion(bytes + currSize, 1.3);
 	reset_index_ptr_();  // Must reset index_ptr after resize operation!
 
-	TLOG(TLVL_TRACE, "ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << (void*)dataEnd_() << " (oldSizeBytes/deltaBytes: " << currSize << "/" << bytes << ")";  // NOLINT(google-readability-casting)
+	TLOG(TLVL_TRACE, "ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << static_cast<void*>(dataEnd_()) << " (oldSizeBytes/deltaBytes: " << currSize << "/" << bytes << ")";
 }
 
 inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
@@ -159,7 +159,7 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 		addSpace_((lastFragmentIndex() + frag.sizeBytes() + sizeof(size_t) * (metadata()->block_count + 2)) - artdaq_Fragment_.dataSizeBytes());
 	}
 	frag.setSequenceID(artdaq_Fragment_.sequenceID());
-	TLOG(TLVL_TRACE, "ContainerFragmentLoader") << "addFragment, copying " << frag.sizeBytes() << " bytes from " << (void*)frag.headerAddress() << " to " << (void*)dataEnd_();  // NOLINT(google-readability-casting)
+	TLOG(TLVL_TRACE, "ContainerFragmentLoader") << "addFragment, copying " << frag.sizeBytes() << " bytes from " << static_cast<void*>(frag.headerAddress()) << " to " << static_cast<void*>(dataEnd_());
 	memcpy(dataEnd_(), frag.headerAddress(), frag.sizeBytes());
 	metadata()->has_index = 0;
 

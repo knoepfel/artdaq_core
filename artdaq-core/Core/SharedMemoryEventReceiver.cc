@@ -48,7 +48,7 @@ bool artdaq::SharedMemoryEventReceiver::ReadyForRead(bool broadcast, size_t time
 		{
 			current_read_buffer_ = buf;
 			current_data_source_->ResetReadPos(buf);
-			current_header_ = reinterpret_cast<detail::RawEventHeader*>(current_data_source_->GetReadPos(buf)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+			current_header_ = reinterpret_cast<detail::RawEventHeader*>(current_data_source_->GetReadPos(buf));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 			TLOG(TLVL_TRACE) << "ReadyForRead Found buffer, returning true. event hdr sequence_id=" << current_header_->sequence_id;
 
 			// Ignore any Init fragments after the first
@@ -102,7 +102,7 @@ std::set<artdaq::Fragment::type_t> artdaq::SharedMemoryEventReceiver::GetFragmen
 {
 	if (current_read_buffer_ == -1 || (current_header_ == nullptr) || (current_data_source_ == nullptr))
 	{
-		throw cet::exception("AccessViolation") << "Cannot call GetFragmentTypes when not currently reading a buffer! Call ReadHeader() first!"; // NOLINT(cert-err60-cpp)
+		throw cet::exception("AccessViolation") << "Cannot call GetFragmentTypes when not currently reading a buffer! Call ReadHeader() first!";  // NOLINT(cert-err60-cpp)
 	}
 
 	err = !current_data_source_->CheckBuffer(current_read_buffer_, SharedMemoryManager::BufferSemaphoreFlags::Reading);
@@ -122,7 +122,7 @@ std::set<artdaq::Fragment::type_t> artdaq::SharedMemoryEventReceiver::GetFragmen
 		{
 			return std::set<Fragment::type_t>();
 		}
-		auto fragHdr = reinterpret_cast<artdaq::detail::RawFragmentHeader*>(current_data_source_->GetReadPos(current_read_buffer_)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		auto fragHdr = reinterpret_cast<artdaq::detail::RawFragmentHeader*>(current_data_source_->GetReadPos(current_read_buffer_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		output.insert(fragHdr->type);
 		current_data_source_->IncrementReadPos(current_read_buffer_, fragHdr->word_count * sizeof(RawDataType));
 	}
@@ -134,7 +134,7 @@ std::unique_ptr<artdaq::Fragments> artdaq::SharedMemoryEventReceiver::GetFragmen
 {
 	if ((current_data_source_ == nullptr) || (current_header_ == nullptr) || current_read_buffer_ == -1)
 	{
-		throw cet::exception("AccessViolation") << "Cannot call GetFragmentsByType when not currently reading a buffer! Call ReadHeader() first!"; // NOLINT(cert-err60-cpp)
+		throw cet::exception("AccessViolation") << "Cannot call GetFragmentsByType when not currently reading a buffer! Call ReadHeader() first!";  // NOLINT(cert-err60-cpp)
 	}
 	err = !current_data_source_->CheckBuffer(current_read_buffer_, SharedMemoryManager::BufferSemaphoreFlags::Reading);
 	if (err)

@@ -203,7 +203,7 @@ inline void RawEvent::insertFragment(FragmentPtr&& pfrag)
 {
 	if (pfrag == nullptr)
 	{
-		throw cet::exception("LogicError") // NOLINT(cert-err60-cpp)
+		throw cet::exception("LogicError")  // NOLINT(cert-err60-cpp)
 		    << "Attempt to insert a null FragmentPtr into a RawEvent detected.\n";
 	}
 	fragments_.emplace_back(std::move(pfrag));

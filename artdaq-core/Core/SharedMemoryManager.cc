@@ -105,7 +105,7 @@ artdaq::SharedMemoryManager::SharedMemoryManager(uint32_t shm_key, size_t buffer
 }
 
 // The clang-tidy warning comes from Detach, which can throw an exception if called with first parameter = true (defaults to false)
-artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept // NOLINT(bugprone-exception-escape)
+artdaq::SharedMemoryManager::~SharedMemoryManager() noexcept  // NOLINT(bugprone-exception-escape)
 {
 	TLOG(TLVL_DEBUG) << "~SharedMemoryManager called";
 	{
@@ -194,7 +194,7 @@ bool artdaq::SharedMemoryManager::Attach(size_t timeout_usec)
 		TLOG(TLVL_DEBUG)
 		    << "Attached to shared memory segment at address "
 		    << std::hex << static_cast<void*>(shm_ptr_) << std::dec;
-		if ((shm_ptr_ != nullptr) && shm_ptr_ != reinterpret_cast<void*>(-1)) // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		if ((shm_ptr_ != nullptr) && shm_ptr_ != reinterpret_cast<void*>(-1))  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		{
 			if (manager_id_ == 0)
 			{
@@ -1010,7 +1010,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 	{
 		return false;
 	}
-	TLOG(27) << "Buffer " << buffer << " at " << (void*)shmBuf << " is stale, time=" << TimeUtils::gettimeofday_us() << ", last touch=" << shmBuf->last_touch_time << ", d=" << delta << ", timeout=" << shm_ptr_->buffer_timeout_us; // NOLINT(google-readability-casting)
+	TLOG(27) << "Buffer " << buffer << " at " << static_cast<void*>(shmBuf) << " is stale, time=" << TimeUtils::gettimeofday_us() << ", last touch=" << shmBuf->last_touch_time << ", d=" << delta << ", timeout=" << shm_ptr_->buffer_timeout_us;
 
 	if (shmBuf->sem_id == manager_id_ && shmBuf->sem == BufferSemaphoreFlags::Writing)
 	{
@@ -1038,7 +1038,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 		{
 			return false;
 		}
-		TLOG(TLVL_WARNING) << "Stale Read buffer " << buffer << " at " << (void*)shmBuf  // NOLINT(google-readability-casting)
+		TLOG(TLVL_WARNING) << "Stale Read buffer " << buffer << " at " << static_cast<void*>(shmBuf)
 		                   << " ( " << delta << " / " << shm_ptr_->buffer_timeout_us << " us ) detected! (seqid="
 		                   << shmBuf->sequence_id << ") Resetting... Reading-->Full";
 		shmBuf->readPos = 0;
@@ -1205,7 +1205,7 @@ void* artdaq::SharedMemoryManager::GetReadPos(int buffer)
 	{
 		return nullptr;
 	}
-	return bufferStart_(buffer) + buf->readPos; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	return bufferStart_(buffer) + buf->readPos;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 void* artdaq::SharedMemoryManager::GetWritePos(int buffer)
 {
@@ -1273,7 +1273,7 @@ void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 	{
 		return;
 	}
-	TLOG(TLVL_TRACE) << "touchBuffer_: Touching buffer at " << (void*)buffer << " with sequence_id " << buffer->sequence_id;  // NOLINT(google-readability-casting)
+	TLOG(TLVL_TRACE) << "touchBuffer_: Touching buffer at " << static_cast<void*>(buffer) << " with sequence_id " << buffer->sequence_id;
 	buffer->last_touch_time = TimeUtils::gettimeofday_us();
 }
 
@@ -1326,7 +1326,7 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, const std::string&
 
 		if (throwException)
 		{
-			throw cet::exception(category) << message; // NOLINT(cert-err60-cpp)
+			throw cet::exception(category) << message;  // NOLINT(cert-err60-cpp)
 		}
 	}
 }

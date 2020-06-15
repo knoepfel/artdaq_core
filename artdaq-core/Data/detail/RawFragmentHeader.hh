@@ -12,7 +12,7 @@
 #include "cetlib_except/exception.h"
 
 extern "C" {
-#include <stdint.h> // NOLINT(modernize-deprecated-headers)
+#include <stdint.h>  // NOLINT(modernize-deprecated-headers)
 }
 
 namespace artdaq {
@@ -211,7 +211,7 @@ artdaq::detail::RawFragmentHeader::setUserType(uint8_t utype)
 {
 	if (utype < FIRST_USER_TYPE || utype > LAST_USER_TYPE)
 	{
-		throw cet::exception("InvalidValue") // NOLINT(cert-err60-cpp)
+		throw cet::exception("InvalidValue")  // NOLINT(cert-err60-cpp)
 		    << "RawFragmentHeader user types must be in the range of "
 		    << static_cast<int>(FIRST_USER_TYPE) << " to " << static_cast<int>(LAST_USER_TYPE)
 		    << " (bad type is " << static_cast<int>(utype) << ").";

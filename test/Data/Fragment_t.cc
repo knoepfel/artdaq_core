@@ -506,10 +506,10 @@ BOOST_AUTO_TEST_CASE(Addresses)
 	artdaq::RawDataType* maddr = f2.metadataAddress();
 	BOOST_REQUIRE_EQUAL(maddr, haddr +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	                               artdaq::detail::RawFragmentHeader::num_words());
-	BOOST_REQUIRE_EQUAL(daddr, maddr + 2);// NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	BOOST_REQUIRE_EQUAL(daddr, maddr + 2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	BOOST_REQUIRE_EQUAL(haddr, &(*(f2.headerBegin())));
 	BOOST_REQUIRE_EQUAL(daddr, &(*(f2.dataBegin())));
-	BOOST_REQUIRE_EQUAL(daddr + 135, &(*(f2.dataEnd())));// NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	BOOST_REQUIRE_EQUAL(daddr + 135, &(*(f2.dataEnd())));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	// metadata with fractional number of longwords
 	MetadataTypeTwo mdTwoA;
@@ -522,10 +522,10 @@ BOOST_AUTO_TEST_CASE(Addresses)
 	maddr = f3.metadataAddress();
 	BOOST_REQUIRE_EQUAL(maddr, haddr +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	                               artdaq::detail::RawFragmentHeader::num_words());
-	BOOST_REQUIRE_EQUAL(daddr, maddr + 4);// NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	BOOST_REQUIRE_EQUAL(daddr, maddr + 4);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	BOOST_REQUIRE_EQUAL(haddr, &(*(f3.headerBegin())));
 	BOOST_REQUIRE_EQUAL(daddr, &(*(f3.dataBegin())));
-	BOOST_REQUIRE_EQUAL(daddr + 77, &(*(f3.dataEnd())));// NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	BOOST_REQUIRE_EQUAL(daddr + 77, &(*(f3.dataEnd())));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 BOOST_AUTO_TEST_CASE(Metadata)

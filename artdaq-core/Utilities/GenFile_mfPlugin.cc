@@ -176,7 +176,8 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 				filePattern = filePattern.replace(pos - 1, 2, "%");
 				pos--;
 				break;
-			case '?': {
+			case '?':
+			{
 				char next = filePattern[pos + 1];
 				switch (next)
 				{
@@ -213,7 +214,7 @@ ELGenFileOutput::ELGenFileOutput(Parameters const& pset)
 						}
 						break;
 					default:
-						pos+=3;
+						pos += 3;
 						break;
 				}
 				pos -= 3;
