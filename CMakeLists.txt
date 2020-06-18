@@ -96,6 +96,16 @@ if(BTYPE_UC STREQUAL DEBUG)
 	endif()
 endif()
 
+#exeption stack trace
+if(DEFINED ENV{USE_EXCEPTIONSTACKTRACE})	
+	if($ENV{USE_EXCEPTIONSTACKTRACE} GREATER 0)
+		message("!!! Exception StackTrace Activated!!!")
+		add_definitions(-D EXCEPTIONSTACKTRACE)
+		set( EXCEPTIONSTACKTRACE_LIB  artdaq-core_Utilities_ExceptionStackTrace )
+		cet_add_compiler_flags( -rdynamic )
+	endif()
+endif()
+
 cet_report_compiler_flags()
 
 set(CETLIB_LIBS cetlib cetlib_except)
