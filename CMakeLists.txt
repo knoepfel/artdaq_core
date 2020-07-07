@@ -102,7 +102,7 @@ if(DEFINED ENV{USE_EXCEPTIONSTACKTRACE})
 		message("!!! Exception StackTrace Activated!!!")
 		add_definitions(-D EXCEPTIONSTACKTRACE)
 		set( EXCEPTIONSTACKTRACE_LIB  artdaq-core_Utilities_ExceptionStackTrace )
-		cet_add_compiler_flags( -rdynamic )
+                cet_add_compiler_flags( -rdynamic -Wno-unused-command-line-argument )
 	endif()
 endif()
 

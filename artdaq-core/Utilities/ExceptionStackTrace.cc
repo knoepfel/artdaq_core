@@ -1,3 +1,4 @@
+#include "TRACE/trace.h"
 #define TRACE_NAME "ExceptionStackTrace"
 
 #include <cxxabi.h>
@@ -48,8 +49,9 @@ void Trace::resolve()
 		address_ = static_cast<uintptr_t>(stoull(m[3], 0, 16));
 		if (std::regex_search(function_, m, std::regex{"(\\S+)\\+(\\S+)"}) && m.size() == 3)
 		{
+			std::string offstr = m[2];
 			function_ = StackTrace::demangle(m[1]);
-			offset_ = static_cast<uintptr_t>(stoull(m[2], 0, 16));
+			offset_ = static_cast<uintptr_t>(stoull(offstr, 0, 16));
 		}
 	}
 	else  //slow parse
@@ -96,7 +98,7 @@ void StackTrace::resolve()
 std::string StackTrace::print() const
 {
 	if (!traces_uptr_)
-		return "Error: Unresolved StackTrace, call resole() first.";
+		return "Error: Unresolved StackTrace, call resolve() first.";
 
 	if (0 == size_)
 	{
@@ -136,4 +138,3 @@ __attribute__((noreturn)) void __cxa_throw(void* ex, std::type_info* info, void 
 }
 #endif
 }
-

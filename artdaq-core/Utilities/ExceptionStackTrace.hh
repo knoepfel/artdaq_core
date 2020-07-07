@@ -11,7 +11,7 @@
 extern "C" {
 
 /**
- * \brief Overloads _cxa_trow and captures stack frames within the context of the thrown exception
+ * \brief Overloads _cxa_throw and captures stack frames within the context of the thrown exception
  */
 #ifndef __clang__
 typedef void(__cxa_throw_t)(void*, void*, void (*)(void*));

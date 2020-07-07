@@ -6,6 +6,7 @@
 #include <boost/lexical_cast.hpp>
 #include <fstream>
 #include <sstream>
+#include "artdaq-core/Utilities/ExceptionHandler.hh"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/make_ParameterSet.h"
@@ -177,7 +178,14 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 
 	//Canonicalize string:
 	fhicl::ParameterSet tmp_pset;
-	fhicl::make_ParameterSet(pstr, tmp_pset);
+	try
+	{
+		fhicl::make_ParameterSet(pstr, tmp_pset);
+	}
+	catch (cet::exception const& ex)
+	{
+		ExceptionHandler(ExceptionHandlerRethrow::yes, std::string("Exception occurred while processing fhicl ParameterSet string ") + pstr + ":");
+	}
 	return tmp_pset.to_string();
 }
 // generateMessageFacilityConfiguration
@@ -262,7 +270,14 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 {
 	auto pstr = generateMessageFacilityConfiguration(progname, useConsole, printDebug);
 	fhicl::ParameterSet pset;
-	fhicl::make_ParameterSet(pstr, pset);
+	try
+	{
+		fhicl::make_ParameterSet(pstr, pset);
+	}
+	catch (cet::exception const&)
+	{
+		ExceptionHandler(ExceptionHandlerRethrow::yes, std::string("Exception occurred while processing fhicl ParameterSet string ") + pstr + ":");
+	}
 
 	fhicl::ParameterSet trace_pset;
 	if (!pset.get_if_present<fhicl::ParameterSet>("TRACE", trace_pset))
