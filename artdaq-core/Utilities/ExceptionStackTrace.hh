@@ -1,11 +1,11 @@
 #ifndef EXCEPTIONSTACKTRACE_H
 #define EXCEPTIONSTACKTRACE_H
 
-#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 extern "C" {
@@ -116,11 +116,11 @@ public:
 
 	//default
 	StackTrace(StackTrace&&) = default;
+	StackTrace& operator=(StackTrace&&) = default;
 
 	//deleted
 	StackTrace(const StackTrace&) = delete;
 	StackTrace& operator=(const StackTrace&) = delete;
-	StackTrace& operator=(StackTrace&&) = delete;
 
 	/**
 	 * \brief Demangles backtrace symbols
@@ -158,7 +158,7 @@ inline std::ostream& operator<<(std::ostream& os, StackTrace const& stack_trace)
 class StackTraceCollector
 {
 public:
-	using stacktrace_map_t = std::map<std::thread::id, StackTrace>;
+	using stacktrace_map_t = std::unordered_map<std::thread::id, StackTrace>;
 
 	/**
 	 * \brief Constructor
@@ -179,7 +179,7 @@ public:
 	void collect_stacktrace(Args&&... args)
 	{
 		std::lock_guard<std::mutex> lg(stack_traces_mutex_);
-		stack_traces_.emplace(std::this_thread::get_id(), StackTrace(std::forward<Args>(args)...));
+		stack_traces_.insert_or_assign(std::this_thread::get_id(), StackTrace(std::forward<Args>(args)...));
 	}
 
 	/**
