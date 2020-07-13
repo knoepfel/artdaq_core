@@ -47,6 +47,16 @@ int artdaq::SharedMemoryFragmentManager::WriteFragment(Fragment&& fragment, bool
 
 		while (!ReadyForWrite(overwrite) && (!overwrite || timeout_us == 0 || loopCount < nloops))
 		{
+			if (!IsValid() || IsEndOfData())
+			{
+				TLOG(TLVL_WARNING) << "WriteFragment: Shared memory is not connected! Attempting reconnect...";
+				auto sts = Attach(timeout_us);
+				if (!sts)
+				{
+					return -1;
+				}
+				TLOG(TLVL_INFO) << "WriteFragment: Shared memory was successfully reconnected";
+			}
 			usleep(sleepTime);
 			++loopCount;
 		}
