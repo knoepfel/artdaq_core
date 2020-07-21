@@ -1017,7 +1017,7 @@ bool artdaq::SharedMemoryManager::ResetBuffer(int buffer)
 		return true;
 	}
 
-	if (!shm_ptr_->destructive_read_mode && shmBuf->sem == BufferSemaphoreFlags::Full && (shmBuf->sequence_id < last_seen_id_ || manager_id_ == 0))
+	if (!shm_ptr_->destructive_read_mode && shmBuf->sem == BufferSemaphoreFlags::Full && manager_id_ == 0)
 	{
 		TLOG(TLVL_DEBUG) << "Resetting old broadcast mode buffer " << buffer << " (seqid=" << shmBuf->sequence_id << "). State: Full-->Empty";
 		shmBuf->writePos = 0;
