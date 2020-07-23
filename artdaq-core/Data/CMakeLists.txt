@@ -6,7 +6,7 @@ NO_DICTIONARY
   EXCLUDE Artdaq_fragmentNameHelper.cc
   )
 
-  simple_plugin(Artdaq "fragmentNameHelper" artdaq-core_Data)
+basic_plugin(Artdaq "fragmentNameHelper" artdaq-core_Data)
 
 cet_remove_compiler_flags(-fsanitize=address -lasan)
 cet_remove_compiler_flags(-fsanitize=thread -ltsan)
