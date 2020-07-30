@@ -31,10 +31,13 @@ struct RawFragmentHeader;
 struct artdaq::detail::RawFragmentHeader
 {
 	/**
-	 * \brief The RawDataType (currently a 64-bit integer) is the basic unit of data representation within _artdaq_
+	 * \brief The RawDataType (currently an unsigned long long) is the basic unit of data representation within _artdaq_
+	 *
+	 * ELF, 7/30/2020: This typedef apparently cannot be changed without breaking compatibility with older data files. 
+	                   I have tried and failed to deal with such a change in classes_def.xml.
 	 */
-	typedef uint64_t RawDataType;
-
+	typedef unsigned long long RawDataType;
+	
 #if HIDE_FROM_ROOT
 	typedef uint16_t version_t;             ///< version field is 16 bits
 	typedef uint64_t sequence_id_t;         ///< sequence_id field is 48 bits
