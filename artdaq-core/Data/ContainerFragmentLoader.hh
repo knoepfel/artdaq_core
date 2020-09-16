@@ -220,7 +220,7 @@ inline artdaq::detail::RawFragmentHeader* artdaq::ContainerFragmentLoader::appen
 
 	metadata()->has_index = 1;
 	reset_index_ptr_();
-	
+
 	return lastFragmentHeader();
 }
 
