@@ -27,7 +27,7 @@ struct RawEventHeader;
 	 */
 struct detail::RawEventHeader
 {
-	static constexpr uint8_t CURRENT_VERSION = 0;
+	static constexpr uint8_t CURRENT_VERSION = 0; ///< Current version of the RawEventHeader
 	typedef uint32_t run_id_t;       ///< Run numbers are 32 bits
 	typedef uint32_t subrun_id_t;    ///< Subrun numbers are 32 bits
 	typedef uint32_t event_id_t;     ///< Event numbers are 32 bits
@@ -40,7 +40,7 @@ struct detail::RawEventHeader
 	sequence_id_t sequence_id;  ///< RawEvent sequence_id should be the same as its component Fragment sequence_ids.
 	timestamp_t timestamp;      ///< The timestamp of the first Fragment received for this event
 	bool is_complete;           ///< Does the event contain the expected number of Fragment objects?
-	uint8_t version;            ///< Version number of the RawFragmentHeader
+	uint8_t version;            ///< Version number of the RawEventHeader
 
 	/**
 		 * \brief Default constructor. Provided for ROOT compatibility
@@ -70,6 +70,10 @@ struct detail::RawEventHeader
 	    , version(CURRENT_VERSION)
 	{}
 
+	/**
+	 * @brief Print a RawEventHeader to the given stream
+	 * @param os Output stream to print to
+	*/
 	void print(std::ostream& os) const;
 };
 
