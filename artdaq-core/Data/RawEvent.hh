@@ -27,12 +27,12 @@ struct RawEventHeader;
 	 */
 struct detail::RawEventHeader
 {
-	static constexpr uint8_t CURRENT_VERSION = 0; ///< Current version of the RawEventHeader
-	typedef uint32_t run_id_t;       ///< Run numbers are 32 bits
-	typedef uint32_t subrun_id_t;    ///< Subrun numbers are 32 bits
-	typedef uint32_t event_id_t;     ///< Event numbers are 32 bits
-	typedef uint64_t sequence_id_t;  ///< Field size should be the same as the Fragment::sequence_id field
-	typedef uint64_t timestamp_t;    ///< Field size should be the same as the Fragment::timestamp field
+	static constexpr uint8_t CURRENT_VERSION = 0;  ///< Current version of the RawEventHeader
+	typedef uint32_t run_id_t;                     ///< Run numbers are 32 bits
+	typedef uint32_t subrun_id_t;                  ///< Subrun numbers are 32 bits
+	typedef uint32_t event_id_t;                   ///< Event numbers are 32 bits
+	typedef uint64_t sequence_id_t;                ///< Field size should be the same as the Fragment::sequence_id field
+	typedef uint64_t timestamp_t;                  ///< Field size should be the same as the Fragment::timestamp field
 
 	run_id_t run_id;            ///< Fragments don't know about runs
 	subrun_id_t subrun_id;      ///< Fragments don't know about subruns
