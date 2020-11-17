@@ -683,7 +683,7 @@ bool artdaq::SharedMemoryManager::ReadyForWrite(bool overwrite)
 std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager(bool locked)
 {
 	std::deque<int> output;
-	auto buffer_count = size();
+	size_t buffer_count = size();
 	if (!IsValid() || buffer_count == 0)
 	{
 		return output;
@@ -695,7 +695,7 @@ std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager(bool locke
 		std::lock_guard<std::mutex> lk(search_mutex_);
 		TLOG(TLVL_BUFLCK) << "GetBuffersOwnedByManager obtained search_mutex";
 		//TraceLock lk(search_mutex_, 16, "GetOwnedSearch");
-		for (auto ii = 0; ii < buffer_count; ++ii)
+		for (size_t ii = 0; ii < buffer_count; ++ii)
 		{
 			auto buf = getBufferInfo_(ii);
 			if (buf == nullptr)
@@ -710,7 +710,7 @@ std::deque<int> artdaq::SharedMemoryManager::GetBuffersOwnedByManager(bool locke
 	}
 	else
 	{
-		for (auto ii = 0; ii < buffer_count; ++ii)
+		for (size_t ii = 0; ii < buffer_count; ++ii)
 		{
 			auto buf = getBufferInfo_(ii);
 			if (buf == nullptr)
