@@ -14,7 +14,7 @@ namespace artdaq {
 	* \return Fhicl string with generated MessageFacility configuration
 	* \throw cet::exception if log path or ARTDAQ_LOG_FHICL do not exist
 	*/
-std::string generateMessageFacilityConfiguration(char const* progname, bool useConsole = true, bool printDebug = false, char const* fileExtraName ="");
+std::string generateMessageFacilityConfiguration(char const* progname, bool useConsole = true, bool printDebug = false, char const* fileExtraName = "");
 
 /**
 	 * \brief Configure TRACE
