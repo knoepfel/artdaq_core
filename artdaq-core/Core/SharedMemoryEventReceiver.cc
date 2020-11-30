@@ -221,7 +221,7 @@ void artdaq::SharedMemoryEventReceiver::ReleaseBuffer()
 	{
 		if (current_data_source_ != nullptr)
 		{
-			current_data_source_->MarkBufferEmpty(current_read_buffer_);
+			current_data_source_->MarkBufferEmpty(current_read_buffer_, false, false);
 		}
 	}
 	catch (cet::exception const& e)
