@@ -125,6 +125,11 @@ BOOST_AUTO_TEST_CASE(FragmentType)
 	frag.setSystemType(240);
 	frag.setSystemType(250);
 	frag.setSystemType(255);
+
+	auto map = artdaq::detail::RawFragmentHeader::MakeVerboseSystemTypeMap();
+	BOOST_REQUIRE(map.size() > 0);
+	map = artdaq::detail::RawFragmentHeader::MakeSystemTypeMap();
+	BOOST_REQUIRE(map.size() > 0);
 }
 
 BOOST_AUTO_TEST_CASE(SequenceID)
