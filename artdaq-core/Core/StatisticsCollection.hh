@@ -94,7 +94,7 @@ private:
 	/**
 		 * \brief Thread control varaible
 		 */
-	bool thread_stop_requested_;
+	std::atomic<bool> thread_stop_requested_;
 	/**
 		 * \brief Thread which performs calculation of MonitoredQuantity statistics
 		 */
