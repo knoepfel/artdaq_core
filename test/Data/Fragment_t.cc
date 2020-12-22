@@ -67,6 +67,16 @@ BOOST_AUTO_TEST_CASE(Construct)
 	BOOST_REQUIRE_EQUAL(f3.sequenceID(), (artdaq::Fragment::sequence_id_t)101);
 	BOOST_REQUIRE_EQUAL(f3.fragmentID(), (artdaq::Fragment::fragment_id_t)202);
 	BOOST_REQUIRE_EQUAL(f3.hasMetadata(), false);
+	
+	std::vector<artdaq::RawDataType> d {1, 2, 3};
+	auto f4 = artdaq::Fragment::dataFrag(101, 202, &d[0], 3);
+	BOOST_REQUIRE_EQUAL(f4->dataSize(), (size_t)3);
+	BOOST_REQUIRE_EQUAL(f4->size(), (size_t)artdaq::detail::RawFragmentHeader::num_words() + 3);
+	BOOST_REQUIRE_EQUAL(f4->version(), (artdaq::Fragment::version_t)artdaq::detail::RawFragmentHeader::CurrentVersion);
+	BOOST_REQUIRE(f4->type() == artdaq::Fragment::DataFragmentType);
+	BOOST_REQUIRE_EQUAL(f4->sequenceID(), (artdaq::Fragment::sequence_id_t)101);
+	BOOST_REQUIRE_EQUAL(f4->fragmentID(), (artdaq::Fragment::fragment_id_t)202);
+	BOOST_REQUIRE_EQUAL(f4->hasMetadata(), false);
 
 	// Verify that only "user" fragment types may be specified
 	// in the constructor
@@ -87,6 +97,9 @@ BOOST_AUTO_TEST_CASE(Construct)
 	artdaq::Fragment fragF(101, 202, 100);
 	artdaq::Fragment fragG(101, 202, 200);
 	artdaq::Fragment fragH(101, 202, 224);
+
+	TLOG(TLVL_INFO) << "Example Fragment: " << f1;
+	BOOST_REQUIRE_EQUAL(f1.typeString(), "0");
 }
 
 BOOST_AUTO_TEST_CASE(FragmentType)
@@ -273,6 +286,18 @@ BOOST_AUTO_TEST_CASE(Addresses)
 	BOOST_REQUIRE_EQUAL(haddr, &(*(f1.headerBegin())));
 	BOOST_REQUIRE_EQUAL(daddr, &(*(f1.dataBegin())));
 	BOOST_REQUIRE_EQUAL(daddr + 200, &(*(f1.dataEnd())));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+	// Const versions
+	const artdaq::Fragment cf1(f1);
+	BOOST_REQUIRE_EQUAL(cf1.dataSize(), (size_t)200);
+	BOOST_REQUIRE_EQUAL(cf1.size(), (size_t)200 +
+	                                   artdaq::detail::RawFragmentHeader::num_words());
+	const artdaq::RawDataType* chaddr = cf1.headerBegin();
+	const artdaq::RawDataType* cdaddr = cf1.dataBegin();
+	BOOST_REQUIRE_EQUAL(cdaddr,
+	                    (chaddr + artdaq::detail::RawFragmentHeader::num_words()));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+	BOOST_REQUIRE_EQUAL(cdaddr + 200, &(*(cf1.dataEnd())));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	// metadata with integer number of longwords
 	MetadataTypeOne mdOneA;
@@ -470,6 +495,10 @@ BOOST_AUTO_TEST_CASE(Bytes)
 	// (now-deprecated, but still in legacy code) dataAddress() point to
 	// the same region in memory, i.e., the start of the payload
 
+	auto* hdrptr = reinterpret_cast<artdaq::Fragment::byte_t*>(  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	    &*f3_factory->headerBegin());
+	BOOST_REQUIRE_EQUAL(&*f3_factory->headerBeginBytes(), hdrptr);
+
 	auto* ptr1 = reinterpret_cast<artdaq::Fragment::byte_t*>(  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	    &*f3_factory->dataBegin());
 
@@ -479,6 +508,25 @@ BOOST_AUTO_TEST_CASE(Bytes)
 
 	BOOST_REQUIRE_EQUAL(ptr1, ptr2);
 	BOOST_REQUIRE_EQUAL(ptr2, ptr3);
+
+	auto* dataEndPtr = reinterpret_cast<artdaq::Fragment::byte_t*>(  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	    &*f3_factory->dataEnd());
+	BOOST_REQUIRE_EQUAL(&*f3_factory->dataEndBytes(), dataEndPtr);
+
+	// Check const versions, too
+	const artdaq::Fragment f3_copy(*f3_factory);
+	auto chdrptr = reinterpret_cast<const artdaq::Fragment::byte_t*>(f3_copy.headerBegin());  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	BOOST_REQUIRE_EQUAL(&*f3_copy.headerBeginBytes(), chdrptr);
+	auto* cptr1 = reinterpret_cast<const artdaq::Fragment::byte_t*>(  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	    &*f3_copy.dataBegin());
+
+	const artdaq::Fragment::byte_t* cptr2 = f3_copy.dataBeginBytes();
+
+	BOOST_REQUIRE_EQUAL(cptr1, cptr2);
+
+	auto* cdataEndPtr = reinterpret_cast<const artdaq::Fragment::byte_t*>(  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	    &*f3_copy.dataEnd());
+	BOOST_REQUIRE_EQUAL(&*f3_copy.dataEndBytes(), cdataEndPtr);
 
 	// Make sure metadata struct gets aligned
 	// header == 3 RawDataTypes, metadata is 3 bytes (rounds up to 1 RawDataType)

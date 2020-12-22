@@ -7,7 +7,7 @@
 #include "cetlib_except/exception.h"
 
 #include <algorithm>
-#include <iosfwd>
+#include <ostream>
 #include <memory>
 
 namespace artdaq {
@@ -77,19 +77,6 @@ struct detail::RawEventHeader
 	void print(std::ostream& os) const;
 };
 
-#if HIDE_FROM_ROOT
-/**
-	 * \brief Prints the RawEventHeader to the given stream
-	 * \param os Stream to print RawEventHeader to
-	 * \param evh RawEventHeader to print
-	 * \return Stream reference
-	 */
-inline std::ostream& operator<<(std::ostream& os, detail::RawEventHeader const& evh)
-{
-	evh.print(os);
-	return os;
-}
-#endif
 
 /**
 	 * \brief RawEvent is the artdaq view of a generic event, containing a header and zero or more Fragments.
@@ -326,19 +313,31 @@ RawEvent::releaseProduct(Fragment::type_t fragment_type)
 	return result;
 }
 
+#endif
+}  // namespace artdaq
+
+#if HIDE_FROM_ROOT
+/**
+	 * \brief Prints the RawEventHeader to the given stream
+	 * \param os Stream to print RawEventHeader to
+	 * \param evh RawEventHeader to print
+	 * \return Stream reference
+	 */
+inline std::ostream& operator<<(std::ostream& os, artdaq::detail::RawEventHeader const& evh)
+{
+	evh.print(os);
+	return os;
+}
 /**
 	 * \brief Prints the RawEvent to the given stream
 	 * \param os Stream to print RawEvent to
 	 * \param ev RawEvent to print
 	 * \return Stream reference
 	 */
-inline std::ostream& operator<<(std::ostream& os, RawEvent const& ev)
+inline std::ostream& operator<<(std::ostream& os, artdaq::RawEvent const& ev)
 {
 	ev.print(os);
 	return os;
 }
-
 #endif
-}  // namespace artdaq
-
 #endif /* artdaq_core_Data_RawEvent_hh */

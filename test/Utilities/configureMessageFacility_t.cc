@@ -15,6 +15,10 @@ BOOST_AUTO_TEST_SUITE(configureMessageFacility_test)
 BOOST_AUTO_TEST_CASE(configureTRACETest)
 {
 	fhicl::ParameterSet pset;
+	pset.put("TRACE_MODE", "3");
+	fhicl::ParameterSet namlvlset;
+	namlvlset.put<std::vector<uint64_t>>("ConfigureMessageFacility_t", {0x0123456789ABCDEF, 0xFEDCBA9876543210, 0x0});
+	pset.put("TRACE_NAMLVLSET", namlvlset);
 	artdaq::configureTRACE(pset);
 }
 
