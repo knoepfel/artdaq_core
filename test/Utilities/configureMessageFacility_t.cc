@@ -1,11 +1,11 @@
-#include "artdaq-core/Utilities/configureMessageFacility.hh"
 #include "artdaq-core/Utilities/ExceptionHandler.hh"
+#include "artdaq-core/Utilities/configureMessageFacility.hh"
 
 #define BOOST_TEST_MODULE configureMessageFacility_t
+#include <fhiclcpp/make_ParameterSet.h>
+#include <boost/filesystem.hpp>
 #include "cetlib/quiet_unit_test.hpp"
 #include "cetlib_except/exception.h"
-#include <boost/filesystem.hpp>
-#include <fhiclcpp/make_ParameterSet.h>
 
 #define TRACE_NAME "configureMessageFacility_t"
 #include "tracemf.h"
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(generateMessageFacilityConfigurationTest)
 	setenv("ARTDAQ_LOG_ROOT", badDir.c_str(), 1);
 	BOOST_REQUIRE_EXCEPTION(artdaq::generateMessageFacilityConfiguration("configureMessageFacility_t"), cet::exception, [](cet::exception const& e) { return e.category() == "ConfigureMessageFacility"; });
 	setenv("ARTDAQ_LOG_ROOT", "/tmp", 1);
-	
+
 	setenv("ARTDAQ_LOG_FHICL", "/this/file/doesn't/exist.fcl", 1);
 	BOOST_REQUIRE_EXCEPTION(artdaq::generateMessageFacilityConfiguration("configureMessageFacility_t"), cet::exception, [](cet::exception const& e) { return e.category() == "configureMessageFacility"; });
 	unsetenv("ARTDAQ_LOG_FHICL");

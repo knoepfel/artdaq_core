@@ -7,8 +7,8 @@
 #include "cetlib_except/exception.h"
 
 #include <algorithm>
-#include <ostream>
 #include <memory>
+#include <ostream>
 
 namespace artdaq {
 /**
@@ -76,7 +76,6 @@ struct detail::RawEventHeader
 	*/
 	void print(std::ostream& os) const;
 };
-
 
 /**
 	 * \brief RawEvent is the artdaq view of a generic event, containing a header and zero or more Fragments.

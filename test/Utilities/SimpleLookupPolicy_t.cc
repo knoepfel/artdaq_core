@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(Constructors)
 	artdaq::SimpleLookupPolicy e("PATH");
 	artdaq::SimpleLookupPolicy np("", artdaq::SimpleLookupPolicy::ArgType::PATH_STRING);
 	artdaq::SimpleLookupPolicy p("/tmp", artdaq::SimpleLookupPolicy::ArgType::PATH_STRING);
-	BOOST_REQUIRE(true); // No exceptions
+	BOOST_REQUIRE(true);  // No exceptions
 }
 
 BOOST_AUTO_TEST_CASE(AbsoluteFilePath)
@@ -24,14 +24,15 @@ BOOST_AUTO_TEST_CASE(AbsoluteFilePath)
 	auto absolutePath = boost::filesystem::current_path();
 	absolutePath += "LookupTarget.fcl";
 	p(absolutePath.string());
-	BOOST_REQUIRE(true); // No exceptions
+	BOOST_REQUIRE(true);  // No exceptions
 }
 
 BOOST_AUTO_TEST_CASE(FallbackPath)
 {
 	auto coreDir = getenv("ARTDAQ_CORE_DIR");
 	std::string coreDirStr = "";
-	if (coreDir != nullptr) {
+	if (coreDir != nullptr)
+	{
 		coreDirStr = std::string(coreDir);
 	}
 
