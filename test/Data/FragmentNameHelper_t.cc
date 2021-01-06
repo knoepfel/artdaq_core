@@ -1,5 +1,5 @@
-#include "artdaq-core/Data/FragmentNameHelper.hh"
 #include "artdaq-core/Data/ContainerFragmentLoader.hh"
+#include "artdaq-core/Data/FragmentNameHelper.hh"
 
 #define BOOST_TEST_MODULE(FragmentNameHelper_t)
 #include <cetlib/quiet_unit_test.hpp>
@@ -104,6 +104,5 @@ BOOST_AUTO_TEST_CASE(FNH_DecodeContainerFragment)
 	BOOST_REQUIRE_EQUAL(res.first, true);
 	BOOST_REQUIRE_EQUAL(res.second, "ContainerData");
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()

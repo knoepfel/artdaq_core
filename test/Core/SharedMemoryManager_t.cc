@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 	BOOST_REQUIRE_EXCEPTION(man.ResetBuffer(11), cet::exception, [&](cet::exception e) { return e.category() == "ArgumentOutOfRange"; });
 	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
 	man.Attach();
-	int dummy[2] {0,1};
+	int dummy[2]{0, 1};
 	BOOST_REQUIRE_EXCEPTION(man.Write(11, &dummy, sizeof(dummy)), cet::exception, [&](cet::exception e) { return e.category() == "ArgumentOutOfRange"; });
 	BOOST_REQUIRE_EQUAL(man.IsValid(), false);
 	man.Attach();

@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(AddFragments)
 	BOOST_REQUIRE_EQUAL(outfrag->dataSize(), 4);
 	BOOST_REQUIRE_EQUAL(*outfrag->dataBegin(), 1);
 	BOOST_REQUIRE_EQUAL(*(outfrag->dataBegin() + 1), 2);
-	outfrag = (*cf)[1]; // Alternate access operator
+	outfrag = (*cf)[1];  // Alternate access operator
 	BOOST_REQUIRE_EQUAL(outfrag->sequenceID(), 1);
 	BOOST_REQUIRE_EQUAL(outfrag->fragmentID(), 1);
 	BOOST_REQUIRE_EQUAL(outfrag->dataSize(), 4);
