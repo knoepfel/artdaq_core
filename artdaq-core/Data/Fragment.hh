@@ -741,7 +741,8 @@ public:
      */
 	detail::RawFragmentHeader const fragmentHeader() const;
 
-	~Fragment() {
+	~Fragment()
+	{
 		if (upgraded_header_ != nullptr) delete upgraded_header_;
 	}
 #endif
@@ -756,7 +757,7 @@ private:
 
 #if HIDE_FROM_ROOT
 
-	mutable detail::RawFragmentHeader* upgraded_header_ {nullptr};
+	mutable detail::RawFragmentHeader* upgraded_header_{nullptr};
 
 	detail::RawFragmentHeader* fragmentHeaderPtr() const;
 
