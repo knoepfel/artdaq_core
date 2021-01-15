@@ -15,6 +15,10 @@ StatisticsCollection::StatisticsCollection()
 	try
 	{
 		calculation_thread_ = std::make_unique<boost::thread>(boost::bind(&StatisticsCollection::run, this));
+		char tname[16];
+		snprintf(tname, 16, "%s", "StatColl");  // NOLINT
+		auto handle = calculation_thread_->native_handle();
+		pthread_setname_np(handle, tname);
 	}
 	catch (const boost::exception& e)
 	{
