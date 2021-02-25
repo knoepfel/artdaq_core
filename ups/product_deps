@@ -61,15 +61,6 @@ e19:s103:py2:prof                      e19:py2:prof    -nq-    -std=c++17
 e19:s103:debug                         e19:debug       -nq-    -std=c++17
 e19:s103:prof                          e19:prof        -nq-    -std=c++17
 
-c7:s102:py2:debug                      c7:py2:debug    -nq-    -std=c++17
-c7:s102:py2:prof                       c7:py2:prof     -nq-    -std=c++17
-c7:s102:debug                          c7:debug        -nq-    -std=c++17
-c7:s102:prof                           c7:prof         -nq-    -std=c++17
-e19:s102:py2:debug                     e19:py2:debug   -nq-    -std=c++17
-e19:s102:py2:prof                      e19:py2:prof    -nq-    -std=c++17
-e19:s102:debug                         e19:debug       -nq-    -std=c++17
-e19:s102:prof                          e19:prof        -nq-    -std=c++17
-
 c7:s97:py2:debug                       c7:py2:debug    -nq-    -std=c++17
 c7:s97:py2:prof                        c7:py2:prof     -nq-    -std=c++17
 c7:s97:debug                           c7:debug        -nq-    -std=c++17
