@@ -15,7 +15,7 @@
 
 cmake_minimum_required (VERSION 3.12...3.14)
 
-project(artdaq_core VERSION 3.06.10)
+project(artdaq_core VERSION 3.06.11)
 # cetbuildtools contains our cmake modules
 SET ( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
 IF (NOT CETBUILDTOOLS_VERSION)
