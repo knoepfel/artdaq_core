@@ -13,7 +13,9 @@
 #  make package
 # ======================================================================
 
-cmake_minimum_required (VERSION 3.12...3.14)
+cmake_minimum_required (VERSION 3.16)
+
+find_package(cetbuildtools)
 
 project(artdaq_core VERSION 3.06.11)
 # cetbuildtools contains our cmake modules
