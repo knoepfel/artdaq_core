@@ -7,16 +7,14 @@
 #include "cetlib_except/exception.h"
 
 #include <algorithm>
-#include <ostream>
 #include <memory>
+#include <ostream>
 
 namespace artdaq {
 /**
 	 * \brief artdaq implementation details namespace
 	 */
 namespace detail {
-struct RawEventHeader;
-}
 
 /**
 	 * \brief The header information used to identify key properties of the RawEvent object
@@ -25,7 +23,7 @@ struct RawEventHeader;
 	 * the information necessary for routing of raw events inside the
 	 * artdaq code, but is not intended for use by any experiment.
 	 */
-struct detail::RawEventHeader
+struct RawEventHeader
 {
 	static constexpr uint8_t CURRENT_VERSION = 0;  ///< Current version of the RawEventHeader
 	typedef uint32_t run_id_t;                     ///< Run numbers are 32 bits
@@ -77,7 +75,21 @@ struct detail::RawEventHeader
 	void print(std::ostream& os) const;
 };
 
+#if HIDE_FROM_ROOT
+/**
+	 * \brief Prints the RawEventHeader to the given stream
+	 * \param os Stream to print RawEventHeader to
+	 * \param evh RawEventHeader to print
+	 * \return Stream reference
+	 */
+inline std::ostream& operator<<(std::ostream& os, RawEventHeader const& evh)
+{
+	evh.print(os);
+	return os;
+}
 
+#endif
+}  // namespace detail
 /**
 	 * \brief RawEvent is the artdaq view of a generic event, containing a header and zero or more Fragments.
 	 * 
@@ -313,31 +325,18 @@ RawEvent::releaseProduct(Fragment::type_t fragment_type)
 	return result;
 }
 
-#endif
-}  // namespace artdaq
-
-#if HIDE_FROM_ROOT
-/**
-	 * \brief Prints the RawEventHeader to the given stream
-	 * \param os Stream to print RawEventHeader to
-	 * \param evh RawEventHeader to print
-	 * \return Stream reference
-	 */
-inline std::ostream& operator<<(std::ostream& os, artdaq::detail::RawEventHeader const& evh)
-{
-	evh.print(os);
-	return os;
-}
 /**
 	 * \brief Prints the RawEvent to the given stream
 	 * \param os Stream to print RawEvent to
 	 * \param ev RawEvent to print
 	 * \return Stream reference
 	 */
-inline std::ostream& operator<<(std::ostream& os, artdaq::RawEvent const& ev)
+inline std::ostream& operator<<(std::ostream& os, RawEvent const& ev)
 {
 	ev.print(os);
 	return os;
 }
 #endif
+}  // namespace artdaq
+
 #endif /* artdaq_core_Data_RawEvent_hh */

@@ -32,7 +32,6 @@ BOOST_AUTO_TEST_CASE(RawEvent_Methods)
 	BOOST_REQUIRE_EQUAL(r1.timestamp(), 5);
 	BOOST_REQUIRE_EQUAL(r1.isComplete(), false);
 
-
 	artdaq::FragmentPtr frag = std::make_unique<artdaq::Fragment>(101, 202, artdaq::Fragment::DataFragmentType, 303);
 	r1.insertFragment(std::move(frag));
 

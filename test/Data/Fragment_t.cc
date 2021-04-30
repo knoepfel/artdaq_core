@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE(Construct)
 	BOOST_REQUIRE_EQUAL(f3.sequenceID(), (artdaq::Fragment::sequence_id_t)101);
 	BOOST_REQUIRE_EQUAL(f3.fragmentID(), (artdaq::Fragment::fragment_id_t)202);
 	BOOST_REQUIRE_EQUAL(f3.hasMetadata(), false);
-	
-	std::vector<artdaq::RawDataType> d {1, 2, 3};
+
+	std::vector<artdaq::RawDataType> d{1, 2, 3};
 	auto f4 = artdaq::Fragment::dataFrag(101, 202, &d[0], 3);
 	BOOST_REQUIRE_EQUAL(f4->dataSize(), (size_t)3);
 	BOOST_REQUIRE_EQUAL(f4->size(), (size_t)artdaq::detail::RawFragmentHeader::num_words() + 3);
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(Addresses)
 	const artdaq::Fragment cf1(f1);
 	BOOST_REQUIRE_EQUAL(cf1.dataSize(), (size_t)200);
 	BOOST_REQUIRE_EQUAL(cf1.size(), (size_t)200 +
-	                                   artdaq::detail::RawFragmentHeader::num_words());
+	                                    artdaq::detail::RawFragmentHeader::num_words());
 	const artdaq::RawDataType* chaddr = cf1.headerBegin();
 	const artdaq::RawDataType* cdaddr = cf1.dataBegin();
 	BOOST_REQUIRE_EQUAL(cdaddr,

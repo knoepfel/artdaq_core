@@ -211,7 +211,7 @@ void artdaq::configureTRACE(fhicl::ParameterSet& trace_pset)
 				for (const auto& tname : tnames)
 				{
 					lvlsbldr << tname;
-					auto msks = lvls_pset.get<std::vector<uint64_t>>(tname);
+					auto msks = lvls_pset.get<std::vector<double>>(tname);
 					for (auto msk : msks)
 					{
 						lvlsbldr << " 0x" << std::hex << static_cast<unsigned long long>(msk);  // NOLINT(google-runtime-int)
@@ -257,16 +257,8 @@ void artdaq::configureMessageFacility(char const* progname, bool useConsole, boo
 	pstr = pset.to_string();
 	pset.erase("TRACE");
 
-#if CANVAS_HEX_VERSION >= 0x30300  // art v2_11_00
 	mf::StartMessageFacility(pset, progname);
 
-#else
-	mf::StartMessageFacility(pset);
-
-	mf::SetApplicationName(progname);
-
-	mf::setEnabledState("");
-#endif
 	TLOG(TLVL_TRACE) << "Message Facility Config input is: " << pstr;
 	TLOG(TLVL_INFO) << "Message Facility Application " << progname << " configured with: " << pset.to_string();
 }
