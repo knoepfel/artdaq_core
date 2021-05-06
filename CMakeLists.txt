@@ -17,7 +17,7 @@ cmake_minimum_required (VERSION 3.16)
 
 find_package(cetbuildtools)
 
-project(artdaq_core VERSION 3.06.11)
+project(artdaq_core VERSION 3.07.00)
 # cetbuildtools contains our cmake modules
 SET ( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
 IF (NOT CETBUILDTOOLS_VERSION)
@@ -77,6 +77,12 @@ if(ONE_MF_LIBRARY)
     set( MESSAGEFACILITY_LIBS MF_MessageLogger)
 else()
     set( MESSAGEFACILITY_LIBS MF_MessageLogger MF_Utilities)
+endif()
+
+# as of fhiclcpp v4_15_00, ParameterSet::make is the preferred way to make a ParameterSet
+check_ups_version(fhiclcpp $ENV{FHICLCPP_VERSION} v4_15_00 PRODUCT_MATCHES_VAR PSET_MAKE)
+if(PSET_MAKE)
+  add_definitions(-DSIMPLER_PSET_MAKE)
 endif()
 
 # Debug streamer.
