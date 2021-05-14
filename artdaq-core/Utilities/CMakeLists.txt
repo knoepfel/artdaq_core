@@ -6,15 +6,14 @@ endif()
 
 cet_make(
 	EXCLUDE GenFile_mfPlugin.cc ExceptionStackTrace.cc
-  LIBRARIES 
-  ${MESSAGEFACILITY_LIBS}
+  LIBRARIES
+  ${MF_MESSAGELOGGER}
+  cetlib_except
+  cetlib
   fhiclcpp
-  ${CETLIB_LIBS}
-  ${Boost_DATE_TIME_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
   ${FOUND_RT}
-	${EXCEPTIONSTACKTRACE_LIB} 
+	${EXCEPTIONSTACKTRACE_LIB}
+	Boost::filesystem
 )
 
 cet_make_library(
@@ -26,13 +25,9 @@ cet_make_library(
 )
 
 basic_plugin( "GenFile" "mfPlugin"
-   ${MESSAGEFACILITY_LIBS}
-   ${MF_MESSAGESERVICE}
-    ${FHICLCPP}
-    ${CETLIB}
-	${CETLIB_EXCEPT}
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_DATE_TIME_LIBRARY}
+  fhiclcpp
+  cetlib_except
+MF_MessageLogger
 )
 
 install_headers()
