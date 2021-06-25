@@ -29,6 +29,8 @@ public:
 		 */
 	FragmentGenerator() = default;
 
+	virtual ~FragmentGenerator() = default;
+
 	/**
 	   * \brief Obtain the next collection of Fragments.
 	   * \param output New FragmentPtr objects will be added to this FragmentPtrs object.
