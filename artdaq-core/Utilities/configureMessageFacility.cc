@@ -124,8 +124,8 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		}
 		else
 		{
-			TLOG(TLVL_ERROR) << "Unable to open requested fhicl file \"" << logFhiclCode << "\".";
-			//throw cet::exception("configureMessageFacility") << "Unable to open requested fhicl file \"" << logFhiclCode << "\".";  // NOLINT(cert-err60-cpp)
+			TLOG(TLVL_ERROR) << "Unable to open requested fhicl file ARTDAQ_LOG_FHICL=\"" << logFhiclCode << "\".";
+			throw cet::exception("ConfigureMessageFacility") << "Unable to open requested fhicl file ARTDAQ_LOG_FHICL=\"" << logFhiclCode << "\".";  // NOLINT(cert-err60-cpp)
 		}
 	}
 
