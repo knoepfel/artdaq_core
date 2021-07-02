@@ -17,7 +17,7 @@ cmake_minimum_required (VERSION 3.16)
 
 find_package(cetbuildtools)
 
-project(artdaq_core VERSION 3.07.02)
+project(artdaq_core VERSION 3.07.03)
 # cetbuildtools contains our cmake modules
 SET ( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
 IF (NOT CETBUILDTOOLS_VERSION)
@@ -33,6 +33,7 @@ set(CMAKE_MODULE_PATH
 
 include(CetCMakeEnv)
 cet_cmake_env()
+set(artdaq_core_OLD_STYLE_CONFIG_VARS TRUE)
 
 cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
@@ -84,17 +85,20 @@ if(BTYPE_UC STREQUAL DEBUG)
 	if(DEFINED ENV{USE_ASAN})
 		if($ENV{USE_ASAN} GREATER 0)
 			message("!!! Address Sanitizer Activated!!!")
-			cet_add_compiler_flags(-fsanitize=address -lasan -Wno-unused-command-line-argument)
+			add_compile_options(-fsanitize=address -Wno-unused-command-line-argument)
+			add_link_options(-lasan)
 		endif()
 	endif()
 	if(DEFINED ENV{USE_TSAN})
 		if($ENV{USE_TSAN} GREATER 0)
 			message("!!! Thread Sanitizer Activated!!!")
-			cet_add_compiler_flags(-fsanitize=thread -ltsan -Wno-unused-command-line-argument)
+			add_compile_options(-fsanitize=thread -Wno-unused-command-line-argument)
+			add_link_options(-ltsan)
 		endif()
 	endif()
 	if(DEFINED ENV{USE_GCOV})
-		cet_add_compiler_flags(-fprofile-arcs -ftest-coverage --coverage)
+		add_compile_options(-fprofile-arcs -ftest-coverage --coverage)
+		add_link_options(--coverage)
 	endif()
 endif()
 
@@ -104,7 +108,8 @@ if(DEFINED ENV{USE_EXCEPTIONSTACKTRACE})
 		message("!!! Exception StackTrace Activated!!!")
 		add_definitions(-D EXCEPTIONSTACKTRACE)
 		set( EXCEPTIONSTACKTRACE_LIB  artdaq-core_Utilities_ExceptionStackTrace )
-                cet_add_compiler_flags( -rdynamic -Wno-unused-command-line-argument )
+		add_compile_options( -rdynamic -Wno-unused-command-line-argument )
+		add_link_options( -rdynamic )
 	endif()
 endif()
 

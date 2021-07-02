@@ -20,7 +20,7 @@ perllib  product_dir
 #
 product			version		optional
 canvas_root_io	v1_09_03	s111
-canvas_root_io  v1_07_03        s110
+canvas_root_io	v1_07_03	s110
 canvas_root_io	v1_09_02	s109
 canvas_root_io	v1_09_01	s108
 canvas_root_io	v1_09_00	s107
@@ -30,7 +30,7 @@ canvas_root_io	v1_07_00	s104
 canvas_root_io	v1_05_03	s103
 canvas_root_io	v1_05_02	s97
 TRACE			v3_17_01
-cetbuildtools	v8_08_02	-	only_for_build
+cetbuildtools	v8_10_01	-	only_for_build
 end_product_list
 
 # -nq- means there is no qualifier
@@ -43,12 +43,12 @@ e20:s111:prof	e20:prof		-nq-	-std=c++17
 e19:s111:debug	e19:debug		-nq-	-std=c++17
 e19:s111:prof	e19:prof		-nq-	-std=c++17
 
-c7:s110:debug                        c7:debug        -nq-    -std=c++17
-c7:s110:prof                         c7:prof         -nq-    -std=c++17
-e20:s110:debug				e20:debug	-nq-	-std=c++17
-e20:s110:prof				e20:prof	-nq-	-std=c++17
-e19:s110:debug				e19:debug	-nq-	-std=c++17
-e19:s110:prof				e19:prof	-nq-	-std=c++17
+c7:s110:debug	c7:debug		-nq-	-std=c++17
+c7:s110:prof	c7:prof			-nq-	-std=c++17
+e20:s110:debug	e20:debug		-nq-	-std=c++17
+e20:s110:prof	e20:prof		-nq-	-std=c++17
+e19:s110:debug	e19:debug		-nq-	-std=c++17
+e19:s110:prof	e19:prof		-nq-	-std=c++17
 
 c7:s109:debug	c7:debug		-nq-	-std=c++17
 c7:s109:prof	c7:prof			-nq-	-std=c++17
@@ -97,7 +97,7 @@ table_fragment_end
 # Preserve tabs and formatting in emacs and vi / vim:
 
 ### Local Variables:
-### tab-width: 8
+### tab-width: 4
 ### End:
 
-# vi:set ts=8 noexpandtab:
+# vi:set ts=4 noexpandtab:
