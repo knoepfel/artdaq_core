@@ -113,7 +113,7 @@ if(DEFINED ENV{USE_EXCEPTIONSTACKTRACE})
 	endif()
 endif()
 
-cet_report_compiler_flags()
+#cet_report_compiler_flags()
 
 # macros for art_dictionary and simple_plugin
 include(ArtDictionary)
