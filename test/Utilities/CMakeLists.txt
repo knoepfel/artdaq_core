@@ -5,7 +5,7 @@ cet_test(TimeUtils_t USE_BOOST_UNIT
 cet_test(ExceptionHandler_t USE_BOOST_UNIT
 	LIBRARIES artdaq-core_Utilities
 	cetlib_except
-	canvas
+	${CANVAS}
 )
 
 cet_test(SimpleLookupPolicy_t USE_BOOST_UNIT
