@@ -29,7 +29,7 @@ canvas_root_io	v1_09_01	s108
 canvas_root_io	v1_07_02	s106
 canvas_root_io	v1_07_01	s105
 TRACE			v3_17_01
-cetbuildtools	v8_13_03	-	only_for_build
+cetbuildtools	v8_13_04	-	only_for_build
 end_product_list
 
 # -nq- means there is no qualifier
