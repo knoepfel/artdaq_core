@@ -17,7 +17,7 @@ cmake_minimum_required (VERSION 3.16)
 
 find_package(cetbuildtools)
 
-project(artdaq_core VERSION 3.07.03)
+project(artdaq_core VERSION 3.07.05)
 # cetbuildtools contains our cmake modules
 SET ( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
 IF (NOT CETBUILDTOOLS_VERSION)
@@ -33,7 +33,6 @@ set(CMAKE_MODULE_PATH
 
 include(CetCMakeEnv)
 cet_cmake_env()
-set(artdaq_core_OLD_STYLE_CONFIG_VARS TRUE)
 
 cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
