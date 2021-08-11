@@ -103,7 +103,8 @@ struct artdaq::detail::RawFragmentHeader
 	static std::string SystemTypeToString(type_t type)
 	{
 		auto map = MakeVerboseSystemTypeMap();
-		if (map.count(type)) {
+		if (map.count(type))
+		{
 			return map[type];
 		}
 		return "Unknown";
