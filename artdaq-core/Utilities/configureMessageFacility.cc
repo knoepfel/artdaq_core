@@ -18,6 +18,11 @@
 namespace BFS = boost::filesystem;
 
 namespace {
+/**
+ * \brief Make a fhicl::ParameterSet from a string (shim for compatibility)
+ * \param config_str String to turn into a ParameterSet
+ * \return fhicl::ParameterSet created from string
+ */
 fhicl::ParameterSet make_pset(std::string const& config_str)
 {
 #ifdef SIMPLER_PSET_MAKE
