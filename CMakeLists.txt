@@ -116,9 +116,6 @@ add_subdirectory(test)
 # source
 add_subdirectory(artdaq-core)
 
-# ups - table and config files
-add_subdirectory(ups)
-
 # doc - Documentation
 if ( NOT DEFINED ENV{DISABLE_DOXYGEN} )
 add_subdirectory(doc)
