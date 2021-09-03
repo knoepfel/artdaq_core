@@ -23,7 +23,7 @@ old_style_config_vars
 product			version		optional
 canvas_root_io	v1_09_04	s112
 canvas_root_io	v1_07_03	s110
-TRACE			v3_17_01
+TRACE			v3_17_03
 cetbuildtools	v8_13_04	-	only_for_build
 end_product_list
 
