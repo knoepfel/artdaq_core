@@ -32,17 +32,17 @@ cet_set_compiler_flags(DIAGS VIGILANT
 )
 
 # these are minimum required versions, not the actual product versions
-find_package(Boost)
-find_package(canvas)
-find_package( cetlib  )
-find_package( cetpkgsupport  )
-find_package( clhep  )
-find_package( fhiclcpp  )
-find_package( messagefacility  )
-find_package( sqlite  )
-find_package( tbb )
-find_package( root  )
-find_package( TRACE  )
+find_ups_boost(v1_53_0)
+find_ups_product( canvas v1_00_00 )
+find_ups_product( cetlib v1_08_00 )
+find_ups_product( cetpkgsupport v1_08_03 )
+find_ups_product( clhep v2_2_0 )
+find_ups_product( fhiclcpp v3_04_00 )
+find_ups_product( messagefacility v1_14_01 )
+find_ups_product( sqlite v3_08_05_00 )
+find_ups_product( tbb )
+find_ups_root( v5_34_20 )
+find_ups_product( TRACE v3_03_00 )
 
 
 string(REGEX MATCHALL "[0-9][0-9]?[0-9]?" MESSAGEFACILITY_VERSION_LIST "$ENV{MESSAGEFACILITY_VERSION}")
