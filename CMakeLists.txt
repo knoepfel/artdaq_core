@@ -20,7 +20,7 @@ set(CET_CETBUILDTOOLS_COMPAT TRUE)
 include(Compatibility)
 set(CET_WARN_DEPRECATED)
 
-project(artdaq_core VERSION 3.08.02)
+project(artdaq_core VERSION 3.08.03)
 
 include(CetCMakeEnv)
 cet_cmake_env()
