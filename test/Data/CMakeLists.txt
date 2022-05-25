@@ -14,7 +14,3 @@ cet_test(RawEvent_t USE_BOOST_UNIT
 cet_test(BuildInfo_t USE_BOOST_UNIT
   LIBRARIES artdaq-core_Data
   )
-
-cet_test(FragmentNameHelper_t USE_BOOST_UNIT
-  LIBRARIES artdaq-core_Data
-  )

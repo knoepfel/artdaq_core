@@ -9,10 +9,12 @@
 
 cet_make(
   LIBRARIES
-  artdaq-core_Data
-  artdaq-core_Utilities
-  pthread
-  Boost::thread
+	Boost::thread
+	TRACE::TRACE
+	cetlib_except::cetlib_except
+	messagefacility::MF_MessageLogger
+    artdaq_core::artdaq-core_Utilities
+	artdaq_core::artdaq-core_Data
   )
 
 install_headers()

@@ -1,6 +1,6 @@
-#include "artdaq-core/Generators/makeFragmentGenerator.hh"
+#include "artdaq-core/Plugins/makeFragmentGenerator.hh"
 
-#include "artdaq-core/Generators/GeneratorMacros.hh"
+#include "artdaq-core/Plugins/GeneratorMacros.hh"
 #include "cetlib/BasicPluginFactory.h"
 #include "fhiclcpp/ParameterSet.h"
 

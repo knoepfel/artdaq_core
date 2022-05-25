@@ -13,17 +13,17 @@
 #  make package
 # ======================================================================
 
-cmake_minimum_required (VERSION 3.16)
+cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
-find_package(cetmodules)
-set(CET_CETBUILDTOOLS_COMPAT TRUE)
-include(Compatibility)
-set(CET_WARN_DEPRECATED)
+find_package(cetmodules 3.08.00 REQUIRED)
 
-project(artdaq_core VERSION 3.08.04)
+project(artdaq_core VERSION 3.08.05 LANGUAGES CXX C)
 
 include(CetCMakeEnv)
 cet_cmake_env()
+
+# Find our own CMake modules, and tell everyone else where to find them.
+cet_cmake_module_directories(Modules BINARY)
 
 cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
@@ -31,41 +31,10 @@ cet_set_compiler_flags(DIAGS VIGILANT
   EXTRA_FLAGS -pedantic
 )
 
-# these are minimum required versions, not the actual product versions
-find_ups_boost(v1_53_0)
-find_ups_product( canvas v1_00_00 )
-find_ups_product( cetlib v1_08_00 )
-find_ups_product( cetpkgsupport v1_08_03 )
-find_ups_product( clhep v2_2_0 )
-find_ups_product( fhiclcpp v3_04_00 )
-find_ups_product( messagefacility v1_14_01 )
-find_ups_product( sqlite v3_08_05_00 )
-find_ups_product( tbb )
-find_ups_root( v5_34_20 )
-find_ups_product( TRACE v3_03_00 )
-
-
-string(REGEX MATCHALL "[0-9][0-9]?[0-9]?" MESSAGEFACILITY_VERSION_LIST "$ENV{MESSAGEFACILITY_VERSION}")
-list(GET MESSAGEFACILITY_VERSION_LIST 0 MESSAGEFACILITY_MAJOR_VERSION)
-list(GET MESSAGEFACILITY_VERSION_LIST 1 MESSAGEFACILITY_MINOR_VERSION)
-list(GET MESSAGEFACILITY_VERSION_LIST 2 MESSAGEFACILITY_PATCH_VERSION)
-
-message("-DMESSAGEFACILITY_HEX_VERSION=0x${MESSAGEFACILITY_MAJOR_VERSION}${MESSAGEFACILITY_MINOR_VERSION}${MESSAGEFACILITY_PATCH_VERSION}")
-add_definitions(-DMESSAGEFACILITY_HEX_VERSION=0x${MESSAGEFACILITY_MAJOR_VERSION}${MESSAGEFACILITY_MINOR_VERSION}${MESSAGEFACILITY_PATCH_VERSION})
-
-string(REGEX MATCHALL "[0-9][0-9]?[0-9]?" CANVAS_VERSION_LIST "$ENV{CANVAS_VERSION}")
-list(GET CANVAS_VERSION_LIST 0 CANVAS_MAJOR_VERSION)
-list(GET CANVAS_VERSION_LIST 1 CANVAS_MINOR_VERSION)
-list(GET CANVAS_VERSION_LIST 2 CANVAS_PATCH_VERSION)
-
-message("-DCANVAS_HEX_VERSION=0x${CANVAS_MAJOR_VERSION}${CANVAS_MINOR_VERSION}${CANVAS_PATCH_VERSION}")
-add_definitions(-DCANVAS_HEX_VERSION=0x${CANVAS_MAJOR_VERSION}${CANVAS_MINOR_VERSION}${CANVAS_PATCH_VERSION})
-
-# as of fhiclcpp v4_15_00 (s108), ParameterSet::make is the preferred way to make a ParameterSet
-check_ups_version(fhiclcpp $ENV{FHICLCPP_VERSION} v4_15_00 PRODUCT_MATCHES_VAR PSET_MAKE)
-if(PSET_MAKE)
-  add_definitions(-DSIMPLER_PSET_MAKE)
-endif()
+find_package(Boost COMPONENTS filesystem thread date_time)
+find_package(messagefacility)
+find_package(canvas_root_io)
+find_package(TRACE)
 
 # Debug streamer.
 string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)

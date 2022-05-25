@@ -1,11 +1,11 @@
 cet_make(
 NO_DICTIONARY
   LIBRARIES
-  artdaq-core_Utilities
-  EXCLUDE Artdaq_fragmentNameHelper.cc
+  TRACE::TRACE
+  cetlib_except::cetlib_except
+  artdaq_core::artdaq-core_Utilities
   )
 
-basic_plugin(Artdaq "fragmentNameHelper" artdaq-core_Data)
 
 cet_remove_compiler_flags(-fsanitize=address -lasan)
 cet_remove_compiler_flags(-fsanitize=thread -ltsan)

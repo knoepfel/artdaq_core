@@ -1,5 +1,5 @@
 add_subdirectory(Utilities)
 add_subdirectory(Data)
 add_subdirectory(Core)
-add_subdirectory(Generators)
+add_subdirectory(Plugins)
 add_subdirectory(BuildInfo)

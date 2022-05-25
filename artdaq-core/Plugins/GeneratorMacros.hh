@@ -1,7 +1,7 @@
-#ifndef artdaq_core_Generators_GeneratorMacros_hh
-#define artdaq_core_Generators_GeneratorMacros_hh
+#ifndef artdaq_core_Plugins_GeneratorMacros_hh
+#define artdaq_core_Plugins_GeneratorMacros_hh
 
-#include "artdaq-core/Generators/FragmentGenerator.hh"
+#include "artdaq-core/Plugins/FragmentGenerator.hh"
 #include "fhiclcpp/fwd.h"
 
 #include <memory>
@@ -34,4 +34,4 @@ typedef std::unique_ptr<artdaq::FragmentGenerator> makeFunc_t(fhicl::ParameterSe
 	}                                                                     \
 	}
 
-#endif /* artdaq_core_Generators_GeneratorMacros_hh */
+#endif /* artdaq_core_Plugins_GeneratorMacros_hh */
