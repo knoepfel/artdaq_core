@@ -73,10 +73,7 @@ endif()
 
 #cet_report_compiler_flags()
 
-# macros for art_dictionary and simple_plugin
-include(ArtDictionary)
-include(CetMake)
-include(BasicPlugin)
+cet_register_export_set(SET_NAME artdaq_core NAMESPACE artdaq_core)
 
 # testing
 add_subdirectory(test)

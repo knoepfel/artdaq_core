@@ -29,9 +29,6 @@ include(ArtdaqCorePlugins)
 
 cet_build_plugin(Artdaq fragmentNameHelper)
 
-install_headers()
-install_source()
-
 cet_make(
   EXCLUDE Artdaq_fragmentNameHelper.cc
   LIBRARIES

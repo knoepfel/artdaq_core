@@ -6,6 +6,8 @@ NO_DICTIONARY
   artdaq_core::artdaq-core_Utilities
   )
 
+  include(ArtDictionary)
+
   art_dictionary(DICTIONARY_LIBRARIES artdaq-core_Data)
   get_target_property(DictCompileOptions artdaq-core_Data_dict COMPILE_OPTIONS)
   if(DictCompileOptions)
