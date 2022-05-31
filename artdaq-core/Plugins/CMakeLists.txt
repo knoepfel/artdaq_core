@@ -24,9 +24,7 @@ foreach(type IN ITEMS fragmentNameHelper generator)
     LIBRARIES REG artdaq_plugin_types::${type})
 endforeach()
 
-cet_collect_plugin_builders(Modules ArtdaqCorePlugins)
-include(ArtdaqCorePlugins)
-
+include(fragmentNameHelper)
 cet_build_plugin(Artdaq fragmentNameHelper)
 
 cet_make(

@@ -3,13 +3,14 @@
 // Using LibraryManager, find the correct library and return an instance
 // of the specified generator.
 
+#include "artdaq-core/Plugins/FragmentGenerator.hh"
+
 #include "fhiclcpp/fwd.h"
 
 #include <memory>
 #include <string>
 
 namespace artdaq {
-class FragmentGenerator;
 
 /**
    * \brief Instantiates the FragmentGenerator plugin with the given name, using the given ParameterSet
