@@ -2,7 +2,6 @@
 
 #define BOOST_TEST_MODULE ExceptionStackTrace_t
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib_except/exception.h"
 
 #define TRACE_NAME "ExceptionStackTrace_t"
 #include "TRACE/tracemf.h"

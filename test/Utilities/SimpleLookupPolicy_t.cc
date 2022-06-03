@@ -1,9 +1,12 @@
 #include "artdaq-core/Utilities/SimpleLookupPolicy.hh"
 
 #define BOOST_TEST_MODULE SimpleLookupPolicy_t
-#include <boost/filesystem.hpp>
 #include "cetlib/quiet_unit_test.hpp"
+
+#include "cetlib/filepath_maker.h"
 #include "cetlib_except/exception.h"
+
+#include <boost/filesystem.hpp>
 
 #define TRACE_NAME "SimpleLookupPolicy_t"
 #include "TRACE/tracemf.h"

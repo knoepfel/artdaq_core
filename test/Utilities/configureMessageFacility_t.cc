@@ -2,10 +2,14 @@
 #include "artdaq-core/Utilities/configureMessageFacility.hh"
 
 #define BOOST_TEST_MODULE configureMessageFacility_t
-#include <fhiclcpp/make_ParameterSet.h>
-#include <boost/filesystem.hpp>
 #include "cetlib/quiet_unit_test.hpp"
+
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/make_ParameterSet.h"
 #include "cetlib_except/exception.h"
+
+#include <boost/filesystem.hpp>
 
 #define TRACE_NAME "configureMessageFacility_t"
 #include "TRACE/tracemf.h"
