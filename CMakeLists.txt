@@ -15,7 +15,7 @@
 
 cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
-find_package(cetmodules 3.08.00 REQUIRED)
+find_package(cetmodules 3.14.00 REQUIRED)
 
 project(artdaq_core VERSION 3.08.05 LANGUAGES CXX C)
 
@@ -71,15 +71,11 @@ if(DEFINED ENV{USE_EXCEPTIONSTACKTRACE})
 	endif()
 endif()
 
-#cet_report_compiler_flags()
-
-cet_register_export_set(SET_NAME artdaq_core NAMESPACE artdaq_core)
+# source
+add_subdirectory(artdaq-core)
 
 # testing
 add_subdirectory(test)
-
-# source
-add_subdirectory(artdaq-core)
 
 # doc - Documentation
 if ( NOT DEFINED ENV{DISABLE_DOXYGEN} )
