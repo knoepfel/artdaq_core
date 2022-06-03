@@ -6,7 +6,7 @@
 #include "cetlib_except/exception.h"
 
 #define TRACE_NAME "SimpleLookupPolicy_t"
-#include "tracemf.h"
+#include "TRACE/tracemf.h"
 
 BOOST_AUTO_TEST_SUITE(SimpleLookupPolicy_test)
 

@@ -8,7 +8,7 @@
 #include "cetlib_except/exception.h"
 
 #define TRACE_NAME "GenFile_t"
-#include "tracemf.h"
+#include "TRACE/tracemf.h"
 
 BOOST_AUTO_TEST_SUITE(GenFile_test)
 
