@@ -1,28 +1,54 @@
 
-cet_make(
-	EXCLUDE GenFile_mfPlugin.cc ExceptionStackTrace.cc
+cet_make_library(
+  SOURCE
+  ExceptionHandler.cc
+  SimpleLookupPolicy.cc
+  TimeUtils.cc
+  configureMessageFacility.cc
   LIBRARIES
-  ${EXCEPTIONSTACKTRACE_LIB}
+  PUBLIC
 	fhiclcpp::fhiclcpp
-	Boost::date_time
 	cetlib::cetlib
-	canvas::canvas
-	TRACE::TRACE
+  PRIVATE
+  ${EXCEPTIONSTACKTRACE_LIB}
 	messagefacility::MF_MessageLogger
+	canvas::canvas
+  cetlib_except::cetlib_except
+	Boost::date_time
+  Boost::filesystem
+	TRACE::TRACE
+)
+
+cet_make_library(LIBRARY_NAME artdaq-core_Utilities_TraceLock INTERFACE
+  SOURCE
+  TraceLock.hh
+  LIBRARIES INTERFACE
+	TRACE::MF
+  Threads::Threads
 )
 
 cet_make_library(
-	LIBRARY_NAME  artdaq-core_Utilities_ExceptionStackTrace
+	LIBRARY_NAME artdaq-core_Utilities_ExceptionStackTrace
 	SOURCE 
 	ExceptionStackTrace.cc 
   LIBRARIES
-	-ldl
-	TRACE::TRACE
+  PUBLIC
+  Threads::Threads
+  PRIVATE
+  TRACE::TRACE
+  ${CMAKE_DL_LIBS}
 )
 
 include(mfPlugin)
-mfPlugin(GenFile LIBRARIES REG TRACE::TRACE messagefacility::MF_MessageLogger)
-
+cet_build_plugin(GenFile mfPlugin
+  LIBRARIES PRIVATE
+  messagefacility::MF_MessageLogger
+  fhiclcpp::types
+  fhiclcpp::fhiclcpp
+  cetlib::cetlib
+  Boost::date_time
+  TRACE::TRACE
+)
 
 install_headers()
 install_source()
