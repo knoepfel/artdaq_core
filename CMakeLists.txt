@@ -31,10 +31,15 @@ cet_set_compiler_flags(DIAGS VIGILANT
   EXTRA_FLAGS -pedantic
 )
 
-find_package(Boost COMPONENTS filesystem thread date_time)
-find_package(messagefacility)
-find_package(canvas_root_io)
-find_package(TRACE)
+find_package(canvas_root_io REQUIRED EXPORT) # Dictionaries.
+find_package(canvas REQUIRED EXPORT)
+find_package(messagefacility REQUIRED EXPORT)
+find_package(fhiclcpp REQUIRED EXPORT)
+find_package(cetlib REQUIRED EXPORT)
+find_package(TRACE REQUIRED EXPORT)
+
+find_package(Boost COMPONENTS date_time filesystem thread REQUIRED EXPORT)
+find_package(Threads REQUIRED EXPORT)
 
 # Debug streamer.
 string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
