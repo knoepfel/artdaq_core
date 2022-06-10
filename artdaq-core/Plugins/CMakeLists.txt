@@ -1,6 +1,7 @@
 include(BasicPlugin)
 
 cet_register_export_set(SET_NAME PluginTypes NAMESPACE artdaq_plugin_types)
+cet_register_export_set(SET_NAME PluginSupport NAMESPACE artdaq_plugin_support)
 # Everything following without a specific EXPORT_SET defined must be in
 # a new export set to avoid a circular dependence between export sets.
 cet_register_export_set(SET_NAME PluginUsers SET_DEFAULT
@@ -51,6 +52,10 @@ cet_make_library(SOURCE
   PRIVATE
   artdaq_plugin_types::generator
   cetlib::cetlib
+)
+
+cet_make_alias(NAME generatorMaker EXPORT_SET PluginSupport
+  TARGET artdaq_core::artdaq-core_Plugins
 )
 
 install_headers()
