@@ -15,7 +15,7 @@
 
 cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
-find_package(cetmodules 3.14.00 REQUIRED)
+find_package(cetmodules 3.16.00 REQUIRED)
 
 project(artdaq_core VERSION 3.08.05 LANGUAGES CXX C)
 
