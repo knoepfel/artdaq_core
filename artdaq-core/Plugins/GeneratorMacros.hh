@@ -2,7 +2,8 @@
 #define artdaq_core_Plugins_GeneratorMacros_hh
 
 #include "artdaq-core/Plugins/FragmentGenerator.hh"
-#include "fhiclcpp/fwd.h"
+
+namespace fhicl { class ParameterSet; }
 
 #include <memory>
 #include "cetlib/compiler_macros.h"

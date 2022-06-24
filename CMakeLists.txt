@@ -15,7 +15,7 @@
 
 cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
-find_package(cetmodules 3.08.00 REQUIRED)
+find_package(cetmodules 3.16.00 REQUIRED)
 
 project(artdaq_core VERSION 3.08.05 LANGUAGES CXX C)
 
@@ -31,10 +31,15 @@ cet_set_compiler_flags(DIAGS VIGILANT
   EXTRA_FLAGS -pedantic
 )
 
-find_package(Boost COMPONENTS filesystem thread date_time)
-find_package(messagefacility)
-find_package(canvas_root_io)
-find_package(TRACE)
+find_package(canvas_root_io REQUIRED EXPORT) # Dictionaries.
+find_package(canvas REQUIRED EXPORT)
+find_package(messagefacility REQUIRED EXPORT)
+find_package(fhiclcpp REQUIRED EXPORT)
+find_package(cetlib REQUIRED EXPORT)
+find_package(TRACE REQUIRED EXPORT)
+
+find_package(Boost COMPONENTS date_time filesystem thread REQUIRED EXPORT)
+find_package(Threads REQUIRED EXPORT)
 
 # Debug streamer.
 string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
@@ -71,15 +76,11 @@ if(DEFINED ENV{USE_EXCEPTIONSTACKTRACE})
 	endif()
 endif()
 
-#cet_report_compiler_flags()
-
-cet_register_export_set(SET_NAME artdaq_core NAMESPACE artdaq_core)
+# source
+add_subdirectory(artdaq-core)
 
 # testing
 add_subdirectory(test)
-
-# source
-add_subdirectory(artdaq-core)
 
 # doc - Documentation
 if ( NOT DEFINED ENV{DISABLE_DOXYGEN} )

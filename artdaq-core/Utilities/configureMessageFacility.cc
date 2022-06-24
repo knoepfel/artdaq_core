@@ -10,7 +10,7 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #define TRACE_NAME "configureMessageFacility"
-#include "tracemf.h"  // TRACE_CNTL, TRACE
+#include "TRACE/tracemf.h"  // TRACE_CNTL, TRACE
 
 namespace BFS = boost::filesystem;
 

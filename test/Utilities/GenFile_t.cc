@@ -2,13 +2,16 @@
 #include "artdaq-core/Utilities/configureMessageFacility.hh"
 
 #define BOOST_TEST_MODULE GenFile_t
-#include <fhiclcpp/make_ParameterSet.h>
-#include <boost/filesystem.hpp>
 #include "cetlib/quiet_unit_test.hpp"
-#include "cetlib_except/exception.h"
+
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/make_ParameterSet.h"
+
+#include <boost/filesystem.hpp>
 
 #define TRACE_NAME "GenFile_t"
-#include "tracemf.h"
+#include "TRACE/tracemf.h"
 
 BOOST_AUTO_TEST_SUITE(GenFile_test)
 

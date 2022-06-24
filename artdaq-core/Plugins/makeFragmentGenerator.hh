@@ -3,9 +3,7 @@
 // Using LibraryManager, find the correct library and return an instance
 // of the specified generator.
 
-#include "artdaq-core/Plugins/FragmentGenerator.hh"
-
-#include "fhiclcpp/fwd.h"
+namespace fhicl { class ParameterSet; }
 
 #include <memory>
 #include <string>
