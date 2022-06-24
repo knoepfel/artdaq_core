@@ -5,6 +5,8 @@
 
 namespace fhicl { class ParameterSet; }
 
+#include "artdaq-core/Plugins/FragmentGenerator.hh"
+
 #include <memory>
 #include <string>
 
