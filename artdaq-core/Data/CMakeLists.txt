@@ -10,7 +10,6 @@ cet_make_library(SOURCE
 )
 
 cet_make_library(LIBRARY_NAME artdaq-core::Data_ParentageMap INTERFACE
-  NO_INSTALL
   SOURCE detail/ParentageMap.hh
   LIBRARIES INTERFACE
   canvas::canvas
