@@ -1,15 +1,44 @@
-cet_make(
-NO_DICTIONARY
+cet_make_library(SOURCE
+  Fragment.cc
+  RawEvent.cc
   LIBRARIES
-  artdaq-core_Utilities
-  EXCLUDE Artdaq_fragmentNameHelper.cc
-  )
+  PUBLIC
+  artdaq_core::artdaq-core_Utilities
+  cetlib_except::cetlib_except
+  TRACE::MF
+  TRACE::TRACE
+)
 
-basic_plugin(Artdaq "fragmentNameHelper" artdaq-core_Data)
+cet_make_library(LIBRARY_NAME artdaq-core::Data_ParentageMap INTERFACE
+  SOURCE detail/ParentageMap.hh
+  LIBRARIES INTERFACE
+  canvas::canvas
+)
 
-cet_remove_compiler_flags(-fsanitize=address -lasan)
-cet_remove_compiler_flags(-fsanitize=thread -ltsan)
-  art_dictionary(DICTIONARY_LIBRARIES artdaq-core_Data)
+include(ArtDictionary)
+
+art_dictionary(DICTIONARY_LIBRARIES
+  artdaq-core_Data
+  artdaq-core_Data_ParentageMap
+)
+
+function(disable_sanitizers DictName)
+  get_target_property(DictCompileOptions ${DictName} COMPILE_OPTIONS)
+  if(DictCompileOptions)
+        string(REPLACE "-fsanitize=thread" "" DictCompileOptions "${DictCompileOptions}")
+        string(REPLACE "-fsanitize=address" "" DictCompileOptions "${DictCompileOptions}")
+        string(REPLACE "-ltsan" "" DictCompileOptions "${DictCompileOptions}")
+        string(REPLACE "-lasan" "" DictCompileOptions "${DictCompileOptions}")
+
+        set_target_properties(${DictName} PROPERTIES COMPILE_OPTIONS "${DictCompileOptions}")
+   endif()
+endfunction()
+
+disable_sanitizers(artdaq-core_Data_dict)
+
+if (${canvas_root_io_VERSION} VERSION_LESS 1.11.00)
+  add_subdirectory(MissingArtDictionaries)
+endif()
 
 install_headers(SUBDIRS detail)
 install_source(SUBDIRS detail)
