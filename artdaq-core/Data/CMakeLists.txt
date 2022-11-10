@@ -15,12 +15,22 @@ cet_make_library(LIBRARY_NAME artdaq-core::Data_ParentageMap INTERFACE
   canvas::canvas
 )
 
-include(ArtDictionary)
-
-art_dictionary(DICTIONARY_LIBRARIES
+if(DEFINED ENV{USE_ASAN})
+include(BuildDictionary)
+build_dictionary( NO_CHECK_CLASS_VERSION
+  DICTIONARY_LIBRARIES
   artdaq-core_Data
   artdaq-core_Data_ParentageMap
+  canvas::canvas
 )
+else()
+build_dictionary(
+  DICTIONARY_LIBRARIES
+  artdaq-core_Data
+  artdaq-core_Data_ParentageMap
+  canvas::canvas
+)
+endif()
 
 function(disable_sanitizers DictName)
   get_target_property(DictCompileOptions ${DictName} COMPILE_OPTIONS)
