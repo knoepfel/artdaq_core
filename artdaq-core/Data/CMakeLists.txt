@@ -15,8 +15,8 @@ cet_make_library(LIBRARY_NAME artdaq-core::Data_ParentageMap INTERFACE
   canvas::canvas
 )
 
-if(DEFINED ENV{USE_ASAN})
 include(BuildDictionary)
+if(DEFINED ENV{USE_ASAN})
 build_dictionary( NO_CHECK_CLASS_VERSION
   DICTIONARY_LIBRARIES
   artdaq-core_Data
