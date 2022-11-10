@@ -16,7 +16,7 @@ cet_make_library(LIBRARY_NAME artdaq-core::Data_ParentageMap INTERFACE
 )
 
 include(BuildDictionary)
-if(DEFINED ENV{USE_ASAN})
+if(DEFINED ENV{USE_ASAN} OR DEFINED ENV{USE_TSAN})
 build_dictionary( NO_CHECK_CLASS_VERSION
   DICTIONARY_LIBRARIES
   artdaq-core_Data
