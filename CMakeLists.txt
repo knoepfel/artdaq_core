@@ -31,14 +31,14 @@ cet_set_compiler_flags(DIAGS VIGILANT
   EXTRA_FLAGS -pedantic
 )
 
-find_package(canvas_root_io REQUIRED EXPORT) # Dictionaries.
-find_package(canvas REQUIRED EXPORT)
-find_package(messagefacility REQUIRED EXPORT)
-find_package(fhiclcpp REQUIRED EXPORT)
-find_package(cetlib REQUIRED EXPORT)
+find_package(canvas_root_io REQUIRED EXPORT QUIET) # Dictionaries.
+find_package(canvas REQUIRED EXPORT QUIET)
+find_package(messagefacility REQUIRED EXPORT QUIET)
+find_package(fhiclcpp REQUIRED EXPORT QUIET)
+find_package(cetlib REQUIRED EXPORT QUIET)
 find_package(TRACE REQUIRED EXPORT)
 
-find_package(Boost COMPONENTS date_time filesystem thread REQUIRED EXPORT)
+find_package(Boost QUIET COMPONENTS date_time filesystem thread REQUIRED EXPORT)
 find_package(Threads REQUIRED EXPORT)
 
 # Debug streamer.
