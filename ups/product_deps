@@ -26,6 +26,7 @@ canvas_root_io	v1_11_00	s118
 canvas_root_io	v1_10_02	s116
 canvas_root_io	v1_10_01	s115
 canvas_root_io	v1_10_00	s114
+canvas_root_io	v1_09_05a	s117a
 canvas_root_io	v1_09_05	s117
 canvas_root_io	v1_09_04a	s112a
 canvas_root_io	v1_09_04	s112
@@ -53,6 +54,13 @@ e20:s118:debug	e20:debug		-nq-	-std=c++17
 e20:s118:prof	e20:prof		-nq-	-std=c++17
 e26:s118:debug	e26:debug		-nq-	-std=c++17
 e26:s118:prof	e26:prof		-nq-	-std=c++17
+
+c7:s117a:debug	c7:debug		-nq-	-std=c++17
+c7:s117a:prof	c7:prof			-nq-	-std=c++17
+e20:s117a:debug	e20:debug		-nq-	-std=c++17
+e20:s117a:prof	e20:prof		-nq-	-std=c++17
+e19:s117a:debug	e19:debug		-nq-	-std=c++17
+e19:s117a:prof	e19:prof		-nq-	-std=c++17
 
 c7:s117:debug	c7:debug		-nq-	-std=c++17
 c7:s117:prof	c7:prof			-nq-	-std=c++17
