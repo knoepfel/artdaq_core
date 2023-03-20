@@ -302,6 +302,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 		int buffer_num = -1;
 		ShmBuffer* buffer_ptr = nullptr;
 		uint64_t seqID = -1;
+		auto nattach = GetAttachedCount() - 1;
 
 		for (auto ii = 0; ii < shm_ptr_->buffer_count; ++ii)
 		{
@@ -341,6 +342,12 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 		{
 			sem = buffer_ptr->sem.load();
 			sem_id = buffer_ptr->sem_id.load();
+			seqID = buffer_ptr->sequence_id.load();
+		}
+
+		// Round-robin to readers
+		if(shm_ptr_->destructive_read_mode && seqID < last_seen_id_ + nattach){
+			continue;
 		}
 
 		if ((buffer_ptr == nullptr) || (sem_id != -1 && sem_id != manager_id_) || sem != BufferSemaphoreFlags::Full)
