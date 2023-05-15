@@ -304,7 +304,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 	for (int retry = 0; retry < 5; retry++)
 	{
 		BufferSemaphoreFlags sem;
-		int16_t sem_id;
+		int16_t sem_id = -2;
 		int buffer_num = -1;
 		ShmBuffer* buffer_ptr = nullptr;
 		uint64_t seqID = -1;
