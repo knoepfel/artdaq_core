@@ -5,7 +5,7 @@
 // from the user of Fragment, as an implementation detail. The interface
 // of Fragment is intended to be used to access the data.
 
-//#include <cstddef>
+// #include <cstddef>
 #include <map>
 #include "artdaq-core/Data/dictionarycontrol.hh"
 #include "artdaq-core/Utilities/TimeUtils.hh"
@@ -180,7 +180,7 @@ struct artdaq::detail::RawFragmentHeader
 	 * @param other RawFragmentHeader to compare
 	 * @return Whether the two RawFragmentHeaders are identical
 	 */
-	bool operator==(const detail::RawFragmentHeader& other)
+	bool operator==(const detail::RawFragmentHeader& other) const
 	{
 		return word_count == other.word_count &&
 		       version == other.version &&
