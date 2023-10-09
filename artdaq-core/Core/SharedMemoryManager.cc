@@ -891,7 +891,7 @@ bool artdaq::SharedMemoryManager::IncrementWritePos(int buffer, size_t written)
 	touchBuffer_(buf);
 	if (buf->writePos + written > shm_ptr_->buffer_size)
 	{
-		TLOG(TLVL_ERROR) << "Requested write size is larger than the buffer size! (sz=" << std::dec << shm_ptr_->buffer_size << ", cur + req=" << std::dec << buf->writePos + written << ", diff=" << std::dec << (buf->writePos + written - shm_ptr_->buffer_size) >> ")";
+		TLOG(TLVL_ERROR) << "Requested write size is larger than the buffer size! (sz=" << std::dec << shm_ptr_->buffer_size << ", cur + req=" << std::dec << buf->writePos + written << ", diff=" << std::dec << (buf->writePos + written - shm_ptr_->buffer_size) << ")";
 		return false;
 	}
 	TLOG(TLVL_POS + 1) << "IncrementWritePos: buffer= " << buffer << ", writePos=" << buf->writePos << ", bytes written=" << written;
