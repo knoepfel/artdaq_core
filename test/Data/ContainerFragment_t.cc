@@ -299,9 +299,9 @@ BOOST_AUTO_TEST_CASE(AppendFragment)
 
 	auto newHdr = cfl.appendFragment(4);
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 2);
-	BOOST_REQUIRE_EQUAL(newHdr->word_count, 4 + artdaq::detail::RawFragmentHeader::num_words());
-	BOOST_REQUIRE_EQUAL(newHdr->type, type);
-	BOOST_REQUIRE_EQUAL(newHdr->sequence_id, 1);
+	BOOST_REQUIRE_EQUAL(static_cast<artdaq::detail::RawFragmentHeader::RawDataType>(newHdr->word_count), 4 + artdaq::detail::RawFragmentHeader::num_words());
+	BOOST_REQUIRE_EQUAL(static_cast<artdaq::detail::RawFragmentHeader::RawDataType>(newHdr->type), type);
+	BOOST_REQUIRE_EQUAL(static_cast<artdaq::detail::RawFragmentHeader::RawDataType>(newHdr->sequence_id), 1);
 
 	memcpy(newHdr + 1, &fakeData[0], fakeData.size() * sizeof(artdaq::Fragment::value_type));
 	newHdr->fragment_id = 1;
@@ -346,9 +346,9 @@ BOOST_AUTO_TEST_CASE(ResizeLastFragment)
 
 	auto newHdr = cfl.appendFragment(4);
 	BOOST_REQUIRE_EQUAL(cf->block_count(), 2);
-	BOOST_REQUIRE_EQUAL(newHdr->word_count, 4 + artdaq::detail::RawFragmentHeader::num_words());
-	BOOST_REQUIRE_EQUAL(newHdr->type, type);
-	BOOST_REQUIRE_EQUAL(newHdr->sequence_id, 1);
+	BOOST_REQUIRE_EQUAL(static_cast<artdaq::detail::RawFragmentHeader::RawDataType>(newHdr->word_count), 4 + artdaq::detail::RawFragmentHeader::num_words());
+	BOOST_REQUIRE_EQUAL(static_cast<artdaq::detail::RawFragmentHeader::RawDataType>(newHdr->type), type);
+	BOOST_REQUIRE_EQUAL(static_cast<artdaq::detail::RawFragmentHeader::RawDataType>(newHdr->sequence_id), 1);
 
 	memcpy(newHdr + 1, &fakeData[0], fakeData.size() * sizeof(artdaq::Fragment::value_type));
 	newHdr->fragment_id = 1;
