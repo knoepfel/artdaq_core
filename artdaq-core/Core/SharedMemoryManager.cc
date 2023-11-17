@@ -1380,6 +1380,7 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, const std::string&
 
 		if (throwException)
 		{
+			TRACE_CNTL("modeM", (uint64_t)0);
 			throw cet::exception(category) << message;  // NOLINT(cert-err60-cpp)
 		}
 	}
