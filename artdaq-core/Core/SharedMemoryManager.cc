@@ -710,7 +710,7 @@ bool artdaq::SharedMemoryManager::ReadyForWrite(bool overwrite)
 		{
 			TLOG(TLVL_WRITEREADY + 1) << std::hex << std::showbase << shm_key_
 			                          << std::dec
-			                          << " WriteReadyCount: Buffer " << ii << " is either empty or available for overwrite.";
+			                          << " ReadyForWrite: Buffer " << ii << " is either empty or available for overwrite.";
 			return true;
 		}
 	}
