@@ -21,7 +21,7 @@ old_style_config_vars
 
 #
 product			version		optional
-canvas_root_io  v1_13_01    s128
+canvas_root_io  v1_13_03    s128
 canvas_root_io  v1_13_01    s126
 canvas_root_io  v1_12_03    s124
 canvas_root_io  v1_11_02    s120a
