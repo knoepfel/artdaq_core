@@ -165,6 +165,15 @@ bool artdaq::SharedMemoryManager::Attach(size_t timeout_usec)
 	last_seen_id_ = 0;
 	size_t shmSize = requested_shm_parameters_.buffer_count * (requested_shm_parameters_.buffer_size + sizeof(ShmBuffer)) + sizeof(ShmStruct);
 
+	auto available = GetAvailableRAM();
+
+	if (shmSize > 0.8 * available) {
+		TLOG(TLVL_WARNING) << "Requested shared memory size " << PrintBytes(shmSize) 
+			<< " (" << requested_shm_parameters_.buffer_count << " buffers * " << PrintBytes(requested_shm_parameters_.buffer_size) << ")" 
+			<< " is more than 80% of system available RAM (" << PrintBytes(available) << ")";
+		TLOG(TLVL_WARNING) << "Allocation of shared memory will likely fail!";
+	}
+
 	// 19-Feb-2019, KAB: separating out the determination of whether a given process owns the shared
 	// memory (indicated by manager_id_ == 0) and whether or not the shared memory already exists.
 	if (requested_shm_parameters_.buffer_count > 0 && requested_shm_parameters_.buffer_size > 0 && manager_id_ <= 0)
