@@ -3,12 +3,14 @@
 
 #include <atomic>
 #include <deque>
+#include <iomanip>
 #include <list>
 #include <mutex>
+#include <sstream>
 #include <string>
 #include <vector>
-#include "sys/sysinfo.h"
 #include "artdaq-core/Utilities/TimeUtils.hh"
+#include "sys/sysinfo.h"
 
 namespace artdaq {
 /**
@@ -365,18 +367,22 @@ public:
 		return 0;
 	}
 
-	static std::string PrintBytes(uint64_t bytes) {
+	static std::string PrintBytes(uint64_t bytes)
+	{
 		double print = bytes / 1024.0 / 1024.0 / 1024.0;
 		std::string unit = "GB";
-		if (bytes < 1024) {
+		if (bytes < 1024)
+		{
 			print = bytes;
 			unit = "B";
 		}
-		else if (bytes < 1024 * 1024) {
+		else if (bytes < 1024 * 1024)
+		{
 			print = bytes / 1024.0;
 			unit = "KB";
 		}
-		else if (bytes < 1024 * 1024 * 1024) {
+		else if (bytes < 1024 * 1024 * 1024)
+		{
 			print = bytes / 1024.0 / 1024.0;
 			unit = "MB";
 		}
