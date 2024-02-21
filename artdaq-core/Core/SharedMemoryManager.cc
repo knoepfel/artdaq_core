@@ -2,7 +2,9 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <cstring>
+#include <iomanip>
 #include <list>
+#include <sstream>
 #include <unordered_map>
 #ifndef SHM_DEST  // Lynn reports that this is missing on Mac OS X?!?
 #define SHM_DEST 01000
