@@ -169,10 +169,10 @@ bool artdaq::SharedMemoryManager::Attach(size_t timeout_usec)
 
 	TLOG(TLVL_INFO) << "Requested shared memory size " << PrintBytes(shmSize)
 	                << " (" << requested_shm_parameters_.buffer_count << " buffers * " << PrintBytes(requested_shm_parameters_.buffer_size) << ")"
-	                << ", available RAM (" << PrintBytes(available) << ")";
+	                << ", available RAM " << PrintBytes(available);
 	if (shmSize > 0.8 * available)
 	{
-		TLOG(TLVL_WARNING) << "Requested shared memory size is over 80% of available RAM! Allocation of shared memory will likely fail!";
+		TLOG(TLVL_WARNING) << "Requested shared memory size is greater than 80% of available RAM! Allocation of shared memory will likely fail!";
 	}
 
 	// 19-Feb-2019, KAB: separating out the determination of whether a given process owns the shared
