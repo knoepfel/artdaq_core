@@ -26,7 +26,7 @@ canvas_root_io  v1_13_04    s129
 canvas_root_io  v1_13_03    s128
 canvas_root_io  v1_11_03    s120b
 canvas_root_io  v1_11_02    s120a
-TRACE			v3_17_10
+TRACE			v3_17_11
 cetmodules		v3_24_01	-	only_for_build
 end_product_list
 
