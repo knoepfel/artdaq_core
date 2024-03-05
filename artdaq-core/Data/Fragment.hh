@@ -768,8 +768,17 @@ private:
 
 // http://stackoverflow.com/questions/33939687
 // This should generate an exception if artdaq::Fragment is not move-constructible
-inline artdaq::Fragment::Fragment(artdaq::Fragment&&) noexcept = default;
-inline artdaq::Fragment& artdaq::Fragment::operator=(artdaq::Fragment&&) noexcept = default;
+inline artdaq::Fragment::Fragment(artdaq::Fragment&& of) noexcept  : vals_(std::move(of.vals_)), upgraded_header_(of.upgraded_header_) {
+	of.upgraded_header_ = nullptr;
+}
+inline artdaq::Fragment& artdaq::Fragment::operator=(artdaq::Fragment&& of) noexcept
+{
+	vals_ = std::move(of.vals_);
+	upgraded_header_ = of.upgraded_header_;
+	of.upgraded_header_ = nullptr;
+	return *this;
+}
+
 
 inline artdaq::Fragment::Fragment(const artdaq::Fragment& f) : vals_(f.vals_), upgraded_header_(nullptr) {}
 inline artdaq::Fragment& artdaq::Fragment::operator=(const artdaq::Fragment& f) {
