@@ -108,7 +108,7 @@ public:
 	 * \brief Default copy constructor
 	 * \todo Decide if Copy constructor should be declared =delete
 	 */
-	Fragment(const Fragment&) = default;
+	Fragment(const Fragment&);
 	/**
 	 * \brief Move Constructor
 	 *
@@ -122,7 +122,7 @@ public:
 	 * \return Reference to new Fragment
 	 * \todo Decide if copy-assignment operator should be declared =delete
 	 */
-	Fragment& operator=(const Fragment&) = default;
+	Fragment& operator=(const Fragment&);
 	/**
 	 * \brief Move-assignment operator
 	 * \return Reference to Fragment
@@ -770,6 +770,13 @@ private:
 // This should generate an exception if artdaq::Fragment is not move-constructible
 inline artdaq::Fragment::Fragment(artdaq::Fragment&&) noexcept = default;
 inline artdaq::Fragment& artdaq::Fragment::operator=(artdaq::Fragment&&) noexcept = default;
+
+inline artdaq::Fragment::Fragment(const artdaq::Fragment& f) : vals_(f.vals_), upgraded_header_(nullptr) {}
+inline artdaq::Fragment& artdaq::Fragment::operator=(const artdaq::Fragment& f) {
+	vals_ = f.vals_;
+	upgraded_header_ = nullptr;
+	return *this;
+}
 
 inline bool constexpr artdaq::Fragment::
     isUserFragmentType(type_t fragmentType)
