@@ -8,3 +8,5 @@ obj/*
 core.*
 spack-build-*
 spack-configure-*
+build-linux-*
+
