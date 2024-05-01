@@ -21,6 +21,7 @@ old_style_config_vars
 
 #
 product			version		optional
+canvas_root_io  v1_14_00    s132
 canvas_root_io  v1_13_06    s131
 canvas_root_io  v1_13_05    s130
 canvas_root_io  v1_13_04    s129
@@ -34,6 +35,9 @@ end_product_list
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
 qualifier		canvas_root_io	TRACE	notes
+e28:s132:debug	e28:debug		-nq-	-std=c++20
+e28:s132:prof	e28:prof		-nq-	-std=c++20
+
 c14:s131:debug	c14:debug		-nq-	-std=c++17
 c14:s131:prof	c14:prof		-nq-	-std=c++17
 #c15:s131:debug	c15:debug		-nq-	-std=c++17
